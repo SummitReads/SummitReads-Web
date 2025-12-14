@@ -2,10 +2,12 @@
     --bg-dark: #0F172A;
     --bg-card: #1E293B;
     --bg-card-hover: #334155;
-    --brand-teal: #38BDF8;
+    /* UPDATED: New color hex code */
+    --brand-teal: #19bee3; 
     --text-main: #F1F5F9;
     --text-muted: #94A3B8;
-    --glow-color: rgba(56, 189, 248, 0.15);
+    /* UPDATED: New RGB values (25, 190, 227) for glow */
+    --glow-color: rgba(25, 190, 227, 0.15); 
 }
 
 body {
@@ -23,7 +25,8 @@ body {
     transform: translateX(-50%);
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, rgba(15,23,42,0) 70%);
+    /* UPDATED: New RGB values for the gradient */
+    background: radial-gradient(circle, rgba(25,190,227,0.15) 0%, rgba(15,23,42,0) 70%);
     z-index: -1;
     pointer-events: none;
 }
@@ -50,7 +53,7 @@ nav {
 .logo {
     display: flex;
     align-items: center;
-    gap: 0; /* Zero gap for seamless logo */
+    gap: 0; 
     font-weight: 800;
     font-size: 1.4rem;
     color: white;
@@ -66,7 +69,7 @@ nav {
     display: block;
     filter: brightness(0) invert(1);
     opacity: 0.95;
-    margin-right: 10px; /* Space added via margin instead of gap */
+    margin-right: 10px; 
 }
 
 .nav-link {
@@ -107,8 +110,9 @@ nav {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    /* UPDATED: New RGB values for background and border */
+    background: rgba(25, 190, 227, 0.1);
+    border: 1px solid rgba(25, 190, 227, 0.2);
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 0.85rem;
@@ -175,7 +179,8 @@ input[type="text"] {
 
 input[type="text"]:focus {
     border-color: var(--brand-teal);
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    /* UPDATED: New RGB values for focus shadow */
+    box-shadow: 0 0 0 2px rgba(25, 190, 227, 0.2);
 }
 
 /* --- Categories --- */
@@ -222,7 +227,6 @@ input[type="text"]:focus {
 
 .grid {
     display: grid;
-    /* FIX: Cards are smaller (180px min) to fit more on screen */
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 20px;
 }
@@ -240,7 +244,8 @@ input[type="text"]:focus {
 .card:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    border-color: rgba(56, 189, 248, 0.3);
+    /* UPDATED: New RGB values for hover border */
+    border-color: rgba(25, 190, 227, 0.3);
 }
 
 .card-image-container {
@@ -275,7 +280,7 @@ input[type="text"]:focus {
 .card:hover .card-overlay { opacity: 1; }
 
 .play-btn {
-    width: 48px; /* Smaller play button */
+    width: 48px; 
     height: 48px;
     border-radius: 50%;
     background: var(--brand-teal);
@@ -292,12 +297,12 @@ input[type="text"]:focus {
 .card:hover .play-btn { transform: scale(1); }
 
 .card-content {
-    padding: 12px; /* Tighter padding */
+    padding: 12px; 
 }
 
 .card h3 {
     margin: 0 0 4px 0;
-    font-size: 0.95rem; /* Smaller Title */
+    font-size: 0.95rem; 
     font-weight: 600;
     color: white;
     line-height: 1.4;
@@ -305,7 +310,7 @@ input[type="text"]:focus {
 
 .card .author {
     color: var(--text-muted);
-    font-size: 0.8rem; /* Smaller Author */
+    font-size: 0.8rem; 
     margin: 0 0 8px 0;
 }
 
@@ -317,7 +322,8 @@ input[type="text"]:focus {
 }
 
 .tag {
-    background: rgba(56, 189, 248, 0.1);
+    /* UPDATED: New RGB values for tag background */
+    background: rgba(25, 190, 227, 0.1);
     color: var(--brand-teal);
     padding: 2px 8px;
     border-radius: 4px;
@@ -325,7 +331,7 @@ input[type="text"]:focus {
 }
 
 .rating {
-    color: #FBBF24; /* Amber 400 */
+    color: #FBBF24; 
     font-weight: 600;
 }
 
@@ -349,8 +355,9 @@ input[type="text"]:focus {
 .btn-ghost:hover {
     color: white;
     border-color: var(--brand-teal);
-    background: rgba(56, 189, 248, 0.1);
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+    /* UPDATED: New RGB values for hover background */
+    background: rgba(25, 190, 227, 0.1);
+    box-shadow: 0 0 15px rgba(25, 190, 227, 0.15);
     transform: translateX(2px);
 }
 
