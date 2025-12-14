@@ -1,5 +1,5 @@
 :root {
-    /* Brand Palette extracted from your React Vision */
+    /* Brand Palette */
     --bg-dark: #0F172A;       /* Slate 900 */
     --bg-card: #1E293B;       /* Slate 800 */
     --bg-card-hover: #334155; /* Slate 700 */
@@ -11,7 +11,7 @@
 
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif; /* Professional Font */
+    font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-main);
     overflow-x: hidden;
@@ -53,20 +53,22 @@ nav {
 .logo {
     display: flex;
     align-items: center;
-    gap: 8px; /* Tighter gap so Icon + Text feel connected */
-    font-weight: 700;
-    font-size: 1.35rem; /* Slightly larger for readability */
-    color: white; /* "Summit" will be White */
+    gap: 8px; 
+    font-weight: 800; /* Extra Bold for impact */
+    font-size: 1.4rem; 
+    color: white; 
     text-decoration: none;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px; /* TIGHTENS the text to remove gaps */
 }
 
-/* "Reads" becomes Cyan */
-.logo span { color: var(--brand-teal); }
+/* "Reads" in Cyan */
+.logo span { 
+    color: var(--brand-teal); 
+}
 
-/* Logo Icon - Inverts dark icon to white */
+/* Logo Icon - White Filter */
 .logo-img {
-    height: 36px;  /* Matches the new font size */
+    height: 36px;
     width: auto;
     display: block;
     filter: brightness(0) invert(1);
