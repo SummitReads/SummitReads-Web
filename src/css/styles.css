@@ -49,22 +49,24 @@ nav {
     align-items: center;
 }
 
+/* --- LOGO STYLING --- */
 .logo {
     display: flex;
     align-items: center;
-    gap: 8px; /* Tighter gap for "One Word" feel */
+    gap: 8px; /* Tighter gap so Icon + Text feel connected */
     font-weight: 700;
-    font-size: 1.35rem; /* Slightly larger text */
-    color: white;
+    font-size: 1.35rem; /* Slightly larger for readability */
+    color: white; /* "Summit" will be White */
     text-decoration: none;
     letter-spacing: -0.5px;
 }
 
+/* "Reads" becomes Cyan */
 .logo span { color: var(--brand-teal); }
 
-/* Logo Image Styling - Inverts dark icon to white */
+/* Logo Icon - Inverts dark icon to white */
 .logo-img {
-    height: 36px;  /* Sized to match the font height */
+    height: 36px;  /* Matches the new font size */
     width: auto;
     display: block;
     filter: brightness(0) invert(1);
