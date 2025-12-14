@@ -1,5 +1,5 @@
 :root {
-    /* Brand Palette */
+    /* Brand Palette extracted from your React Vision */
     --bg-dark: #0F172A;       /* Slate 900 */
     --bg-card: #1E293B;       /* Slate 800 */
     --bg-card-hover: #334155; /* Slate 700 */
@@ -11,13 +11,13 @@
 
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', sans-serif; /* Professional Font */
     background-color: var(--bg-dark);
     color: var(--text-main);
     overflow-x: hidden;
 }
 
-/* --- Ambient Glow --- */
+/* --- Ambient Background Glow --- */
 .ambient-glow {
     position: fixed;
     top: -20%;
@@ -52,9 +52,9 @@ nav {
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* Tighter gap for "One Word" feel */
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.35rem; /* Slightly larger text */
     color: white;
     text-decoration: none;
     letter-spacing: -0.5px;
@@ -62,11 +62,13 @@ nav {
 
 .logo span { color: var(--brand-teal); }
 
-/* Logo Image Styling */
+/* Logo Image Styling - Inverts dark icon to white */
 .logo-img {
-    height: 32px;  /* Matches text height perfectly */
+    height: 36px;  /* Sized to match the font height */
     width: auto;
     display: block;
+    filter: brightness(0) invert(1);
+    opacity: 0.95;
 }
 
 .nav-link {
