@@ -1,23 +1,21 @@
 :root {
-    /* Brand Palette extracted from your React Vision */
-    --bg-dark: #0F172A;       /* Slate 900 */
-    --bg-card: #1E293B;       /* Slate 800 */
-    --bg-card-hover: #334155; /* Slate 700 */
-    --brand-teal: #38BDF8;    /* Sky 400 - Neon Blue/Cyan */
-    --text-main: #F1F5F9;     /* Slate 100 */
-    --text-muted: #94A3B8;    /* Slate 400 */
+    --bg-dark: #0F172A;
+    --bg-card: #1E293B;
+    --bg-card-hover: #334155;
+    --brand-teal: #38BDF8;
+    --text-main: #F1F5F9;
+    --text-muted: #94A3B8;
     --glow-color: rgba(56, 189, 248, 0.15);
 }
 
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif; /* Professional Font */
+    font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
     color: var(--text-main);
     overflow-x: hidden;
 }
 
-/* --- Ambient Background Glow --- */
 .ambient-glow {
     position: fixed;
     top: -20%;
@@ -49,33 +47,26 @@ nav {
     align-items: center;
 }
 
-/* --- LOGO STYLING --- */
 .logo {
     display: flex;
     align-items: center;
-    /* FIX: Set gap to 0 so "Summit" and "Reads" touch perfectly */
-    gap: 0; 
-    font-weight: 800; /* Extra Bold */
-    font-size: 1.4rem; 
-    color: white; 
+    gap: 0; /* Zero gap for seamless logo */
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: white;
     text-decoration: none;
-    letter-spacing: -1px; /* Tightens letters for logo feel */
+    letter-spacing: -1px;
 }
 
-/* "Reads" in Cyan */
-.logo span { 
-    color: var(--brand-teal); 
-}
+.logo span { color: var(--brand-teal); }
 
-/* Logo Icon - White Filter */
 .logo-img {
     height: 36px;
     width: auto;
     display: block;
     filter: brightness(0) invert(1);
     opacity: 0.95;
-    /* FIX: Add spacing here instead of using gap */
-    margin-right: 10px; 
+    margin-right: 10px; /* Space added via margin instead of gap */
 }
 
 .nav-link {
@@ -226,18 +217,19 @@ input[type="text"]:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 24px;
+    /* FIX: Cards are smaller (180px min) to fit more on screen */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
 }
 
 .card {
     background: var(--bg-card);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,0.05);
     transition: transform 0.3s, box-shadow 0.3s;
@@ -283,8 +275,8 @@ input[type="text"]:focus {
 .card:hover .card-overlay { opacity: 1; }
 
 .play-btn {
-    width: 56px;
-    height: 56px;
+    width: 48px; /* Smaller play button */
+    height: 48px;
     border-radius: 50%;
     background: var(--brand-teal);
     border: none;
@@ -300,27 +292,28 @@ input[type="text"]:focus {
 .card:hover .play-btn { transform: scale(1); }
 
 .card-content {
-    padding: 16px;
+    padding: 12px; /* Tighter padding */
 }
 
 .card h3 {
     margin: 0 0 4px 0;
-    font-size: 1rem;
+    font-size: 0.95rem; /* Smaller Title */
     font-weight: 600;
     color: white;
+    line-height: 1.4;
 }
 
 .card .author {
     color: var(--text-muted);
-    font-size: 0.875rem;
-    margin: 0 0 12px 0;
+    font-size: 0.8rem; /* Smaller Author */
+    margin: 0 0 8px 0;
 }
 
 .card-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
 }
 
 .tag {
