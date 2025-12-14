@@ -3,140 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SummitReads - Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>SummitReads | Discover Wisdom</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
+    <div class="ambient-glow"></div>
+
     <nav>
-        <a href="#" class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#56B4E9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
-            Summit<span>Reads</span>
-        </a>
-        <div class="nav-actions">
-            <a href="#" class="nav-link">Browse</a>
-            <a href="#" class="nav-link">My Library</a>
-            <button class="btn-secondary">Sign Out</button>
+        <div class="nav-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+                </div>
+                Summit<span>Reads</span>
+            </a>
+            <div class="nav-actions">
+                <a href="#" class="nav-link">Library</a>
+                <button class="btn-primary small">Sign Out</button>
+            </div>
         </div>
     </nav>
 
-    <div class="hero">
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search for wisdom...">
+    <header class="hero">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            Updated Daily • 1,200+ Guides
         </div>
-        <div class="filters">
-            <div class="pill active">All Categories</div>
-            <div class="pill">Business</div>
-            <div class="pill">Health</div>
-            <div class="pill">Spirituality</div>
-            <div class="pill">Psychology</div>
+        <h1>
+            Discover <span class="text-gradient">Wisdom</span>
+        </h1>
+        <p class="hero-sub">Curated summaries for the modern leader.</p>
+
+        <div class="search-wrapper">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="Search titles, authors, or topics...">
         </div>
+    </header>
+
+    <div class="category-scroll">
+        <button class="pill active">All</button>
+        <button class="pill">Business</button>
+        <button class="pill">Psychology</button>
+        <button class="pill">Leadership</button>
+        <button class="pill">Productivity</button>
+        <button class="pill">Biographies</button>
     </div>
 
-    <div class="section-container">
-        <div class="section-header">
-            <h2>Continue Climbing</h2>
-        </div>
+    <main class="container">
         
-        <div class="grid">
-            <div class="card">
-                <div class="card-image" style="background: linear-gradient(45deg, #1D3557, #457B9D);">
-                    Atomic Habits
-                    <span class="tag">Audio</span>
-                </div>
-                <div class="card-content">
-                    <h3 class="title">Atomic Habits</h3>
-                    <div class="author">James Clear</div>
-                    <div class="progress-wrapper">
-                        <div class="progress-header">
-                            <span>Chapter 4</span>
-                            <span class="highlight-text">42%</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 42%;"></div>
-                        </div>
-                    </div>
-                    <button class="btn-card" onclick="alert('Resuming Atomic Habits...')">Resume</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-image" style="background: linear-gradient(45deg, #264653, #2A9D8F);">
-                    Deep Work
-                    <span class="tag">E-Book</span>
-                </div>
-                <div class="card-content">
-                    <h3 class="title">Deep Work</h3>
-                    <div class="author">Cal Newport</div>
-                    <div class="progress-wrapper">
-                        <div class="progress-header">
-                            <span>Page 180</span>
-                            <span class="highlight-text">75%</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-fill" style="width: 75%;"></div>
-                        </div>
-                    </div>
-                    <button class="btn-card" onclick="alert('Resuming Deep Work...')">Resume</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section-container">
         <div class="section-header">
-            <h2>Top Rated Guides</h2>
-            <a href="#" class="see-all">See All &rarr;</a>
+            <h2>Trending Now</h2>
+            <a href="#" class="see-all">View All</a>
         </div>
 
         <div class="grid">
             <div class="card">
-                <div class="card-image" style="background: linear-gradient(45deg, #3d348b, #7678ed);">
-                    Hyperfocus
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1592496431122-2349e0fbc666?w=600&auto=format&fit=crop&q=60" alt="Book Cover">
+                    <div class="card-overlay">
+                        <button class="play-btn">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-content">
-                    <h3 class="title">Hyperfocus</h3>
-                    <div class="author">Chris Bailey</div>
-                    <div class="rating-wrapper">
-                        <span class="stars">★★★★★</span>
-                        <span>(1.2k)</span>
+                    <h3>Atomic Habits</h3>
+                    <p class="author">James Clear</p>
+                    <div class="card-meta">
+                        <span class="tag">Psychology</span>
+                        <span class="rating">★ 4.9</span>
                     </div>
-                    <button class="btn-card outline">View Summary</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-image" style="background: linear-gradient(45deg, #e07a5f, #f2cc8f);">
-                    Can't Hurt Me
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1555252333-9f8e92e65df4?w=600&auto=format&fit=crop&q=60" alt="Book Cover">
+                    <div class="card-overlay">
+                        <button class="play-btn">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-content">
-                    <h3 class="title">Can't Hurt Me</h3>
-                    <div class="author">David Goggins</div>
-                    <div class="rating-wrapper">
-                        <span class="stars">★★★★☆</span>
-                        <span>(850)</span>
+                    <h3>The Psychology of Money</h3>
+                    <p class="author">Morgan Housel</p>
+                    <div class="card-meta">
+                        <span class="tag">Finance</span>
+                        <span class="rating">★ 4.8</span>
                     </div>
-                    <button class="btn-card outline">View Summary</button>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-image" style="background: linear-gradient(45deg, #2b2d42, #8d99ae);">
-                    Ego is the Enemy
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&auto=format&fit=crop&q=60" alt="Book Cover">
+                    <div class="card-overlay">
+                        <button class="play-btn">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-content">
-                    <h3 class="title">Ego is the Enemy</h3>
-                    <div class="author">Ryan Holiday</div>
-                    <div class="rating-wrapper">
-                        <span class="stars">★★★★★</span>
-                        <span>(2.4k)</span>
+                    <h3>Deep Work</h3>
+                    <p class="author">Cal Newport</p>
+                    <div class="card-meta">
+                        <span class="tag">Productivity</span>
+                        <span class="rating">★ 4.7</span>
                     </div>
-                    <button class="btn-card outline">View Summary</button>
+                </div>
+            </div>
+
+             <div class="card">
+                <div class="card-image-container">
+                    <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&auto=format&fit=crop&q=60" alt="Book Cover">
+                    <div class="card-overlay">
+                        <button class="play-btn">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <h3>Thinking, Fast & Slow</h3>
+                    <p class="author">Daniel Kahneman</p>
+                    <div class="card-meta">
+                        <span class="tag">Science</span>
+                        <span class="rating">★ 4.6</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
+    </main>
+    
     <script src="js/app.js"></script>
 </body>
 </html>
