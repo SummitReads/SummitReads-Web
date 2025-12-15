@@ -2,17 +2,19 @@
     --bg-dark: #0F172A;
     --bg-card: #1E293B;
     --bg-card-hover: #334155;
-    /* UPDATED: New color hex code */
     --brand-teal: #19bee3; 
     --text-main: #F1F5F9;
     --text-muted: #94A3B8;
-    /* UPDATED: New RGB values (25, 190, 227) for glow */
     --glow-color: rgba(25, 190, 227, 0.15); 
+    
+    /* Font Stacks */
+    --font-sans: 'Inter', sans-serif;
+    --font-serif: 'Playfair Display', serif; /* NEW Premium Font */
 }
 
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg-dark);
     color: var(--text-main);
     overflow-x: hidden;
@@ -23,37 +25,30 @@ body {
     position: fixed;
     top: 0;
     left: 50%;
-    /* Centers horizontally, pulls it up vertically so only the bottom half glows down */
     transform: translate(-50%, -30%); 
-    
-    /* Make it much wider to create the "horizon" effect */
     width: 140vw; 
     height: 800px;
-    
-    /* Changed from 'circle' to 'ellipse' for a wider spread */
-    /* Uses your new brand RGB values (25, 190, 227) */
     background: radial-gradient(
         ellipse at center, 
         rgba(25, 190, 227, 0.15) 0%, 
         rgba(25, 190, 227, 0.05) 40%, 
         rgba(15, 23, 42, 0) 70%
     );
-    
-    /* Adds extra blur to remove any harsh banding */
     filter: blur(60px); 
-    
     z-index: -1;
     pointer-events: none;
 }
 
-/* --- Navigation --- */
+/* --- Glass Navigation --- */
 nav {
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(12px);
-    background: rgba(15, 23, 42, 0.8);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    /* GLASS EFFECT UPDATED */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(15, 23, 42, 0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 .nav-content {
@@ -69,6 +64,7 @@ nav {
     display: flex;
     align-items: center;
     gap: 0; 
+    font-family: var(--font-sans);
     font-weight: 800;
     font-size: 1.4rem;
     color: white;
@@ -101,16 +97,23 @@ nav {
     background: var(--brand-teal);
     color: #0F172A;
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    font-family: var(--font-sans);
+}
+
+.btn-primary.small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
 }
 
 .btn-primary:hover {
     filter: brightness(1.1);
     box-shadow: 0 0 15px var(--glow-color);
+    transform: translateY(-1px);
 }
 
 /* --- Hero Section --- */
@@ -125,7 +128,6 @@ nav {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    /* UPDATED: New RGB values for background and border */
     background: rgba(25, 190, 227, 0.1);
     border: 1px solid rgba(25, 190, 227, 0.2);
     padding: 6px 12px;
@@ -133,6 +135,7 @@ nav {
     font-size: 0.85rem;
     color: var(--brand-teal);
     margin-bottom: 24px;
+    font-family: var(--font-sans);
 }
 
 .pulse-dot {
@@ -143,12 +146,17 @@ nav {
     box-shadow: 0 0 8px var(--brand-teal);
 }
 
+/* TYPOGRAPHY UPDATE: Editorial Serif */
+h1, h2, h3 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.02em;
+}
+
 h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
+    font-size: 4rem;
+    font-weight: 700;
     margin: 0 0 16px 0;
     line-height: 1.1;
-    letter-spacing: -1px;
 }
 
 .text-gradient {
@@ -159,11 +167,12 @@ h1 {
 
 .hero-sub {
     color: var(--text-muted);
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     margin-bottom: 40px;
+    line-height: 1.6;
 }
 
-/* --- Search Bar --- */
+/* --- Glass Search Bar --- */
 .search-wrapper {
     position: relative;
     max-width: 500px;
@@ -176,47 +185,51 @@ h1 {
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    z-index: 2;
 }
 
 input[type="text"] {
     width: 100%;
-    padding: 14px 14px 14px 48px;
-    background: var(--bg-card);
+    padding: 16px 16px 16px 48px;
+    /* GLASS INPUT */
+    background: rgba(30, 41, 59, 0.6); 
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 12px;
     color: white;
-    font-size: 1rem;
+    font-size: 1.05rem;
     outline: none;
     transition: all 0.2s;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans);
 }
 
 input[type="text"]:focus {
     border-color: var(--brand-teal);
-    /* UPDATED: New RGB values for focus shadow */
-    box-shadow: 0 0 0 2px rgba(25, 190, 227, 0.2);
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 0 0 4px rgba(25, 190, 227, 0.15);
 }
 
 /* --- Categories --- */
 .category-scroll {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     padding: 0 20px 40px;
     flex-wrap: wrap;
 }
 
 .pill {
-    background: var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255,255,255,0.1);
     color: var(--text-muted);
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 10px 20px;
+    border-radius: 24px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 0.9rem;
-    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
 }
 
 .pill:hover, .pill.active {
@@ -224,26 +237,128 @@ input[type="text"]:focus {
     color: var(--bg-dark);
     font-weight: 600;
     border-color: var(--brand-teal);
+    transform: translateY(-2px);
 }
 
-/* --- Grid & Cards --- */
+/* --- Featured Hero Card (NEW) --- */
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 24px 80px;
 }
 
+.featured-section {
+    margin-bottom: 60px;
+}
+
+.glass-panel {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.featured-card {
+    display: flex;
+    flex-direction: column-reverse; /* Mobile First */
+    position: relative;
+    transition: transform 0.3s;
+}
+
+.featured-card:hover {
+    border-color: rgba(25, 190, 227, 0.3);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+}
+
+.featured-content {
+    padding: 30px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.tag-featured {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: var(--brand-teal);
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.featured-content h2 {
+    font-size: 2rem;
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+}
+
+.featured-desc {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.featured-meta {
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    opacity: 0.8;
+}
+
+.featured-image {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+}
+
+.featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Desktop Styles for Featured Card */
+@media (min-width: 768px) {
+    .featured-card {
+        flex-direction: row;
+        height: 380px;
+    }
+    
+    .featured-image {
+        width: 45%;
+        height: 100%;
+    }
+    
+    .featured-content {
+        padding: 48px;
+    }
+    
+    .featured-content h2 {
+        font-size: 2.5rem;
+    }
+}
+
+
+/* --- Grid & Cards --- */
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 24px;
 }
 
 .card {
@@ -251,21 +366,20 @@ input[type="text"]:focus {
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid rgba(255,255,255,0.05);
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
 }
 
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-8px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-    /* UPDATED: New RGB values for hover border */
     border-color: rgba(25, 190, 227, 0.3);
 }
 
 .card-image-container {
     position: relative;
-    aspect-ratio: 1 / 1; 
+    aspect-ratio: 1 / 1.4; /* Taller for book covers */
     overflow: hidden;
 }
 
@@ -283,7 +397,7 @@ input[type="text"]:focus {
 .card-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(15, 23, 42, 0.4);
     opacity: 0;
     transition: opacity 0.3s;
     display: flex;
@@ -295,8 +409,8 @@ input[type="text"]:focus {
 .card:hover .card-overlay { opacity: 1; }
 
 .play-btn {
-    width: 48px; 
-    height: 48px;
+    width: 56px; 
+    height: 56px;
     border-radius: 50%;
     background: var(--brand-teal);
     border: none;
@@ -306,42 +420,44 @@ input[type="text"]:focus {
     justify-content: center;
     cursor: pointer;
     transform: scale(0.8);
-    transition: transform 0.2s;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .card:hover .play-btn { transform: scale(1); }
 
 .card-content {
-    padding: 12px; 
+    padding: 16px; 
 }
 
 .card h3 {
-    margin: 0 0 4px 0;
-    font-size: 0.95rem; 
-    font-weight: 600;
+    margin: 0 0 6px 0;
+    font-size: 1rem; 
+    font-weight: 700;
     color: white;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .card .author {
     color: var(--text-muted);
-    font-size: 0.8rem; 
-    margin: 0 0 8px 0;
+    font-size: 0.85rem; 
+    margin: 0 0 12px 0;
+    font-family: var(--font-sans);
 }
 
 .card-meta {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    font-family: var(--font-sans);
 }
 
 .tag {
-    /* UPDATED: New RGB values for tag background */
     background: rgba(25, 190, 227, 0.1);
     color: var(--brand-teal);
-    padding: 2px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
     font-weight: 600;
 }
 
@@ -365,12 +481,12 @@ input[type="text"]:focus {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    font-family: var(--font-sans);
 }
 
 .btn-ghost:hover {
     color: white;
     border-color: var(--brand-teal);
-    /* UPDATED: New RGB values for hover background */
     background: rgba(25, 190, 227, 0.1);
     box-shadow: 0 0 15px rgba(25, 190, 227, 0.15);
     transform: translateX(2px);
