@@ -18,15 +18,30 @@ body {
     overflow-x: hidden;
 }
 
+/* --- UPDATED AMBIENT GLOW (Soundsift Style) --- */
 .ambient-glow {
     position: fixed;
-    top: -20%;
+    top: 0;
     left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    /* UPDATED: New RGB values for the gradient */
-    background: radial-gradient(circle, rgba(25,190,227,0.15) 0%, rgba(15,23,42,0) 70%);
+    /* Centers horizontally, pulls it up vertically so only the bottom half glows down */
+    transform: translate(-50%, -30%); 
+    
+    /* Make it much wider to create the "horizon" effect */
+    width: 140vw; 
+    height: 800px;
+    
+    /* Changed from 'circle' to 'ellipse' for a wider spread */
+    /* Uses your new brand RGB values (25, 190, 227) */
+    background: radial-gradient(
+        ellipse at center, 
+        rgba(25, 190, 227, 0.15) 0%, 
+        rgba(25, 190, 227, 0.05) 40%, 
+        rgba(15, 23, 42, 0) 70%
+    );
+    
+    /* Adds extra blur to remove any harsh banding */
+    filter: blur(60px); 
+    
     z-index: -1;
     pointer-events: none;
 }
