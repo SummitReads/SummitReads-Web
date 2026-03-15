@@ -778,3 +778,98 @@
   .landing-page .pb-item { border-right: none; border-top: 1px solid var(--border); }
   .pb-item:first-child { border-top: none; }
 }
+
+/* ─── MOBILE ─── */
+@media (max-width: 640px) {
+
+  /* Nav — hide middle links, keep logo + CTA only */
+  .landing-page nav { padding: 0 16px; height: 56px; }
+  .landing-page .nav-links { gap: 4px; }
+  .landing-page .nav-link { display: none; }
+  .landing-page .nav-link-teams { display: flex; font-size: 0.78rem; padding: 6px 10px; }
+  .landing-page .nav-cta { padding: 7px 14px; font-size: 0.78rem; margin-left: 2px; }
+
+  /* Hero — single column */
+  .landing-page .hero {
+    grid-template-columns: 1fr;
+    padding: 72px 16px 48px;
+    gap: 48px;
+    min-height: auto;
+  }
+  .landing-page .hero-left { padding-right: 0; }
+  .landing-page .hero-right { display: none; }
+
+  /* Stats row — wrap and shrink */
+  .landing-page .hero-stats-row {
+    flex-wrap: wrap; gap: 8px; margin-bottom: 28px;
+  }
+  .landing-page .hero-stat-pill {
+    font-size: 0.7rem; padding-right: 12px; margin-right: 12px;
+  }
+
+  /* Hero headline */
+  .landing-page .hero h1 {
+    font-size: clamp(2.2rem, 9vw, 3rem);
+  }
+
+  /* CTAs — stack vertically */
+  .landing-page .hero-actions {
+    flex-direction: column; align-items: stretch; gap: 10px;
+  }
+  .landing-page .btn-primary,
+  .landing-page .btn-ghost {
+    text-align: center; justify-content: center; width: 100%;
+  }
+
+  /* Hero footnote — smaller */
+  .landing-page .hero-footnote { font-size: 0.66rem; }
+
+  /* Sections — reduce padding */
+  .landing-page .how,
+  .landing-page .categories,
+  .landing-page .pricing,
+  .landing-page .purchase,
+  .landing-page .mechanic,
+  .landing-page .dashboard-preview { padding: 64px 0; }
+
+  /* Wrap padding */
+  .landing-page .wrap { padding: 0 16px; }
+
+  /* Individual pricing cards — single column */
+  .landing-page .indiv-cards { grid-template-columns: 1fr; gap: 16px; }
+  .landing-page .indiv-card-top { padding: 24px 24px 20px; }
+  .landing-page .indiv-features { padding: 18px 24px; }
+  .landing-page .indiv-amount { font-size: 2.4rem; }
+
+  /* Team calculator */
+  .landing-page .pricing-top { grid-template-columns: 1fr; }
+  .landing-page .plan-info { border-right: none; border-bottom: 1px solid var(--border); padding: 28px 24px; }
+  .landing-page .calc-side { padding: 28px 24px; }
+
+  /* Billing toggle */
+  .landing-page .billing-toggle { width: 100%; }
+  .landing-page .billing-opt { flex: 1; justify-content: center; }
+
+  /* Sprint example */
+  .landing-page .stage-grid { grid-template-columns: repeat(2, 1fr); }
+  .stage-col { border-right: none !important; border-top: 1px solid var(--border); }
+  .stage-col:nth-child(1), .stage-col:nth-child(2) { border-top: none; }
+  .stage-col:nth-child(odd) { border-right: 1px solid var(--border) !important; }
+
+  /* Sprint chrome */
+  .landing-page .sprint-chrome { flex-direction: column; gap: 12px; padding: 18px 16px; }
+  .landing-page .sprint-chrome-right { flex-wrap: wrap; gap: 8px; }
+  .landing-page .sprint-footer-line { flex-direction: column; gap: 16px; padding: 20px 16px; }
+
+  /* FAQ */
+  .landing-page .faq-layout { grid-template-columns: 1fr; gap: 32px; }
+  .landing-page .faq-lede { position: static; }
+
+  /* Final CTA */
+  .landing-page .final-cta { padding: 64px 16px; }
+  .landing-page .final-cta h2 { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+  .landing-page .cta-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .landing-page .cta-actions .btn-primary,
+  .landing-page .cta-actions .btn-ghost { justify-content: center; }
+
+}
