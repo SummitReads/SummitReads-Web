@@ -1,0 +1,251 @@
+"use client";
+import { useState } from 'react';
+import { supabase } from '@/app/supabaseClient';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+export default function SignupPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    // Validation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          }
+        }
+      });
+
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        setSuccess(true);
+        setLoading(false);
+      } else {
+        // Auto-signed in, redirect
+        router.push('/');
+      }
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <>
+        <div className="ambient-glow"></div>
+        <nav className="glass-nav">
+          <div className="nav-content">
+            <Link href="/" className="logo">
+              <img src="/SummitReads-Logo.png" alt="SummitReads" className="logo-img" />
+              Summit<span>Reads</span>
+            </Link>
+          </div>
+        </nav>
+
+        <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+          <div className="glass-panel" style={{ padding: '48px', textAlign: 'center' }}>
+            <div style={{ fontSize: '4rem', marginBottom: '24px' }}>✉️</div>
+            <h1 style={{ fontSize: '2rem', marginBottom: '16px' }}>Check Your Email</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
+              We've sent you a confirmation link to <strong>{email}</strong>. 
+              Click the link to verify your account and start your journey.
+            </p>
+            <Link href="/auth/login" className="btn-primary">
+              Back to Login
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="ambient-glow"></div>
+      <nav className="glass-nav">
+        <div className="nav-content">
+          <Link href="/" className="logo">
+            <img src="/SummitReads-Logo.png" alt="SummitReads" className="logo-img" />
+            Summit<span>Reads</span>
+          </Link>
+        </div>
+      </nav>
+
+      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+        <div className="glass-panel" style={{ padding: '48px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Start Your Journey</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Create an account to begin transforming books into action</p>
+          </div>
+
+          <form onSubmit={handleSignup}>
+            {error && (
+              <div style={{ 
+                background: 'rgba(239, 68, 68, 0.1)', 
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '24px',
+                color: '#ef4444'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '24px' }}>
+              <label htmlFor="fullName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+                autoComplete="name"
+                placeholder="John Doe"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="you@example.com"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label htmlFor="password" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="At least 6 characters"
+                suppressHydrationWarning={true}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                suppressHydrationWarning={true}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn-primary-large" 
+              disabled={loading}
+              style={{ width: '100%' }}
+            >
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <div style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)' }}>
+            Already have an account?{' '}
+            <Link href="/auth/login" style={{ color: 'var(--brand-teal)', fontWeight: '600' }}>
+              Sign in
+            </Link>
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}

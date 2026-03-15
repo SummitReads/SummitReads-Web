@@ -1,0 +1,171 @@
+/* ADD THIS TO THE END OF globals.css */
+
+/* =========================================
+   STATS HOVER BANNER (Above Hero)
+   ========================================= */
+.stats-hover-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: -40px;
+  margin-top: 40px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stats-hover-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stats-hover-card {
+  position: relative;
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(25, 190, 227, 0.3);
+  border-radius: 20px;
+  padding: 16px 32px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.3),
+    0 0 80px rgba(25, 190, 227, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.stats-hover-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(25, 190, 227, 0.5);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 100px rgba(25, 190, 227, 0.2);
+}
+
+.stats-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(25, 190, 227, 0.15) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.stats-hover-card:hover .stats-glow {
+  opacity: 1;
+}
+
+.stats-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats-icon {
+  color: var(--brand-teal);
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { 
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    transform: rotate(180deg) scale(1.1);
+  }
+}
+
+.stats-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats-count {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-serif);
+  background: linear-gradient(135deg, #fff 0%, var(--brand-teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stats-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(25, 190, 227, 0.1);
+  border: 1px solid rgba(25, 190, 227, 0.2);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  color: var(--brand-teal);
+  font-weight: 600;
+  position: relative;
+}
+
+.pulse-ring {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-teal);
+  box-shadow: 0 0 0 0 rgba(25, 190, 227, 0.7);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(25, 190, 227, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(25, 190, 227, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(25, 190, 227, 0);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .stats-hover-container {
+    margin-bottom: -30px;
+    margin-top: 20px;
+  }
+
+  .stats-hover-card {
+    padding: 12px 20px;
+  }
+
+  .stats-content {
+    gap: 12px;
+  }
+
+  .stats-count {
+    font-size: 1.5rem;
+  }
+
+  .stats-label {
+    font-size: 0.7rem;
+  }
+
+  .stats-badge {
+    display: none; /* Hide on very small screens */
+  }
+}
