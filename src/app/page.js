@@ -258,7 +258,7 @@ export default function Home() {
                 <div className="mechanic-num">01</div>
                 <div>
                   <h3>Choose a sprint from the library</h3>
-                  <p>Browse 295 sprints across Financial Intelligence, Leadership, Productivity, Marketing, Sales, Strategy, Mindset, and Communication. Managers can assign sprints to individuals or groups — or team members can browse the full library and choose what they want to develop on their own. Either way, an email arrives and they're in. No app download. No LMS setup.</p>
+                  <p>295 sprints across Financial Intelligence, Leadership, Productivity, Marketing, Sales, Strategy, Mindset, and Communication. Managers assign to individuals or groups. Team members can also browse and pick what they want to develop. They get an email and they're in. No app download, no LMS setup.</p>
                   <p className="aside">✓ Self-guided — live in minutes</p>
                 </div>
               </div>
@@ -266,14 +266,14 @@ export default function Home() {
                 <div className="mechanic-num">02</div>
                 <div>
                   <h3>Each stage takes 15 minutes, then stops</h3>
-                  <p>Each Ascent stage delivers one concept with direct workplace application — something the learner can act on before the next stage opens. The pacing is deliberate. Skills build from daily practice, not a single afternoon of passive consumption.</p>
+                  <p>Each Ascent stage delivers one concept they can use at work before the next stage opens. The pacing is intentional. Skills build from daily practice, not a single afternoon of passive consumption.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
                   <h3>Every stage requires a response before advancing</h3>
-                  <p>After each stage, the learner writes a Basecamp response connecting the concept to their actual work — a real situation, a real pattern they've noticed. Not multiple choice. Not a slider. They have to think and articulate it before the next stage opens.</p>
+                  <p>After each stage, the learner writes a response connecting the concept to their actual work. A real situation. A real pattern they've noticed. Not multiple choice, not a slider — they have to think and articulate it before the next stage opens.</p>
                   <p>Every response is logged. Managers see it in the team dashboard. Individual learners build a record of their own thinking over the sprint.</p>
                 </div>
               </div>
@@ -281,7 +281,7 @@ export default function Home() {
                 <div className="mechanic-num">04</div>
                 <div>
                   <h3>By Stage 7, they've built something</h3>
-                  <p>The Summit Mission produces a real deliverable — a working application of the skill to their actual role, built from everything across the previous six stages. Not a quiz result. Not a certificate. Something they made, that applies to their job. Different for every person.</p>
+                  <p>The Summit Mission produces a real deliverable — a working application of the skill to their actual role, built from everything across the previous six stages. Not a quiz result. Not a certificate. Something they made, that actually applies to their job. Different for every person.</p>
                 </div>
               </div>
             </div>
