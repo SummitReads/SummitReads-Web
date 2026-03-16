@@ -161,11 +161,49 @@ export default function Home() {
 
   return (
     <div className="landing-page" style={cssVars}>
-      <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-      </Head>
+      {/* ── JSON-LD Structured Data ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "SummitReads",
+          "url": "https://summitreads.io",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "SummitReads delivers 295 structured 7-stage skill sprints for professional development. Each sprint builds real workplace skills through daily practice, reflection gates, and a Stage 7 deliverable — not passive content consumption.",
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Individual Plan",
+              "price": "149",
+              "priceCurrency": "USD",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "billingDuration": "P1Y"
+              }
+            },
+            {
+              "@type": "Offer",
+              "name": "Team Plan",
+              "price": "179",
+              "priceCurrency": "USD",
+              "description": "Per seat, per year. Volume discounts from 25 seats."
+            }
+          ],
+          "provider": {
+            "@type": "Organization",
+            "name": "SummitReads",
+            "url": "https://summitreads.io",
+            "logo": "https://summitreads.io/SummitReads-Logo.png",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "email": "support@summitreads.io",
+              "contactType": "customer support"
+            }
+          }
+        })}}
+      />
       {/* ── NAV ── */}
       <nav>
         <a href="#" className="nav-logo">

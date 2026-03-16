@@ -1,27 +1,124 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { DM_Sans, Playfair_Display, DM_Mono } from 'next/font/google'
+import './globals.css'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// ── Fonts ─────────────────────────────────────────────────────────────────────
+// These match the fonts used in landing.css.
+// If you want to keep Geist instead, revert these and update landing.css to match.
+const dmSans = DM_Sans({
+  variable: '--font-geist-sans', // keeps compatibility with any globals.css references
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const playfair = Playfair_Display({
+  variable: '--font-serif',
+  subsets: ['latin'],
+  weight: ['700', '800'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
 
+const dmMono = DM_Mono({
+  variable: '--font-geist-mono', // keeps compatibility with any globals.css references
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap',
+})
+
+// ── Metadata ──────────────────────────────────────────────────────────────────
 export const metadata = {
-  title: "SummitReads — Skill Development That Actually Sticks",
-  description: "295 skill sprints that turn professional concepts into measurable behavior change. Focused. Practical. Built for teams.",
-};
+  metadataBase: new URL('https://summitreads.io'),
 
+  title: {
+    default: 'SummitReads — Skill Development That Actually Sticks',
+    template: '%s | SummitReads',
+  },
+
+  description:
+    '295 structured skill sprints for individuals and teams. 15 minutes a day. Reflection-gated stages that build real workplace skills — not passive content consumption.',
+
+  keywords: [
+    'professional development platform',
+    'skill development for teams',
+    'employee training software',
+    'microlearning platform',
+    'leadership development',
+    'team learning platform',
+    'online skill sprints',
+    'professional growth',
+    'SummitReads',
+  ],
+
+  authors: [{ name: 'SummitReads', url: 'https://summitreads.io' }],
+  creator: 'SummitReads',
+  publisher: 'SummitReads',
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://summitreads.io',
+    siteName: 'SummitReads',
+    title: 'SummitReads — Skill Development That Actually Sticks',
+    description:
+      '295 structured skill sprints. 15 minutes a day. Reflection-gated stages that build real workplace skills — not passive content consumption.',
+    images: [
+      {
+        // [PLACEHOLDER] Create a 1200×630px branded image at /public/og-image.png
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'SummitReads — Skill Development That Actually Sticks',
+      },
+    ],
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SummitReads — Skill Development That Actually Sticks',
+    description:
+      '295 structured skill sprints. 15 minutes a day. Real deliverables, not quiz scores.',
+    images: ['/og-image.png'], // [PLACEHOLDER] same image as OG above
+    // creator: '@[PLACEHOLDER]', // add your Twitter/X handle when ready
+  },
+
+  alternates: {
+    canonical: 'https://summitreads.io',
+  },
+
+  icons: {
+    icon: '/favicon.ico',
+    // [PLACEHOLDER] add these to /public if you have them:
+    // shortcut: '/favicon-16x16.png',
+    // apple: '/apple-touch-icon.png',
+  },
+
+  // [PLACEHOLDER] Uncomment and add token after connecting Google Search Console:
+  // verification: {
+  //   google: 'YOUR_GOOGLE_VERIFICATION_TOKEN',
+  // },
+}
+
+// ── Root Layout ───────────────────────────────────────────────────────────────
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${dmSans.variable} ${playfair.variable} ${dmMono.variable}`}>
         {children}
       </body>
     </html>
-  );
+  )
 }
