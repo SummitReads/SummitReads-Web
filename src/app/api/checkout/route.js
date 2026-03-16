@@ -10,7 +10,10 @@ function getTeamPricePerSeat(seats) {
 
 export async function POST(req) {
   try {
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+    const key = process.env.STRIPE_SECRET_KEY
+    console.log('STRIPE_SECRET_KEY present:', !!key)
+    console.log('STRIPE_SECRET_KEY prefix:', key ? key.substring(0, 12) : 'MISSING')
+    const stripe = new Stripe(key)
     const body = await req.json()
     const { type, seats, billingCycle } = body
 
