@@ -1,7 +1,5 @@
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
 // Tier pricing logic — mirrors the calculator on the landing page
 function getTeamPricePerSeat(seats) {
   if (seats >= 500) return null  // custom pricing
@@ -12,6 +10,7 @@ function getTeamPricePerSeat(seats) {
 
 export async function POST(req) {
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     const body = await req.json()
     const { type, seats, billingCycle } = body
 
