@@ -1,6 +1,4 @@
-import type { MetadataRoute } from 'next'
-
-export default function sitemap(): MetadataRoute.Sitemap {
+export default function sitemap() {
   const baseUrl = 'https://summitreads.io'
 
   return [
@@ -22,7 +20,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.5,
     },
-    // [PLACEHOLDER] — add additional public pages here as you build them
-    // e.g. /about, /blog, /pricing (if standalone), etc.
+    // [PLACEHOLDER] add more public pages here as you build them
   ]
 }
