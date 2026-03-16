@@ -265,7 +265,7 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>Each stage takes 15 minutes, then stops</h3>
+                  <h3>Each stage takes about 15 minutes. One per day works.</h3>
                   <p>Each Ascent stage delivers one concept they can use at work before the next stage opens. The pacing is intentional. Skills build from daily practice, not a single afternoon of passive consumption.</p>
                 </div>
               </div>
