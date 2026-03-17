@@ -46,12 +46,12 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Does this work for remote or distributed teams?',
-    a: <p>Yes — it's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format was designed specifically to fit into a real workday, not a blocked training afternoon.</p>,
+    a: <p>Yes — it's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
   },
   {
     q: 'How is this different from a book summary app?',
     a: <>
-      <p>Book summary apps optimize for information transfer. SummitReads optimizes for behavior change. The reflection gate at Stage 3 is the difference — it's not optional, it's not a quiz, and it can't be skipped. Your team member has to engage with the material in terms of their own work before moving forward.</p>
+      <p>Book summary apps optimize for information transfer. SummitReads optimizes for behavior change. The reflection gate at Stage 3 is the difference — it's not optional, it's not a quiz, and it can't be skipped. Your team member has to engage with the material in terms of their own work before the next stage opens.</p>
       <p><strong>The content is also original.</strong> SummitReads sprints aren't condensed books. They're coaching curricula built around professional skills — original writing, original examples, original structure.</p>
     </>,
   },
@@ -348,7 +348,7 @@ export default function Home() {
                 <div className="mechanic-num">04</div>
                 <div>
                   <h3>By Stage 7, they've built something</h3>
-                  <p>The Summit Mission produces a real deliverable — a working application of the skill to their actual role, built from everything across the previous six stages. Not a quiz result. Not a certificate. Something they made, that actually applies to their job. Different for every person.</p>
+                  <p>The Summit Mission produces a real deliverable — a real tool built around their actual job, constructed from everything across the previous six stages. Not a quiz result. Not a certificate. Something they made, that actually applies to their job. Different for every person.</p>
                 </div>
               </div>
             </div>
