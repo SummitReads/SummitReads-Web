@@ -87,6 +87,19 @@ export default function Home() {
   // Reset checkout loading on mount (handles browser back button)
   useEffect(() => {
     setCheckoutLoading(false)
+    // Also reset when user navigates back to this tab/page
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        setCheckoutLoading(false)
+      }
+    }
+    const handlePageShow = () => setCheckoutLoading(false)
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('pageshow', handlePageShow)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('pageshow', handlePageShow)
+    }
   }, [])
 
   // Scroll reveal
