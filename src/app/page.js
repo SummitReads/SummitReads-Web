@@ -81,6 +81,11 @@ export default function Home() {
     })
   }, [])
 
+  // Reset checkout loading state on mount (in case user navigated back)
+  useEffect(() => {
+    setCheckoutLoading(false)
+  }, [])
+
   // Scroll reveal
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -252,7 +257,7 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Get Team Access →</a>
-            <a href="#pricing" className="btn-ghost">Start as Individual</a>
+            <a href="/auth/signup"  className="btn-ghost">Start as Individual</a>
           </div>
           <p className="hero-footnote">Teams: Signed MSA · Annual billing · 30-day refund &nbsp;·&nbsp; Individuals: No contract · Cancel anytime</p>
         </div>
