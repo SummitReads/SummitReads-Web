@@ -74,6 +74,9 @@ const STAGES = [
 export default function Home() {
   const router = useRouter()
 
+  // Checkout state — declared early so useEffects can reference it
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -81,7 +84,7 @@ export default function Home() {
     })
   }, [])
 
-  // Reset checkout loading state on mount (in case user navigated back)
+  // Reset checkout loading on mount (handles browser back button)
   useEffect(() => {
     setCheckoutLoading(false)
   }, [])
@@ -145,9 +148,6 @@ export default function Home() {
   // FAQ state
   const [openFaq, setOpenFaq]       = useState(null)
   const [billingCycle, setBillingCycle] = useState('annual')
-
-  // Checkout state
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   async function handleIndividualCheckout() {
     setCheckoutLoading(true)
@@ -257,7 +257,7 @@ export default function Home() {
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Get Team Access →</a>
-            <a href="/auth/signup"  className="btn-ghost">Start as Individual</a>
+            <a href="#pricing" className="btn-ghost">Start as Individual</a>
           </div>
           <p className="hero-footnote">Teams: Signed MSA · Annual billing · 30-day refund &nbsp;·&nbsp; Individuals: No contract · Cancel anytime</p>
         </div>
