@@ -57,16 +57,13 @@ export async function POST(req) {
       lineItems = [{
         price_data: {
           currency: 'usd',
-          product: process.env.STRIPE_PRICE_TEAM, // using price ID as product reference
+          product_data: {
+            name: 'SummitReads Team',
+            description: `${seatCount} seat${seatCount !== 1 ? 's' : ''} - Annual - All skill sprints included`,
+          },
           recurring: { interval: 'year' },
           unit_amount: pricePerSeat,
         },
-        quantity: seatCount,
-      }]
-
-      // For team plan we use the price ID directly instead of price_data
-      lineItems = [{
-        price: process.env.STRIPE_PRICE_TEAM,
         quantity: seatCount,
       }]
     }
@@ -100,4 +97,3 @@ export async function POST(req) {
     )
   }
 }
-// Mon Mar 16 21:59:37 MDT 2026
