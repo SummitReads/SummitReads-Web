@@ -128,7 +128,7 @@ export default function Home() {
 
   function openModal() {
     if (!tier?.price) {
-      window.location.href = `mailto:sales@summitskills.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
+      window.location.href = `mailto:sales@summitskills.io?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
       return
     }
     setModalSuccess(false)
@@ -154,7 +154,7 @@ export default function Home() {
       }
     } catch (e) {
       setSubmitting(false)
-      alert(e.message + '\n\nOr email us directly: sales@summitskills.com')
+      alert(e.message + '\n\nOr email us directly: sales@summitskills.io')
     }
   }
 
@@ -184,7 +184,7 @@ export default function Home() {
 
   async function handleTeamCheckout() {
     if (!tier?.price) {
-      window.location.href = `mailto:sales@summitskills.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
+      window.location.href = `mailto:sales@summitskills.io?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
       return
     }
     // TODO: When Docuseal is ready, replace this with openModal() to collect
@@ -242,7 +242,7 @@ export default function Home() {
             style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.9, marginRight: '8px', verticalAlign: 'middle' }}
             onError={e => { e.target.style.display = 'none' }}
           />
-          Summit<em>Reads</em>
+          Summit<em>Skills</em>
         </a>
         <div className="nav-links">
           <a href="#how"          className="nav-link">How it works</a>
@@ -615,7 +615,7 @@ export default function Home() {
             <div className="faq-lede reveal">
               <h2>Questions we <em>actually</em> get</h2>
               <p>If something's not covered here, email us. We respond within one business day.</p>
-              <a href="mailto:support@summitskills.com" className="faq-email">support@summitskills.com →</a>
+              <a href="mailto:support@summitskills.io" className="faq-email">support@summitskills.io →</a>
             </div>
             <div className="faq-list">
               {FAQ_ITEMS.map((item, i) => (
@@ -647,14 +647,14 @@ export default function Home() {
 
       {/* ── FOOTER ── */}
       <footer>
-        <a href="#" className="footer-logo">Summit<em>Reads</em></a>
+        <a href="#" className="footer-logo">Summit<em>Skills</em></a>
         <div className="footer-links">
           <a href="#">Product</a>
           <a href="#">Pricing</a>
           <a href="#">Security</a>
           <a href="#">Privacy Policy</a>
           <a href="#">Terms</a>
-          <a href="mailto:support@summitskills.com">Contact</a>
+          <a href="mailto:support@summitskills.io">Contact</a>
         </div>
         <div className="footer-copy">© 2026 SummitSkills. All rights reserved.</div>
       </footer>
