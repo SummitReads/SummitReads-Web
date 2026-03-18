@@ -25,7 +25,7 @@ export async function POST(request) {
       </div>` : '';
 
     const { data, error } = await resend.emails.send({
-      from:    'SummitReads <notifications@summitreads.io>',
+      from:    'SummitSkills <notifications@summitskills.io>',
       to:      email,
       subject,
       html: `<div style="font-family:sans-serif;background:#0D1520;color:#EEF2F7;padding:40px;border-radius:12px;max-width:560px;margin:0 auto;">
@@ -37,7 +37,7 @@ export async function POST(request) {
         <p style="color:rgba(238,242,247,0.6);margin:0 0 8px;line-height:1.7;">${isLastStage ? `You've completed 6 stages. Stage 7 is your Summit — where everything comes together into a real deliverable.` : `You completed Stage ${currentStage} and unlocked the next one. 15 minutes is all it takes.`}</p>
         ${reflectionBlock}
         <a href="${stageUrl}" style="display:inline-block;padding:14px 32px;background:#17B8E0;color:#0D1520;font-weight:700;text-decoration:none;border-radius:8px;margin-top:8px;">${isLastStage ? 'Complete Your Sprint →' : `Start Stage ${nextStage} →`}</a>
-        <p style="margin:32px 0 0;font-size:0.72rem;color:rgba(238,242,247,0.25);">Questions? <a href="mailto:support@summitreads.io" style="color:#17B8E0;text-decoration:none;">support@summitreads.io</a></p>
+        <p style="margin:32px 0 0;font-size:0.72rem;color:rgba(238,242,247,0.25);">Questions? <a href="mailto:support@summitskills.io" style="color:#17B8E0;text-decoration:none;">support@summitskills.io</a></p>
       </div>`,
     });
 

@@ -60,7 +60,7 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
     },
     tooMany: {
       headline: 'You\'re moving fast.',
-      body:     `You've already completed multiple stages today. SummitReads is designed for daily practice — not a single session. Each stage is meant to be tried in real life before the next one opens. If you rush, you'll finish the sprint but miss the point.`,
+      body:     `You've already completed multiple stages today. SummitSkills is designed for daily practice — not a single session. Each stage is meant to be tried in real life before the next one opens. If you rush, you'll finish the sprint but miss the point.`,
       cta:      'Good point — I\'ll pace myself',
       secondary: 'Continue anyway',
     },

@@ -1,5 +1,5 @@
 'use client'
-import SummitReadsAdmin from '@/components/admin/SummitReadsAdmin'
+import SummitSkillsAdmin from '@/components/admin/SummitSkillsAdmin'
 export default function BillingPage() {
-  return <SummitReadsAdmin initialView="billing" />
+  return <SummitSkillsAdmin initialView="billing" />
 }

@@ -1,4 +1,4 @@
-export const metadata = { title: 'SummitReads Admin' }
+export const metadata = { title: 'SummitSkills Admin' }
 export default function AdminLayout({ children }) {
   return children
 }

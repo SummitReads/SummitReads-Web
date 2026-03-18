@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = 'https://summitreads.io'
+  const baseUrl = 'https://summitskills.io'
 
   return [
     {

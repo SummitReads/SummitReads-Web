@@ -123,7 +123,7 @@ export default function Library() {
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/library" className="logo">
-            <img src="/SummitReads-Logo.png" alt="SummitReads" className="logo-img" />
+            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Reads</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

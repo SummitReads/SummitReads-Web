@@ -12,7 +12,7 @@ import ActivityView  from "@/components/admin/views/ActivityView";
 import TracksView    from "@/components/admin/views/TracksView";
 import BillingView   from "@/components/admin/views/BillingView";
 
-export default function SummitReadsAdmin({ initialView = "overview" }) {
+export default function SummitSkillsAdmin({ initialView = "overview" }) {
   const [nav,         setNav]         = useState(initialView);
   const [profileOpen, setProfileOpen] = useState(false);
   const [drawerOpen,  setDrawerOpen]  = useState(false);

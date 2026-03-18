@@ -58,7 +58,7 @@ export async function POST(req) {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: 'SummitReads Team',
+            name: 'SummitSkills Team',
             description: `${seatCount} seat${seatCount !== 1 ? 's' : ''} - Annual - All skill sprints included`,
           },
           recurring: { interval: 'year' },
@@ -76,8 +76,8 @@ export async function POST(req) {
     const session = await stripe.checkout.sessions.create({
       mode,
       line_items: lineItems,
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitreads.io'}/auth/signup?checkout=success`,
-      cancel_url:  `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitreads.io'}/#pricing`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/auth/signup?checkout=success`,
+      cancel_url:  `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/#pricing`,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
       metadata: {

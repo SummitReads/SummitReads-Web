@@ -12,7 +12,7 @@ export default function robots() {
         ],
       },
     ],
-    sitemap: 'https://summitreads.io/sitemap.xml',
-    host: 'https://summitreads.io',
+    sitemap: 'https://summitskills.io/sitemap.xml',
+    host: 'https://summitskills.io',
   }
 }

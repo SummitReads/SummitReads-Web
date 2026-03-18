@@ -23,7 +23,7 @@ const fmt = n => '$' + n.toLocaleString('en-US')
 const FAQ_ITEMS = [
   {
     q: 'Do we need an LMS or other software?',
-    a: <p>No. SummitReads is fully self-contained. Your team accesses sprints through a web browser — no app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
+    a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser — no app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
   },
   {
     q: "What's the minimum seat count?",
@@ -51,8 +51,8 @@ const FAQ_ITEMS = [
   {
     q: 'How is this different from a book summary app?',
     a: <>
-      <p>Book summary apps optimize for information transfer. SummitReads optimizes for behavior change. The reflection gate at Stage 3 is the difference — it's not optional, it's not a quiz, and it can't be skipped. Your team member has to engage with the material in terms of their own work before the next stage opens.</p>
-      <p><strong>The content is also original.</strong> SummitReads sprints aren't condensed books. They're coaching curricula built around professional skills — original writing, original examples, original structure.</p>
+      <p>Book summary apps optimize for information transfer. SummitSkills optimizes for behavior change. The reflection gate at Stage 3 is the difference — it's not optional, it's not a quiz, and it can't be skipped. Your team member has to engage with the material in terms of their own work before the next stage opens.</p>
+      <p><strong>The content is also original.</strong> SummitSkills sprints aren't condensed books. They're coaching curricula built around professional skills — original writing, original examples, original structure.</p>
     </>,
   },
 ]
@@ -128,7 +128,7 @@ export default function Home() {
 
   function openModal() {
     if (!tier?.price) {
-      window.location.href = `mailto:sales@summitreads.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
+      window.location.href = `mailto:sales@summitskills.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
       return
     }
     setModalSuccess(false)
@@ -154,7 +154,7 @@ export default function Home() {
       }
     } catch (e) {
       setSubmitting(false)
-      alert(e.message + '\n\nOr email us directly: sales@summitreads.com')
+      alert(e.message + '\n\nOr email us directly: sales@summitskills.com')
     }
   }
 
@@ -184,7 +184,7 @@ export default function Home() {
 
   async function handleTeamCheckout() {
     if (!tier?.price) {
-      window.location.href = `mailto:sales@summitreads.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
+      window.location.href = `mailto:sales@summitskills.com?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
       return
     }
     // TODO: When Docuseal is ready, replace this with openModal() to collect
@@ -237,8 +237,8 @@ export default function Home() {
       <nav>
         <a href="#" className="nav-logo">
           <img
-            src="/SummitReads-Logo.png"
-            alt="SummitReads"
+            src="/SummitSkills-Logo.png"
+            alt="SummitSkills"
             style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.9, marginRight: '8px', verticalAlign: 'middle' }}
             onError={e => { e.target.style.display = 'none' }}
           />
@@ -264,7 +264,7 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            SummitReads builds professional skills through structured daily practice — not passive consumption.
+            SummitSkills builds professional skills through structured daily practice — not passive consumption.
             295 sprints across 8 categories. Every sprint requires a written response before advancing.
             No live sessions. No implementation calls.
           </p>
@@ -318,7 +318,7 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>Skill development,<br /><em>not content delivery</em></h2>
-              <p>Most platforms measure completion. SummitReads measures engagement — because someone who can't articulate a concept in their own words hasn't learned it yet.</p>
+              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't learned it yet.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
@@ -369,7 +369,7 @@ export default function Home() {
             <div className="sprint-chrome">
               <div className="sprint-chrome-left">
                 <div className="sprint-icon">
-                  <img src="/SummitReads-Logo.png" alt="SummitReads" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }} />
+                  <img src="/SummitSkills-Logo.png" alt="SummitSkills" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }} />
                 </div>
                 <div>
                   <div className="sprint-name">Building Consistent Habits</div>
@@ -409,7 +409,7 @@ export default function Home() {
             <p>Live sprint progress, stage-by-stage, for every team member. Reflection responses logged. Completion rates tracked. No manual reporting.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
-            <img src="/dashboard-preview.png" alt="SummitReads manager dashboard" />
+            <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
           </div>
         </div>
       </section>
@@ -615,7 +615,7 @@ export default function Home() {
             <div className="faq-lede reveal">
               <h2>Questions we <em>actually</em> get</h2>
               <p>If something's not covered here, email us. We respond within one business day.</p>
-              <a href="mailto:support@summitreads.com" className="faq-email">support@summitreads.com →</a>
+              <a href="mailto:support@summitskills.com" className="faq-email">support@summitskills.com →</a>
             </div>
             <div className="faq-list">
               {FAQ_ITEMS.map((item, i) => (
@@ -654,9 +654,9 @@ export default function Home() {
           <a href="#">Security</a>
           <a href="#">Privacy Policy</a>
           <a href="#">Terms</a>
-          <a href="mailto:support@summitreads.com">Contact</a>
+          <a href="mailto:support@summitskills.com">Contact</a>
         </div>
-        <div className="footer-copy">© 2026 SummitReads. All rights reserved.</div>
+        <div className="footer-copy">© 2026 SummitSkills. All rights reserved.</div>
       </footer>
 
       {/* ── CHECKOUT MODAL ── */}

@@ -1,5 +1,5 @@
 'use client'
-import SummitReadsAdmin from '@/components/admin/SummitReadsAdmin'
+import SummitSkillsAdmin from '@/components/admin/SummitSkillsAdmin'
 export default function ActivityPage() {
-  return <SummitReadsAdmin initialView="activity" />
+  return <SummitSkillsAdmin initialView="activity" />
 }

@@ -1,5 +1,5 @@
 'use client'
-import SummitReadsAdmin from '@/components/admin/SummitReadsAdmin'
+import SummitSkillsAdmin from '@/components/admin/SummitSkillsAdmin'
 export default function OverviewPage() {
-  return <SummitReadsAdmin initialView="overview" />
+  return <SummitSkillsAdmin initialView="overview" />
 }

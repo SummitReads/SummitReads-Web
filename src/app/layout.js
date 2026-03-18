@@ -29,11 +29,11 @@ const dmMono = DM_Mono({
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 export const metadata = {
-  metadataBase: new URL('https://summitreads.io'),
+  metadataBase: new URL('https://summitskills.io'),
 
   title: {
-    default: 'SummitReads — Skill Development That Actually Sticks',
-    template: '%s | SummitReads',
+    default: 'SummitSkills — Skill Development That Actually Sticks',
+    template: '%s | SummitSkills',
   },
 
   description:
@@ -48,12 +48,12 @@ export const metadata = {
     'team learning platform',
     'online skill sprints',
     'professional growth',
-    'SummitReads',
+    'SummitSkills',
   ],
 
-  authors: [{ name: 'SummitReads', url: 'https://summitreads.io' }],
-  creator: 'SummitReads',
-  publisher: 'SummitReads',
+  authors: [{ name: 'SummitSkills', url: 'https://summitskills.io' }],
+  creator: 'SummitSkills',
+  publisher: 'SummitSkills',
 
   robots: {
     index: true,
@@ -70,9 +70,9 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://summitreads.io',
-    siteName: 'SummitReads',
-    title: 'SummitReads — Skill Development That Actually Sticks',
+    url: 'https://summitskills.io',
+    siteName: 'SummitSkills',
+    title: 'SummitSkills — Skill Development That Actually Sticks',
     description:
       '295 structured skill sprints. 15 minutes a day. Reflection-gated stages that build real workplace skills — not passive content consumption.',
     images: [
@@ -81,14 +81,14 @@ export const metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'SummitReads — Skill Development That Actually Sticks',
+        alt: 'SummitSkills — Skill Development That Actually Sticks',
       },
     ],
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'SummitReads — Skill Development That Actually Sticks',
+    title: 'SummitSkills — Skill Development That Actually Sticks',
     description:
       '295 structured skill sprints. 15 minutes a day. Real deliverables, not quiz scores.',
     images: ['/og-image.png'], // [PLACEHOLDER] same image as OG above
@@ -96,7 +96,7 @@ export const metadata = {
   },
 
   alternates: {
-    canonical: 'https://summitreads.io',
+    canonical: 'https://summitskills.io',
   },
 
   icons: {
