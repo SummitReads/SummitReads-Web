@@ -52,17 +52,13 @@ const FAQ_ITEMS = [
     q: 'How is this different from a course library or passive learning platform?',
     a: <>
       <p>Most learning platforms optimize for content consumption — watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work — a situation they're dealing with, a pattern they've noticed, a decision they need to make. That response has to be written before the next stage opens. It can't be skipped, rated, or bypassed.</p>
-      <p>Every response is logged to the manager dashboard. By Stage 7, the employee has produced a real work deliverable built from their own thinking across the sprint — not a certificate, not a score.</p>
-      <p><strong>Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</strong></p>
+      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
+      <p>By Stage 7, the employee has produced a real work deliverable — not a certificate, not a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
     </>,
   },
   {
     q: 'What does the written reflection actually look like?',
-    a: <>
-      <p>Each reflection prompt connects the stage's concept to the employee's actual work context. They're not asked to summarize the material or answer comprehension questions — they're asked to apply it. Identify a real situation where the concept fits. Describe how they'd approach a specific challenge differently. Draft a tool they'll actually use.</p>
-      <p>The responses vary in length and depth. Managers can read them directly in the dashboard. They're worth reading: they reveal how team members actually think about their work, not just whether they clicked through a course.</p>
-    </>,
+    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material — they're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They're worth reading: they reveal how team members actually think, not just whether they clicked through a course.</p>,
   },
 ]
 
@@ -315,9 +311,8 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            SummitSkills gives your team structured 7-day skill sprints — with built-in practice, written reflection at every stage, and a real work deliverable at the end.
-            Managers assign sprints, track written engagement, and see actual progress.
-            No live sessions. No LMS. Runs completely async.
+            Structured 7-day skill sprints with built-in practice, written reflection at every stage, and a real work deliverable at the end.
+            Managers assign sprints, track written engagement, and see actual progress — no live sessions, no LMS, fully async.
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
@@ -369,14 +364,14 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>A system that makes<br /><em>skill-building visible</em></h2>
-              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't internalized it yet.</p>
+              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't learned it yet.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">01</div>
                 <div>
                   <h3>Assign a sprint to your team</h3>
-                  <p>From the manager dashboard, pick any sprint and assign it to individuals, a role group, or your entire team. Team members get an email invite and they're in — no app download, no LMS setup, no IT ticket. You can have a 30-person cohort running a sprint in under 5 minutes.</p>
+                  <p>From the manager dashboard, pick any sprint and assign it to individuals, a role group, or your entire team. Team members get an email invite and they're in — no app download, no LMS setup, no IT ticket.</p>
                   <p className="aside">✓ Self-guided — live within minutes</p>
                 </div>
               </div>
@@ -472,7 +467,7 @@ export default function Home() {
               <p>If someone hasn't advanced past Stage 2 after four days, you see it. You can follow up directly — you don't have to wait for them to tell you.</p>
             </div>
             <div className="manager-usecase">
-              <h4>Run a targeted skill cohort</h4>
+              <h4>Run a team skill sprint</h4>
               <p>Assign the same sprint across a group and review their Stage 4 reflections in your next team meeting. More useful conversation than most training debriefs.</p>
             </div>
             <div className="manager-usecase">
@@ -577,7 +572,7 @@ export default function Home() {
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
                 <div className="plan-name">Team Skill Development Plan</div>
-                <p className="plan-desc">Every team member gets structured skill sprints, guided daily practice, and a real deliverable at the end of every sprint. Managers get a dashboard with written reflection logs, stage-by-stage progress, and sprint assignment tools — everything needed to run ongoing capability development without adding overhead.</p>
+                <p className="plan-desc">Every team member gets structured skill sprints, guided daily practice, and a real deliverable at Stage 7. Managers get written reflection logs, stage-by-stage progress, and sprint assignment tools — everything needed to run ongoing capability development without adding overhead.</p>
                 <ul className="plan-features">
                   <li>Manager dashboard — reflection logs, progress tracking, sprint assignment</li>
                   <li>Written reflection required at every stage — logged and manager-visible</li>
