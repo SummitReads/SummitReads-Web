@@ -716,38 +716,6 @@ export default function Home() {
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
-            <div className="dashboard-annotations">
-              <div className="dash-annotation dash-annotation--left">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Stage-by-stage progress per team member — not just "completed" or "not started"</div>
-              </div>
-              <div className="dash-annotation dash-annotation--right">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Written reflection responses, readable in full — not a score or a rating</div>
-              </div>
-              <div className="dash-annotation dash-annotation--bottom">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Sprint assignment — assign by individual, role, or full team in one action</div>
-              </div>
-            </div>
-          </div>
-          <div className="manager-usecases reveal">
-            <div className="manager-usecase">
-              <h4>Use responses in your next 1:1</h4>
-              <p>"You wrote that your biggest challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
-            </div>
-            <div className="manager-usecase">
-              <h4>Spot who's stuck before they disengage</h4>
-              <p>If someone hasn't advanced past Stage 2 after four days, you see it and can follow up — without waiting for them to tell you.</p>
-            </div>
-            <div className="manager-usecase">
-              <h4>Run a targeted skill cohort</h4>
-              <p>Assign the same sprint across a group and review their reflections together. More signal than most training debriefs.</p>
-            </div>
-            <div className="manager-usecase">
-              <h4>Build a development track without overhead</h4>
-              <p>Two or three sprints across a quarter. No scheduling, no facilitator. Assign, track, discuss the outputs.</p>
-            </div>
           </div>
         </div>
       </section>
