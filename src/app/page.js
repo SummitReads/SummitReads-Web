@@ -245,6 +245,7 @@ export default function Home() {
             font-style: italic;
             margin: 4px 0 16px !important;
             line-height: 1.4;
+            display: table;
           }
           .hero-footnote-indiv {
             font-family: var(--sans);
