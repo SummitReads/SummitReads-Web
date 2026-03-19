@@ -419,8 +419,7 @@
   background:
     linear-gradient(to right,  var(--ink) 0%,   transparent 7%),
     linear-gradient(to left,   var(--ink) 0%,   transparent 7%),
-    linear-gradient(to bottom, var(--ink) 0%,   transparent 5%),
-    linear-gradient(to top,    var(--ink) 0%,   transparent 30%);
+    linear-gradient(to bottom, var(--ink) 0%,   transparent 5%);
   pointer-events: none;
 }
 
@@ -466,7 +465,7 @@
   text-transform: uppercase; letter-spacing: 1.5px;
   padding: 4px 10px; border-radius: 5px; margin-bottom: 16px;
   background: rgba(255,255,255,0.06); border: 1px solid var(--border);
-  color: var(--muted); align-self: flex-start;
+  color: var(--muted);
 }
 .landing-page .indiv-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
 .landing-page .indiv-amount {
