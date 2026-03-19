@@ -525,9 +525,7 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking.
-            Managers assign sprints, see every written reflection, and track progress by individual.
-            No live sessions. No LMS. Up and running in under 24 hours.
+            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. No live sessions. No LMS.
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
@@ -587,15 +585,15 @@ export default function Home() {
                 <div className="mechanic-num">01</div>
                 <div>
                   <h3>Assign a sprint to your team</h3>
-                  <p>From the manager dashboard, pick any sprint and assign it to individuals, a role group, or your entire team. Team members get an email invite and they're in — no app download, no LMS setup, no IT ticket. You can have a 30-person cohort running a sprint in under 5 minutes.</p>
-                  <p className="aside">✓ Self-guided — live within minutes</p>
+                  <p>Pick any sprint and assign it to individuals, a role group, or your full team. Team members get an email and they're in. No app, no LMS, no IT ticket.</p>
+                  <p className="aside">✓ Live within minutes</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>One 15-minute stage per day. Paced for a real workday.</h3>
-                  <p>Each stage delivers one concept — specific, applied, immediately relevant to how they work. The next stage doesn't open until they've engaged with the current one. The daily cadence is intentional: skills build through repetition and reflection, not a single blocked training afternoon.</p>
+                  <h3>One 15-minute stage per day</h3>
+                  <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
                   <p className="aside">✓ Async — no scheduling, no time zones</p>
                 </div>
               </div>
@@ -603,15 +601,14 @@ export default function Home() {
                 <div className="mechanic-num">03</div>
                 <div>
                   <h3>Every stage requires a written response. No skipping.</h3>
-                  <p>Before Stage 4 opens, the employee connects what they've learned to their actual work. A real situation. A real pattern they've noticed. Not multiple choice. Not a rating scale — they write it out before anything unlocks.</p>
-                  <p>Every response is logged. Managers see the writing — not just a green checkmark. It's the difference between knowing your team watched something and knowing they actually engaged with it.</p>
+                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice — they write it out. Every response is logged. Managers see the writing, not just a checkmark.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
-                  <h3>By Stage 7, they've built something they'll actually use</h3>
-                  <p>The Sprint Mission at Stage 7 produces a real work deliverable — a prioritization framework, a communication plan, a habit design system — constructed from their own reflections across the previous six stages. Not a quiz result. Not a certificate. Something they made, built around their actual job. Different for every person.</p>
+                  <h3>Stage 7 produces a real work deliverable</h3>
+                  <p>A prioritization framework, a communication plan, a habit system — built from their own reflections. Not a certificate. Something they made for their actual job.</p>
                 </div>
               </div>
             </div>
@@ -623,9 +620,9 @@ export default function Home() {
       <section className="sprint-section">
         <div className="wrap">
           <div className="sprint-intro reveal">
-            <h2>What a completed sprint actually produces.</h2>
+            <h2>What a completed sprint produces.</h2>
             <div className="sprint-intro-aside">
-              <p>Productivity &amp; Habits — one of 295 sprints. Every sprint follows the same structure. This is what it looks like to go from Day 1 to a real work tool.</p>
+              <p>Productivity &amp; Habits — one of 295 sprints. Same structure, every sprint.</p>
             </div>
           </div>
           <div className="sprint-wrap reveal">
@@ -661,10 +658,10 @@ export default function Home() {
               <a href="#pricing">Get access to see the full sprint →</a>
             </div>
             <div className="sprint-deliverable reveal">
-              <div className="sprint-deliverable-label">Stage 7 Deliverable — what this sprint produces</div>
+              <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal habit design system</div>
               <div className="sprint-deliverable-desc">
-                Built from their own reflections across Stages 1–6: the habit loop they identified in their work week, the friction points they removed, the existing routines they used as anchors. A working reference — not a certificate, not a summary — that they designed for their actual job.
+                Built from their own reflections: the habit loop they identified, the friction they removed, the routines they used as anchors. A working reference designed for their actual job — not a template, not a summary.
               </div>
               <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
@@ -677,28 +674,27 @@ export default function Home() {
         <div className="wrap">
           <div className="best-fit-intro reveal">
             <h2>Built for teams that need<br /><em>structured development without overhead.</em></h2>
-            <p>SummitSkills works best in specific situations. Here's where it tends to have the most impact.</p>
           </div>
           <div className="best-fit-grid reveal">
             <div className="best-fit-card">
               <div className="best-fit-icon">↑</div>
               <h4>First-time and emerging managers</h4>
-              <p>New managers need practical frameworks fast — for delegation, feedback, prioritization, and difficult conversations. SummitSkills gives them structured reps on the skills that actually matter in the first 90 days, without requiring a coach or a classroom.</p>
+              <p>Structured reps on delegation, feedback, and difficult conversations — without requiring a coach or a classroom.</p>
             </div>
             <div className="best-fit-card">
               <div className="best-fit-icon">◎</div>
               <h4>High-potential individual contributors</h4>
-              <p>ICs being groomed for leadership need applied skill development, not more content access. SummitSkills builds the communication, strategic thinking, and influence skills that separate good performers from promotion-ready ones.</p>
+              <p>Applied development in communication, strategic thinking, and influence — the skills that separate good performers from promotion-ready ones.</p>
             </div>
             <div className="best-fit-card">
               <div className="best-fit-icon">⇄</div>
               <h4>Customer-facing and revenue teams</h4>
-              <p>Sales, account management, and customer success teams need consistent skill development without pulling everyone off the floor for training days. Async sprints on communication, negotiation, and client management fit into a real quota-carrying workweek.</p>
+              <p>Async sprints on communication, negotiation, and client management that fit into a real quota-carrying workweek.</p>
             </div>
             <div className="best-fit-card">
               <div className="best-fit-icon">▦</div>
-              <h4>Managers running development without an L&amp;D team</h4>
-              <p>If you're responsible for your team's growth but don't have dedicated L&amp;D support, SummitSkills is the infrastructure. Assign sprints, see written engagement, use the outputs in 1:1s. You don't need to design a development program — it's already built.</p>
+              <h4>Managers without a dedicated L&amp;D team</h4>
+              <p>Assign sprints, see written engagement, use outputs in 1:1s. The development program is already built — you just run it.</p>
             </div>
           </div>
           <div className="best-fit-not reveal">
@@ -712,7 +708,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>The manager dashboard shows written reflection responses, stage-by-stage progress, and engagement quality — for every team member, in real time. You're not waiting for a post-training survey.</p>
+            <p>Written reflection responses, stage-by-stage progress, sprint assignment — all in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -734,19 +730,19 @@ export default function Home() {
           <div className="manager-usecases reveal">
             <div className="manager-usecase">
               <h4>Use responses in your next 1:1</h4>
-              <p>"You wrote that your biggest prioritization challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
+              <p>"You wrote that your biggest challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
             </div>
             <div className="manager-usecase">
               <h4>Spot who's stuck before they disengage</h4>
-              <p>If someone hasn't advanced past Stage 2 after four days, you see it. You can follow up directly — you don't have to wait for them to tell you.</p>
+              <p>If someone hasn't advanced past Stage 2 after four days, you see it and can follow up — without waiting for them to tell you.</p>
             </div>
             <div className="manager-usecase">
               <h4>Run a targeted skill cohort</h4>
-              <p>Assign the same sprint across a group and review their Stage 4 reflections in your next team meeting. More useful conversation than most training debriefs.</p>
+              <p>Assign the same sprint across a group and review their reflections together. More signal than most training debriefs.</p>
             </div>
             <div className="manager-usecase">
-              <h4>Build development tracks without overhead</h4>
-              <p>Assign two or three sprints across a quarter for a lightweight development plan. No scheduling, no facilitator, no blocked training days. Assign, track, discuss the outputs.</p>
+              <h4>Build a development track without overhead</h4>
+              <p>Two or three sprints across a quarter. No scheduling, no facilitator. Assign, track, discuss the outputs.</p>
             </div>
           </div>
         </div>
@@ -761,15 +757,15 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">~10%</div>
-                <div className="credibility-label">of training content is retained after 1 week without application practice</div>
+                <div className="credibility-label">of training content retained after one week without application practice</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">0</div>
-                <div className="credibility-label">useful data points from a completion checkmark — it tells you nothing about what they understood or how they'll apply it</div>
+                <div className="credibility-label">useful signals from a completion checkmark — it tells you nothing about understanding or application</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">7 days</div>
-                <div className="credibility-label">is all it takes with SummitSkills to produce a real work tool — built from the employee's own thinking, applied to their actual job</div>
+                <div className="credibility-label">to a real work deliverable — built from the employee's own thinking, applied to their actual job</div>
               </div>
             </div>
             <div className="credibility-pull">
@@ -873,7 +869,7 @@ export default function Home() {
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
                 <div className="plan-name">Team Skill Development Plan</div>
-                <p className="plan-desc">Every team member gets structured skill sprints, guided daily practice, and a real deliverable at the end of every sprint. Managers get a dashboard with written reflection logs, stage-by-stage progress, and sprint assignment tools — everything needed to run ongoing capability development without adding overhead.</p>
+                <p className="plan-desc">Every seat gets structured skill sprints, written reflection gates, and a real Stage 7 deliverable. Managers get a dashboard with reflection logs, progress tracking, and sprint assignment — everything needed to run team development without adding overhead.</p>
                 <ul className="plan-features">
                   <li>Manager dashboard — reflection logs, progress tracking, sprint assignment</li>
                   <li>Written reflection required at every stage — logged and manager-visible</li>
