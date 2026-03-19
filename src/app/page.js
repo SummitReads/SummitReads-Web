@@ -52,17 +52,13 @@ const FAQ_ITEMS = [
     q: 'How is this different from a course library or passive learning platform?',
     a: <>
       <p>Most learning platforms optimize for content consumption — watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work — a situation they're dealing with, a pattern they've noticed, a decision they need to make. That response has to be written before the next stage opens. It can't be skipped, rated, or bypassed.</p>
-      <p>Every response is logged to the manager dashboard. By Stage 7, the employee has produced a real work deliverable built from their own thinking across the sprint — not a certificate, not a score.</p>
-      <p><strong>Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</strong></p>
+      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
+      <p>By Stage 7, the employee has produced a real work deliverable — not a certificate, not a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
     </>,
   },
   {
     q: 'What does the written reflection actually look like?',
-    a: <>
-      <p>Each reflection prompt connects the stage's concept to the employee's actual work context. They're not asked to summarize the material or answer comprehension questions — they're asked to apply it. Identify a real situation where the concept fits. Describe how they'd approach a specific challenge differently. Draft a tool they'll actually use.</p>
-      <p>The responses vary in length and depth. Managers can read them directly in the dashboard. They're worth reading: they reveal how team members actually think about their work, not just whether they clicked through a course.</p>
-    </>,
+    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material — they're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard — they reveal how team members actually think, not just whether they clicked through a course.</p>,
   },
 ]
 
@@ -75,7 +71,7 @@ const STAGES = [
   { n: '04', type: 'Ascent',   desc: 'Design friction out — make the right action the path of least resistance',  cls: ''          },
   { n: '05', type: 'Ascent',   desc: 'Linking new behaviors to existing routines you already do reliably',        cls: ''          },
   { n: '06', type: 'Ascent',   desc: 'The two-minute entry point — reduce any habit to its smallest start',       cls: ''          },
-  { n: '07', type: 'Summit',   desc: 'Build your personal habit design system — a working tool, not a summary',   cls: ''          },
+  { n: '07', type: 'Summit',   desc: 'Build your personal behavior framework — a working tool built from your own reflections',   cls: ''          },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -341,70 +337,104 @@ export default function Home() {
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
           }
+          .best-fit-inner {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 72px;
+            align-items: start;
+          }
           .best-fit-intro {
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto 56px;
+            margin-bottom: 40px;
           }
           .best-fit-intro h2 {
             font-family: var(--serif);
             font-size: clamp(1.6rem, 3vw, 2.2rem);
             color: var(--text);
             line-height: 1.25;
-            margin-bottom: 16px;
+            margin-bottom: 0;
           }
           .best-fit-intro h2 em { color: var(--teal); font-style: italic; }
-          .best-fit-intro p {
-            font-family: var(--sans);
-            font-size: 0.95rem;
-            color: var(--muted);
-            line-height: 1.6;
-          }
           .best-fit-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
           }
           .best-fit-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px 24px;
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
           }
-          .best-fit-icon {
-            font-size: 1.4rem;
+          .best-fit-num {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            font-weight: 500;
             color: var(--teal);
-            margin-bottom: 14px;
-            opacity: 0.8;
+            background: rgba(23,184,224,0.1);
+            border: 1px solid rgba(23,184,224,0.2);
+            border-radius: 6px;
+            padding: 4px 8px;
+            min-width: 32px;
+            text-align: center;
+            margin-top: 2px;
+            flex-shrink: 0;
           }
           .best-fit-card h4 {
             font-family: var(--sans);
             font-size: 0.95rem;
             font-weight: 700;
             color: var(--text);
-            margin: 0 0 10px;
+            margin: 0 0 6px;
           }
           .best-fit-card p {
             font-family: var(--sans);
-            font-size: 0.87rem;
+            font-size: 0.84rem;
             color: var(--muted);
             line-height: 1.65;
             margin: 0;
           }
           .best-fit-not {
             font-family: var(--sans);
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             color: var(--faint);
             line-height: 1.6;
-            text-align: center;
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 32px;
           }
           .best-fit-not-label {
             font-weight: 600;
             color: var(--muted);
             margin-right: 6px;
+          }
+          .best-fit-right { position: sticky; top: 100px; }
+          .best-fit-visual {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 28px 24px;
+          }
+          .bfv-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--faint);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 20px;
+          }
+          .bfv-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+          }
+          .bfv-cat { font-size: 0.8rem; color: var(--muted); width: 130px; flex-shrink: 0; }
+          .bfv-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+          .bfv-bar { height: 100%; background: var(--teal); border-radius: 2px; opacity: 0.7; }
+          .bfv-n { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); width: 24px; text-align: right; }
+          @media (max-width: 768px) {
+            .best-fit-inner { grid-template-columns: 1fr; gap: 48px; }
+            .best-fit-right { position: static; }
           }
 
           /* ── Dashboard Annotations ── */
@@ -667,9 +697,9 @@ export default function Home() {
             </div>
             <div className="sprint-deliverable reveal">
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
-              <div className="sprint-deliverable-title">A personal habit design system</div>
+              <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
-                Built from their own reflections: the habit loop they identified, the friction they removed, the routines they used as anchors. A working reference designed for their actual job — not a template, not a summary.
+                Built from their own reflections across the sprint — the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
               </div>
               <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
@@ -680,33 +710,68 @@ export default function Home() {
       {/* ── BEST FIT ── */}
       <section className="best-fit">
         <div className="wrap">
-          <div className="best-fit-intro reveal">
-            <h2>Built for teams that need<br /><em>structured development without overhead.</em></h2>
-          </div>
-          <div className="best-fit-grid reveal">
-            <div className="best-fit-card">
-              <div className="best-fit-icon">↑</div>
-              <h4>First-time and emerging managers</h4>
-              <p>Structured reps on delegation, feedback, and difficult conversations — without requiring a coach or a classroom.</p>
+          <div className="best-fit-inner">
+            <div className="best-fit-left">
+              <div className="best-fit-intro reveal">
+                <h2>Built for teams that need<br /><em>structured development without overhead.</em></h2>
+              </div>
+              <div className="best-fit-grid reveal">
+                <div className="best-fit-card">
+                  <div className="best-fit-num">01</div>
+                  <div>
+                    <h4>First-time and emerging managers</h4>
+                    <p>Structured reps on delegation, feedback, and difficult conversations — no coach required.</p>
+                  </div>
+                </div>
+                <div className="best-fit-card">
+                  <div className="best-fit-num">02</div>
+                  <div>
+                    <h4>High-potential individual contributors</h4>
+                    <p>Applied development in communication, strategic thinking, and influence.</p>
+                  </div>
+                </div>
+                <div className="best-fit-card">
+                  <div className="best-fit-num">03</div>
+                  <div>
+                    <h4>Customer-facing and revenue teams</h4>
+                    <p>Async sprints on communication, negotiation, and client management that fit a real workweek.</p>
+                  </div>
+                </div>
+                <div className="best-fit-card">
+                  <div className="best-fit-num">04</div>
+                  <div>
+                    <h4>Managers without a dedicated L&amp;D team</h4>
+                    <p>Assign sprints, see written engagement, use outputs in 1:1s. The program is already built.</p>
+                  </div>
+                </div>
+              </div>
+              <div className="best-fit-not reveal">
+                <span className="best-fit-not-label">Not the right fit if:</span> you need compliance training, SCORM certification, or a broad self-directed content library. SummitSkills is a structured system, not a catalog.
+              </div>
             </div>
-            <div className="best-fit-card">
-              <div className="best-fit-icon">◎</div>
-              <h4>High-potential individual contributors</h4>
-              <p>Applied development in communication, strategic thinking, and influence — the skills that separate good performers from promotion-ready ones.</p>
+            <div className="best-fit-right reveal">
+              <div className="best-fit-visual">
+                <div className="bfv-label">295 sprints across 8 categories</div>
+                {[
+                  { cat: 'Leadership',             n: '48' },
+                  { cat: 'Mindset',                n: '46' },
+                  { cat: 'Communication',          n: '42' },
+                  { cat: 'Productivity',           n: '38' },
+                  { cat: 'Strategy',               n: '35' },
+                  { cat: 'Sales',                  n: '32' },
+                  { cat: 'Financial Intelligence', n: '28' },
+                  { cat: 'Marketing',              n: '26' },
+                ].map(({ cat, n }) => (
+                  <div key={cat} className="bfv-row">
+                    <span className="bfv-cat">{cat}</span>
+                    <div className="bfv-bar-wrap">
+                      <div className="bfv-bar" style={{ width: `${Math.round((parseInt(n) / 48) * 100)}%` }} />
+                    </div>
+                    <span className="bfv-n">{n}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="best-fit-card">
-              <div className="best-fit-icon">⇄</div>
-              <h4>Customer-facing and revenue teams</h4>
-              <p>Async sprints on communication, negotiation, and client management that fit into a real quota-carrying workweek.</p>
-            </div>
-            <div className="best-fit-card">
-              <div className="best-fit-icon">▦</div>
-              <h4>Managers without a dedicated L&amp;D team</h4>
-              <p>Assign sprints, see written engagement, use outputs in 1:1s. The development program is already built — you just run it.</p>
-            </div>
-          </div>
-          <div className="best-fit-not reveal">
-            <span className="best-fit-not-label">Not the right fit if:</span> you need compliance training, SCORM certification, or a broad content library for self-directed browsing. SummitSkills is a structured system, not a catalog.
           </div>
         </div>
       </section>
