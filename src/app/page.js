@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint from the 295-sprint library to individual team members or groups. You can run the whole team on the same sprint or run different sprints by role simultaneously.</p>,
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint — useful for a shared skill gap — or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
   },
   {
     q: "What if someone doesn't finish?",
@@ -242,6 +242,13 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
+          .hero-footnote-indiv {
+            font-family: var(--sans);
+            font-size: 0.78rem;
+            color: var(--faint);
+            margin-top: 8px;
+            line-height: 1.5;
+          }
           .nav-login {
             font-family: var(--sans);
             font-size: 0.88rem;
@@ -281,6 +288,209 @@ export default function Home() {
             line-height: 1.6;
             margin: 0;
           }
+
+          /* ── Sprint Deliverable ── */
+          .sprint-deliverable {
+            margin-top: 32px;
+            background: rgba(23,184,224,0.06);
+            border: 1px solid rgba(23,184,224,0.2);
+            border-radius: 12px;
+            padding: 28px 32px;
+          }
+          .sprint-deliverable-label {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--teal);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+          }
+          .sprint-deliverable-title {
+            font-family: var(--sans);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+          }
+          .sprint-deliverable-desc {
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 12px;
+          }
+          .sprint-deliverable-note {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--faint);
+            font-style: italic;
+          }
+
+          /* ── Best Fit Section ── */
+          .best-fit {
+            padding: 96px 0;
+            background: rgba(255,255,255,0.015);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+          }
+          .best-fit-intro {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 56px;
+          }
+          .best-fit-intro h2 {
+            font-family: var(--serif);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            color: var(--text);
+            line-height: 1.25;
+            margin-bottom: 16px;
+          }
+          .best-fit-intro h2 em { color: var(--teal); font-style: italic; }
+          .best-fit-intro p {
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.6;
+          }
+          .best-fit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+          }
+          .best-fit-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 24px;
+          }
+          .best-fit-icon {
+            font-size: 1.4rem;
+            color: var(--teal);
+            margin-bottom: 14px;
+            opacity: 0.8;
+          }
+          .best-fit-card h4 {
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 0 0 10px;
+          }
+          .best-fit-card p {
+            font-family: var(--sans);
+            font-size: 0.87rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin: 0;
+          }
+          .best-fit-not {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            color: var(--faint);
+            line-height: 1.6;
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+          }
+          .best-fit-not-label {
+            font-weight: 600;
+            color: var(--muted);
+            margin-right: 6px;
+          }
+
+          /* ── Dashboard Annotations ── */
+          .dashboard-annotations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 20px;
+            justify-content: space-between;
+          }
+          .dash-annotation {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 280px;
+          }
+          .dash-ann-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--teal);
+            flex-shrink: 0;
+            margin-top: 5px;
+          }
+          .dash-ann-text {
+            font-family: var(--sans);
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.5;
+          }
+
+          /* ── Credibility Section ── */
+          .credibility {
+            padding: 96px 0;
+            border-top: 1px solid var(--border);
+          }
+          .credibility-inner {
+            max-width: 860px;
+            margin: 0 auto;
+            text-align: center;
+          }
+          .credibility-inner h2 {
+            font-family: var(--serif);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            color: var(--text);
+            line-height: 1.25;
+            margin-bottom: 16px;
+          }
+          .credibility-inner h2 em { color: var(--teal); font-style: italic; }
+          .credibility-sub {
+            font-family: var(--sans);
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 56px;
+            line-height: 1.6;
+          }
+          .credibility-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+            text-align: left;
+          }
+          .credibility-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 24px;
+          }
+          .credibility-stat {
+            font-family: var(--serif);
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--teal);
+            margin-bottom: 10px;
+            line-height: 1;
+          }
+          .credibility-label {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.6;
+          }
+          .credibility-pull {
+            font-family: var(--serif);
+            font-size: 1.05rem;
+            font-style: italic;
+            color: var(--muted);
+            border-left: 3px solid rgba(23,184,224,0.4);
+            padding: 16px 24px;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+            background: rgba(23,184,224,0.04);
+          }
         `}</style>
       </Head>
       {/* ── NAV ── */}
@@ -315,15 +525,16 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            SummitSkills gives your team structured 7-day skill sprints — with built-in practice, written reflection at every stage, and a real work deliverable at the end.
-            Managers assign sprints, track written engagement, and see actual progress.
-            No live sessions. No LMS. Runs completely async.
+            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking.
+            Managers assign sprints, see every written reflection, and track progress by individual.
+            No live sessions. No LMS. Up and running in under 24 hours.
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
             <a href="#pricing" className="btn-ghost">Start as Individual</a>
           </div>
           <p className="hero-footnote">Teams: Signed MSA · Annual billing · 30-day refund &nbsp;·&nbsp; Individuals: No contract · Cancel anytime</p>
+          <p className="hero-footnote-indiv">Starting on your own? Individual access includes the same sprints and outputs — just without the team dashboard.</p>
         </div>
 
         <div className="hero-right">
@@ -368,8 +579,8 @@ export default function Home() {
         <div className="wrap">
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
-              <h2>A system that makes<br /><em>skill-building visible</em></h2>
-              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't internalized it yet.</p>
+              <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
+              <p>Completion rates tell you who clicked through. Written reflection logs tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
@@ -383,8 +594,9 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>Each stage takes about 15 minutes. One per day works.</h3>
-                  <p>Each Ascent stage delivers one concept they can use at work before the next stage opens. The pacing is intentional. Skills build from daily practice, not a single afternoon of passive consumption.</p>
+                  <h3>One 15-minute stage per day. Paced for a real workday.</h3>
+                  <p>Each stage delivers one concept — specific, applied, immediately relevant to how they work. The next stage doesn't open until they've engaged with the current one. The daily cadence is intentional: skills build through repetition and reflection, not a single blocked training afternoon.</p>
+                  <p className="aside">✓ Async — no scheduling, no time zones</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
@@ -445,9 +657,52 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Every stage requires a written response before the next one unlocks — not just the midpoint. Stage 7 produces a deliverable, not a score. Every response is logged to your manager dashboard.</p>
+              <p>Every stage requires a written response before the next one unlocks. Stage 7 produces a deliverable, not a score. Every response is logged to your manager dashboard.</p>
               <a href="#pricing">Get access to see the full sprint →</a>
             </div>
+            <div className="sprint-deliverable reveal">
+              <div className="sprint-deliverable-label">Stage 7 Deliverable — what this sprint produces</div>
+              <div className="sprint-deliverable-title">A personal habit design system</div>
+              <div className="sprint-deliverable-desc">
+                Built from their own reflections across Stages 1–6: the habit loop they identified in their work week, the friction points they removed, the existing routines they used as anchors. A working reference — not a certificate, not a summary — that they designed for their actual job.
+              </div>
+              <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── BEST FIT ── */}
+      <section className="best-fit">
+        <div className="wrap">
+          <div className="best-fit-intro reveal">
+            <h2>Built for teams that need<br /><em>structured development without overhead.</em></h2>
+            <p>SummitSkills works best in specific situations. Here's where it tends to have the most impact.</p>
+          </div>
+          <div className="best-fit-grid reveal">
+            <div className="best-fit-card">
+              <div className="best-fit-icon">↑</div>
+              <h4>First-time and emerging managers</h4>
+              <p>New managers need practical frameworks fast — for delegation, feedback, prioritization, and difficult conversations. SummitSkills gives them structured reps on the skills that actually matter in the first 90 days, without requiring a coach or a classroom.</p>
+            </div>
+            <div className="best-fit-card">
+              <div className="best-fit-icon">◎</div>
+              <h4>High-potential individual contributors</h4>
+              <p>ICs being groomed for leadership need applied skill development, not more content access. SummitSkills builds the communication, strategic thinking, and influence skills that separate good performers from promotion-ready ones.</p>
+            </div>
+            <div className="best-fit-card">
+              <div className="best-fit-icon">⇄</div>
+              <h4>Customer-facing and revenue teams</h4>
+              <p>Sales, account management, and customer success teams need consistent skill development without pulling everyone off the floor for training days. Async sprints on communication, negotiation, and client management fit into a real quota-carrying workweek.</p>
+            </div>
+            <div className="best-fit-card">
+              <div className="best-fit-icon">▦</div>
+              <h4>Managers running development without an L&amp;D team</h4>
+              <p>If you're responsible for your team's growth but don't have dedicated L&amp;D support, SummitSkills is the infrastructure. Assign sprints, see written engagement, use the outputs in 1:1s. You don't need to design a development program — it's already built.</p>
+            </div>
+          </div>
+          <div className="best-fit-not reveal">
+            <span className="best-fit-not-label">Not the right fit if:</span> you need compliance training, SCORM certification, or a broad content library for self-directed browsing. SummitSkills is a structured system, not a catalog.
           </div>
         </div>
       </section>
@@ -461,6 +716,20 @@ export default function Home() {
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
+            <div className="dashboard-annotations">
+              <div className="dash-annotation dash-annotation--left">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Stage-by-stage progress per team member — not just "completed" or "not started"</div>
+              </div>
+              <div className="dash-annotation dash-annotation--right">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Written reflection responses, readable in full — not a score or a rating</div>
+              </div>
+              <div className="dash-annotation dash-annotation--bottom">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Sprint assignment — assign by individual, role, or full team in one action</div>
+              </div>
+            </div>
           </div>
           <div className="manager-usecases reveal">
             <div className="manager-usecase">
@@ -478,6 +747,33 @@ export default function Home() {
             <div className="manager-usecase">
               <h4>Build development tracks without overhead</h4>
               <p>Assign two or three sprints across a quarter for a lightweight development plan. No scheduling, no facilitator, no blocked training days. Assign, track, discuss the outputs.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CREDIBILITY ── */}
+      <section className="credibility">
+        <div className="wrap">
+          <div className="credibility-inner reveal">
+            <h2>Why completion rates<br /><em>aren't enough.</em></h2>
+            <p className="credibility-sub">The average employee completes assigned training. Almost none of it changes how they work on Monday.</p>
+            <div className="credibility-grid">
+              <div className="credibility-item">
+                <div className="credibility-stat">~10%</div>
+                <div className="credibility-label">of training content is retained after 1 week without application practice</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">0</div>
+                <div className="credibility-label">useful data points from a completion checkmark — it tells you nothing about what they understood or how they'll apply it</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">7 days</div>
+                <div className="credibility-label">is all it takes with SummitSkills to produce a real work tool — built from the employee's own thinking, applied to their actual job</div>
+              </div>
+            </div>
+            <div className="credibility-pull">
+              "The reflection gate isn't a quiz. It's a forcing function — it's what turns passive reading into something a manager can actually see and use."
             </div>
           </div>
         </div>
@@ -708,8 +1004,8 @@ export default function Home() {
 
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
-        <h2>Start with one team.<br /><em>See what 7 days actually produces.</em></h2>
-        <p>No implementation calls. A signed contract before payment. Live within 24 hours of signing.</p>
+        <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
+        <p>No implementation calls. No LMS setup. A signed contract before payment, and your team is live within 24 hours of signing.</p>
         <a href="#pricing" className="btn-primary">Get Team Access →</a>
         <p className="final-note">From 1 seat · Annual billing · 30-day refund policy</p>
       </section>
