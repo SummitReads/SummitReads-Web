@@ -242,6 +242,19 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
+          .nav-login {
+            font-family: var(--sans);
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: color 0.15s ease;
+          }
+          .nav-login:hover {
+            color: var(--text);
+          }
           .manager-usecases {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -286,6 +299,7 @@ export default function Home() {
           <a href="#team-pricing" className="nav-link nav-link-teams">For Managers</a>
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
+          <a href="/login" className="nav-login">Log in</a>
           <a href="#team-pricing" className="nav-cta">Get Started</a>
         </div>
       </nav>
