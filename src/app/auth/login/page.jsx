@@ -43,16 +43,16 @@ export default function LoginPage() {
         <div className="nav-content">
           <Link href="/" className="logo">
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Reads</span>
+            Summit<span>Skills</span>
           </Link>
         </div>
       </nav>
 
-      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
-        <div className="glass-panel" style={{ padding: '48px' }}>
+      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
+        <div className="glass-panel" style={{ padding: 'clamp(24px, 5vw, 48px)' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Welcome Back</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Sign in to continue your transformation journey</p>
+            <p style={{ color: 'var(--text-muted)' }}>Sign in to continue your skill development</p>
           </div>
 
           <form onSubmit={handleLogin}>
@@ -128,9 +128,28 @@ export default function LoginPage() {
 
             <button 
               type="submit" 
-              className="btn-primary-large" 
               disabled={loading}
-              style={{ width: '100%' }}
+              style={{ 
+                width: '100%',
+                padding: '14px',
+                borderRadius: '10px',
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: 'transparent',
+                color: '#fff',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: loading ? 'wait' : 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'var(--font-sans)',
+              }}
+              onMouseEnter={e => {
+                e.target.style.borderColor = '#17B8E0'
+                e.target.style.color = '#17B8E0'
+              }}
+              onMouseLeave={e => {
+                e.target.style.borderColor = 'rgba(255,255,255,0.25)'
+                e.target.style.color = '#fff'
+              }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>

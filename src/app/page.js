@@ -299,7 +299,7 @@ export default function Home() {
           <a href="#team-pricing" className="nav-link nav-link-teams">For Managers</a>
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
-          <a href="/login" className="nav-login">Log in</a>
+          <a href="/auth/login" className="nav-login">Log in</a>
           <a href="#team-pricing" className="nav-cta">Get Started</a>
         </div>
       </nav>
