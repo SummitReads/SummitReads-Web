@@ -450,17 +450,17 @@
   background: rgba(13,21,32,0.2); color: var(--ink); border-color: transparent;
 }
 .landing-page .indiv-cards {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch;
 }
 .landing-page .indiv-card {
   border: 1px solid var(--border); border-radius: 14px;
-  background: var(--ink-2); overflow: hidden;
+  background: var(--ink-2); overflow: hidden; display: flex; flex-direction: column;
 }
 .landing-page .indiv-card-team {
   border-color: rgba(23,184,224,0.2);
   background: linear-gradient(160deg, rgba(23,184,224,0.04) 0%, var(--ink-2) 60%);
 }
-.landing-page .indiv-card-top { padding: 32px 32px 28px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; }
+.landing-page .indiv-card-top { padding: 32px 32px 28px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; flex: 1; }
 .landing-page .indiv-plan-tag {
   display: inline-block; font-size: 0.65rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 1.5px;
