@@ -242,6 +242,54 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
+          /* ── Mechanic Cards ── */
+          .mechanic-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 48px;
+          }
+          .mechanic-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .mechanic-card--highlight {
+            border-color: rgba(23,184,224,0.3);
+            background: rgba(23,184,224,0.05);
+          }
+          .mc-num {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--teal);
+            letter-spacing: 0.08em;
+            opacity: 0.7;
+          }
+          .mc-title {
+            font-family: var(--sans);
+            font-size: 0.97rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+          }
+          .mc-body {
+            font-family: var(--sans);
+            font-size: 0.85rem;
+            color: var(--muted);
+            line-height: 1.55;
+            flex: 1;
+          }
+          .mc-tag {
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--teal);
+            margin-top: 4px;
+          }
+
           .hero-footnote-indiv {
             font-family: var(--sans);
             font-size: 0.78rem;
@@ -525,7 +573,7 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. No live sessions. No LMS.
+            Most team learning ends with a completion rate. SummitSkills ends with written reflection logs, manager-visible engagement, and a real work deliverable — built by each person, for their actual job. No live sessions. No LMS.
           </p>
           <div className="hero-actions">
             <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
@@ -578,38 +626,32 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
-              <p>Completion rates tell you who clicked through. Written reflection logs tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
+              <p>Completion rates tell you who clicked through. Reflection logs tell you who actually engaged.</p>
             </div>
-            <div className="mechanic-steps">
-              <div className="mechanic-step reveal">
-                <div className="mechanic-num">01</div>
-                <div>
-                  <h3>Assign a sprint to your team</h3>
-                  <p>Pick any sprint and assign it to individuals, a role group, or your full team. Team members get an email and they're in. No app, no LMS, no IT ticket.</p>
-                  <p className="aside">✓ Live within minutes</p>
-                </div>
+            <div className="mechanic-cards reveal">
+              <div className="mechanic-card">
+                <div className="mc-num">01</div>
+                <div className="mc-title">Assign a sprint</div>
+                <div className="mc-body">Pick a sprint, assign to individuals or your full team. Email invite. No app, no LMS, no IT ticket.</div>
+                <div className="mc-tag">✓ Live within minutes</div>
               </div>
-              <div className="mechanic-step reveal">
-                <div className="mechanic-num">02</div>
-                <div>
-                  <h3>One 15-minute stage per day</h3>
-                  <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
-                  <p className="aside">✓ Async — no scheduling, no time zones</p>
-                </div>
+              <div className="mechanic-card">
+                <div className="mc-num">02</div>
+                <div className="mc-title">15 min/day, one stage at a time</div>
+                <div className="mc-body">One applied concept per stage. The next stage doesn't open until they've engaged with the current one.</div>
+                <div className="mc-tag">✓ Fully async</div>
               </div>
-              <div className="mechanic-step reveal">
-                <div className="mechanic-num">03</div>
-                <div>
-                  <h3>Every stage requires a written response. No skipping.</h3>
-                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice — they write it out. Every response is logged. Managers see the writing, not just a checkmark.</p>
-                </div>
+              <div className="mechanic-card mechanic-card--highlight">
+                <div className="mc-num">03</div>
+                <div className="mc-title">Written response required. No skipping.</div>
+                <div className="mc-body">They connect the concept to their real work before advancing. Managers see the writing — not just a checkmark.</div>
+                <div className="mc-tag">✓ Logged to dashboard</div>
               </div>
-              <div className="mechanic-step reveal">
-                <div className="mechanic-num">04</div>
-                <div>
-                  <h3>Stage 7 produces a real work deliverable</h3>
-                  <p>A prioritization framework, a communication plan, a habit system — built from their own reflections. Not a certificate. Something they made for their actual job.</p>
-                </div>
+              <div className="mechanic-card">
+                <div className="mc-num">04</div>
+                <div className="mc-title">Stage 7 produces a real deliverable</div>
+                <div className="mc-body">A framework, a plan, a system — built from their own reflections. Not a certificate. Something they made.</div>
+                <div className="mc-tag">✓ Different for every person</div>
               </div>
             </div>
           </div>
@@ -654,14 +696,13 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Every stage requires a written response before the next one unlocks. Stage 7 produces a deliverable, not a score. Every response is logged to your manager dashboard.</p>
-              <a href="#pricing">Get access to see the full sprint →</a>
+              <a href="#pricing">See the full sprint →</a>
             </div>
             <div className="sprint-deliverable reveal">
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal habit design system</div>
               <div className="sprint-deliverable-desc">
-                Built from their own reflections: the habit loop they identified, the friction they removed, the routines they used as anchors. A working reference designed for their actual job — not a template, not a summary.
+                Built from their own reflections — not a template, not a summary. Designed for their actual job.
               </div>
               <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
@@ -708,7 +749,6 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Written reflection responses, stage-by-stage progress, sprint assignment — all in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -729,20 +769,20 @@ export default function Home() {
           </div>
           <div className="manager-usecases reveal">
             <div className="manager-usecase">
-              <h4>Use responses in your next 1:1</h4>
-              <p>"You wrote that your biggest challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
+              <h4>Fuel your next 1:1</h4>
+              <p>Read what they wrote. Reference it directly. No survey needed.</p>
             </div>
             <div className="manager-usecase">
-              <h4>Spot who's stuck before they disengage</h4>
-              <p>If someone hasn't advanced past Stage 2 after four days, you see it and can follow up — without waiting for them to tell you.</p>
+              <h4>Spot who's stuck</h4>
+              <p>See stage-by-stage progress in real time. Follow up before they disengage.</p>
             </div>
             <div className="manager-usecase">
-              <h4>Run a targeted skill cohort</h4>
-              <p>Assign the same sprint across a group and review their reflections together. More signal than most training debriefs.</p>
+              <h4>Run a team skill cohort</h4>
+              <p>Same sprint, whole group. Review reflections together. More signal than a debrief.</p>
             </div>
             <div className="manager-usecase">
-              <h4>Build a development track without overhead</h4>
-              <p>Two or three sprints across a quarter. No scheduling, no facilitator. Assign, track, discuss the outputs.</p>
+              <h4>Build a development track</h4>
+              <p>Two or three sprints per quarter. No scheduling, no facilitator. Already structured.</p>
             </div>
           </div>
         </div>
@@ -769,7 +809,7 @@ export default function Home() {
               </div>
             </div>
             <div className="credibility-pull">
-              "The reflection gate isn't a quiz. It's a forcing function — it's what turns passive reading into something a manager can actually see and use."
+              "The reflection gate isn't a quiz. It's a forcing function — it turns passive reading into something a manager can see and use."
             </div>
           </div>
         </div>
