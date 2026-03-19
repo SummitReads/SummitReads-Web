@@ -49,10 +49,19 @@ const FAQ_ITEMS = [
     a: <p>Yes — it's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
   },
   {
-    q: 'How is this different from a book summary app?',
+    q: 'How is this different from a course library or passive learning platform?',
     a: <>
-      <p>Book summary apps optimize for information transfer. SummitSkills optimizes for behavior change. The reflection gate at Stage 3 is the difference — it's not optional, it's not a quiz, and it can't be skipped. Your team member has to engage with the material in terms of their own work before the next stage opens.</p>
-      <p><strong>The content is also original.</strong> SummitSkills sprints aren't condensed books. They're coaching curricula built around professional skills — original writing, original examples, original structure.</p>
+      <p>Most learning platforms optimize for content consumption — watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
+      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work — a situation they're dealing with, a pattern they've noticed, a decision they need to make. That response has to be written before the next stage opens. It can't be skipped, rated, or bypassed.</p>
+      <p>Every response is logged to the manager dashboard. By Stage 7, the employee has produced a real work deliverable built from their own thinking across the sprint — not a certificate, not a score.</p>
+      <p><strong>Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</strong></p>
+    </>,
+  },
+  {
+    q: 'What does the written reflection actually look like?',
+    a: <>
+      <p>Each reflection prompt connects the stage's concept to the employee's actual work context. They're not asked to summarize the material or answer comprehension questions — they're asked to apply it. Identify a real situation where the concept fits. Describe how they'd approach a specific challenge differently. Draft a tool they'll actually use.</p>
+      <p>The responses vary in length and depth. Managers can read them directly in the dashboard. They're worth reading: they reveal how team members actually think about their work, not just whether they clicked through a course.</p>
     </>,
   },
 ]
@@ -232,6 +241,34 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+        <style>{`
+          .manager-usecases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 48px;
+          }
+          .manager-usecase {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 28px 24px;
+          }
+          .manager-usecase h4 {
+            font-family: var(--sans);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--teal);
+            margin: 0 0 10px;
+          }
+          .manager-usecase p {
+            font-family: var(--sans);
+            font-size: 0.88rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin: 0;
+          }
+        `}</style>
       </Head>
       {/* ── NAV ── */}
       <nav>
@@ -246,7 +283,7 @@ export default function Home() {
         </a>
         <div className="nav-links">
           <a href="#how"          className="nav-link">How it works</a>
-          <a href="#team-pricing" className="nav-link nav-link-teams">For Teams</a>
+          <a href="#team-pricing" className="nav-link nav-link-teams">For Managers</a>
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
           <a href="#team-pricing" className="nav-cta">Get Started</a>
@@ -257,19 +294,19 @@ export default function Home() {
       <div className="hero">
         <div className="hero-left">
           <div className="hero-stats-row">
-            <div className="hero-stat-pill"><strong>295</strong> sprints</div>
-            <div className="hero-stat-pill"><strong>8</strong> categories</div>
-            <div className="hero-stat-pill"><strong>7</strong> stages</div>
-            <div className="hero-stat-pill"><strong>Start</strong> today</div>
+            <div className="hero-stat-pill"><strong>15</strong> min/day</div>
+            <div className="hero-stat-pill"><strong>7-stage</strong> sprints</div>
+            <div className="hero-stat-pill">Written application <strong>required</strong></div>
+            <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            SummitSkills builds professional skills through structured daily practice — not passive consumption.
-            295 sprints across 8 categories. Every sprint requires a written response before advancing.
-            No live sessions. No implementation calls.
+            SummitSkills gives your team structured 7-day skill sprints — with built-in practice, written reflection at every stage, and a real work deliverable at the end.
+            Managers assign sprints, track written engagement, and see actual progress.
+            No live sessions. No LMS. Runs completely async.
           </p>
           <div className="hero-actions">
-            <a href="#team-pricing" className="btn-primary">Get Team Access →</a>
+            <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
             <a href="#pricing" className="btn-ghost">Start as Individual</a>
           </div>
           <p className="hero-footnote">Teams: Signed MSA · Annual billing · 30-day refund &nbsp;·&nbsp; Individuals: No contract · Cancel anytime</p>
@@ -317,16 +354,16 @@ export default function Home() {
         <div className="wrap">
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
-              <h2>Skill development,<br /><em>not content delivery</em></h2>
-              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't learned it yet.</p>
+              <h2>A system that makes<br /><em>skill-building visible</em></h2>
+              <p>Most platforms measure completion. SummitSkills measures engagement — because someone who can't articulate a concept in their own words hasn't internalized it yet.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">01</div>
                 <div>
-                  <h3>Choose a sprint from the library</h3>
-                  <p>295 sprints across Financial Intelligence, Leadership, Productivity, Marketing, Sales, Strategy, Mindset, and Communication. Managers assign to individuals or groups. Team members can also browse and pick what they want to develop. They get an email and they're in. No app download, no LMS setup.</p>
-                  <p className="aside">✓ Self-guided — live in minutes</p>
+                  <h3>Assign a sprint to your team</h3>
+                  <p>From the manager dashboard, pick any sprint and assign it to individuals, a role group, or your entire team. Team members get an email invite and they're in — no app download, no LMS setup, no IT ticket. You can have a 30-person cohort running a sprint in under 5 minutes.</p>
+                  <p className="aside">✓ Self-guided — live within minutes</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
@@ -339,16 +376,16 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
-                  <h3>Every stage requires a response before advancing</h3>
-                  <p>After each stage, the learner writes a response connecting the concept to their actual work. A real situation. A real pattern they've noticed. Not multiple choice, not a slider — they have to think and articulate it before the next stage opens.</p>
-                  <p>Every response is logged. Managers see it in the team dashboard. Individual learners build a record of their own thinking over the sprint.</p>
+                  <h3>Every stage requires a written response. No skipping.</h3>
+                  <p>Before Stage 4 opens, the employee connects what they've learned to their actual work. A real situation. A real pattern they've noticed. Not multiple choice. Not a rating scale — they write it out before anything unlocks.</p>
+                  <p>Every response is logged. Managers see the writing — not just a green checkmark. It's the difference between knowing your team watched something and knowing they actually engaged with it.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
-                  <h3>By Stage 7, they've built something</h3>
-                  <p>The Summit Mission produces a real deliverable — a real tool built around their actual job, constructed from everything across the previous six stages. Not a quiz result. Not a certificate. Something they made, that actually applies to their job. Different for every person.</p>
+                  <h3>By Stage 7, they've built something they'll actually use</h3>
+                  <p>The Sprint Mission at Stage 7 produces a real work deliverable — a prioritization framework, a communication plan, a habit design system — constructed from their own reflections across the previous six stages. Not a quiz result. Not a certificate. Something they made, built around their actual job. Different for every person.</p>
                 </div>
               </div>
             </div>
@@ -360,9 +397,9 @@ export default function Home() {
       <section className="sprint-section">
         <div className="wrap">
           <div className="sprint-intro reveal">
-            <h2>What skill-building looks like in practice.</h2>
+            <h2>What a completed sprint actually produces.</h2>
             <div className="sprint-intro-aside">
-              <p>Productivity &amp; Habits — one of 295 sprints. Every sprint follows the same structure.</p>
+              <p>Productivity &amp; Habits — one of 295 sprints. Every sprint follows the same structure. This is what it looks like to go from Day 1 to a real work tool.</p>
             </div>
           </div>
           <div className="sprint-wrap reveal">
@@ -405,11 +442,29 @@ export default function Home() {
       <section className="dashboard-preview">
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
-            <h2>What you see<br />as a <em>manager.</em></h2>
-            <p>Live sprint progress, stage-by-stage, for every team member. Reflection responses logged. Completion rates tracked. No manual reporting.</p>
+            <h2>For managers who want<br />more than a <em>completion report.</em></h2>
+            <p>The manager dashboard shows written reflection responses, stage-by-stage progress, and engagement quality — for every team member, in real time. You're not waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
+          </div>
+          <div className="manager-usecases reveal">
+            <div className="manager-usecase">
+              <h4>Use responses in your next 1:1</h4>
+              <p>"You wrote that your biggest prioritization challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Spot who's stuck before they disengage</h4>
+              <p>If someone hasn't advanced past Stage 2 after four days, you see it. You can follow up directly — you don't have to wait for them to tell you.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Run a targeted skill cohort</h4>
+              <p>Assign the same sprint across a group and review their Stage 4 reflections in your next team meeting. More useful conversation than most training debriefs.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Build development tracks without overhead</h4>
+              <p>Assign two or three sprints across a quarter for a lightweight development plan. No scheduling, no facilitator, no blocked training days. Assign, track, discuss the outputs.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -418,8 +473,8 @@ export default function Home() {
       <section className="pricing" id="pricing">
         <div className="wrap">
           <div className="pricing-header reveal">
-            <h2>Simple, honest pricing.</h2>
-            <p>For individuals building skills on their own, or teams that want accountability and manager visibility. All 295 sprints included in every plan.</p>
+            <h2>Straightforward team pricing.</h2>
+            <p>One annual price per seat. Manager dashboard, reflection logging, and sprint assignment built in. No content tiers, no per-sprint fees, no implementation costs.</p>
           </div>
 
           {/* ── INDIVIDUAL PLANS ── */}
@@ -448,7 +503,7 @@ export default function Home() {
                   {billingCycle === 'annual' && (
                     <div className="indiv-equiv">$12.42/month, billed annually</div>
                   )}
-                  <p className="indiv-desc">For professionals building skills on their own schedule. Pick any sprint, start today.</p>
+                  <p className="indiv-desc">Same structured sprint system, same 7-stage format, same Stage 7 deliverable — without the manager dashboard. For professionals building skills on their own schedule.</p>
                   <button
                     onClick={handleIndividualCheckout}
                     disabled={checkoutLoading}
@@ -462,10 +517,10 @@ export default function Home() {
                   </p>
                 </div>
                 <ul className="indiv-features">
-                  <li>All 295 skill sprints, all categories</li>
-                  <li>AI coaching companion</li>
-                  <li>Personal progress tracking</li>
+                  <li>Structured 7-stage sprint system</li>
+                  <li>Written reflection required at every stage</li>
                   <li>Stage 7 deliverable for every sprint</li>
+                  <li>AI coaching companion</li>
                   <li>~15 min/day · Works on any device</li>
                 </ul>
               </div>
@@ -479,7 +534,7 @@ export default function Home() {
                     <span className="indiv-period">/seat/yr</span>
                   </div>
                   <div className="indiv-equiv">Volume discounts from 25 seats</div>
-                  <p className="indiv-desc">For managers who want to assign sprints, track team progress, and see reflection responses.</p>
+                  <p className="indiv-desc">For managers who want to assign sprints, see written reflection responses, and track real engagement — not just completion rates.</p>
                   <a href="#team-pricing" className="btn-primary" style={{ display: 'block', textAlign: 'center', marginTop: '20px' }}>
                     Calculate Team Price →
                   </a>
@@ -488,10 +543,10 @@ export default function Home() {
                   </p>
                 </div>
                 <ul className="indiv-features">
-                  <li>Everything in Individual, per seat</li>
-                  <li>Manager dashboard &amp; analytics</li>
+                  <li>Manager dashboard &amp; reflection logs</li>
                   <li>Sprint assignment by person or group</li>
-                  <li>Reflection responses visible to managers</li>
+                  <li>Written engagement visible to managers</li>
+                  <li>Stage 7 deliverable for every seat</li>
                   <li>Signed contract · Live in under 24 hours</li>
                 </ul>
               </div>
@@ -507,17 +562,17 @@ export default function Home() {
             <div className="pricing-top">
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
-                <div className="plan-name">Full Library Access</div>
-                <p className="plan-desc">Every seat gets every sprint. No content tiers, no per-sprint fees, no upsells. One annual price, one contract, everything included.</p>
+                <div className="plan-name">Team Skill Development Plan</div>
+                <p className="plan-desc">Every team member gets structured skill sprints, guided daily practice, and a real deliverable at the end of every sprint. Managers get a dashboard with written reflection logs, stage-by-stage progress, and sprint assignment tools — everything needed to run ongoing capability development without adding overhead.</p>
                 <ul className="plan-features">
-                  <li>All 295 skill sprints, all categories</li>
-                  <li>Manager dashboard &amp; per-user analytics</li>
-                  <li>Sprint assignment by individual or group</li>
+                  <li>Manager dashboard — reflection logs, progress tracking, sprint assignment</li>
+                  <li>Written reflection required at every stage — logged and manager-visible</li>
+                  <li>Stage 7 deliverable for every sprint — a real work tool, not a certificate</li>
+                  <li>Assign by individual, role, or full team</li>
                   <li>AI coaching companion per seat</li>
-                  <li>Reflection responses visible to managers</li>
-                  <li>Self-guided setup — live in under an hour</li>
-                  <li>Signed MSA included with every purchase</li>
-                  <li>Annual price lock — no renewal surprises</li>
+                  <li>Self-guided setup — live in under 24 hours</li>
+                  <li>295 sprints across leadership, communication, productivity, strategy, and more</li>
+                  <li>Signed MSA included · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
 
@@ -639,7 +694,7 @@ export default function Home() {
 
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
-        <h2>Start with one team.<br /><em>See what happens in 7 days.</em></h2>
+        <h2>Start with one team.<br /><em>See what 7 days actually produces.</em></h2>
         <p>No implementation calls. A signed contract before payment. Live within 24 hours of signing.</p>
         <a href="#pricing" className="btn-primary">Get Team Access →</a>
         <p className="final-note">From 1 seat · Annual billing · 30-day refund policy</p>
