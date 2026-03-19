@@ -465,7 +465,7 @@
   text-transform: uppercase; letter-spacing: 1.5px;
   padding: 4px 10px; border-radius: 5px; margin-bottom: 16px;
   background: rgba(255,255,255,0.06); border: 1px solid var(--border);
-  color: var(--muted);
+  color: var(--muted); align-self: flex-start; width: fit-content;
 }
 .landing-page .indiv-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
 .landing-page .indiv-amount {
