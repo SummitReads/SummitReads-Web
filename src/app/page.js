@@ -439,29 +439,28 @@ export default function Home() {
 
           /* ── Dashboard Annotations ── */
           .dashboard-annotations {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 20px;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 0;
+            margin-bottom: 48px;
           }
           .dash-annotation {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            max-width: 280px;
           }
           .dash-ann-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--teal);
             flex-shrink: 0;
-            margin-top: 5px;
+            margin-top: 6px;
           }
           .dash-ann-text {
             font-family: var(--sans);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--muted);
             line-height: 1.5;
           }
@@ -785,19 +784,19 @@ export default function Home() {
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
-            <div className="dashboard-annotations">
-              <div className="dash-annotation dash-annotation--left">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Stage-by-stage progress per team member — not just "completed" or "not started"</div>
-              </div>
-              <div className="dash-annotation dash-annotation--right">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Written reflection responses, readable in full — not a score or a rating</div>
-              </div>
-              <div className="dash-annotation dash-annotation--bottom">
-                <div className="dash-ann-dot" />
-                <div className="dash-ann-text">Sprint assignment — assign by individual, role, or full team in one action</div>
-              </div>
+          </div>
+          <div className="dashboard-annotations reveal">
+            <div className="dash-annotation">
+              <div className="dash-ann-dot" />
+              <div className="dash-ann-text">Stage-by-stage progress per team member — not just "completed" or "not started"</div>
+            </div>
+            <div className="dash-annotation">
+              <div className="dash-ann-dot" />
+              <div className="dash-ann-text">Written reflection responses, readable in full — not a score or a rating</div>
+            </div>
+            <div className="dash-annotation">
+              <div className="dash-ann-dot" />
+              <div className="dash-ann-text">Sprint assignment — assign by individual, role, or full team in one action</div>
             </div>
           </div>
           <div className="manager-usecases reveal">
