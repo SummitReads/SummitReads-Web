@@ -774,7 +774,7 @@ export default function Home() {
               {/* Individual card */}
               <div className="indiv-card">
                 <div className="indiv-card-top">
-                  <div className="indiv-plan-tag">Individual</div>
+                  <div className="indiv-plan-tag" style={{ display: 'inline-block' }}>Individual</div>
                   <div className="indiv-price">
                     <span className="indiv-amount">{billingCycle === 'monthly' ? '$19' : '$149'}</span>
                     <span className="indiv-period">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
@@ -807,7 +807,7 @@ export default function Home() {
               {/* Team card — summary, links to calculator below */}
               <div className="indiv-card indiv-card-team">
                 <div className="indiv-card-top">
-                  <div className="indiv-plan-tag" style={{ background: 'rgba(23,184,224,0.15)', borderColor: 'rgba(23,184,224,0.3)', color: 'var(--teal)' }}>Team</div>
+                  <div className="indiv-plan-tag" style={{ display: 'inline-block', background: 'rgba(23,184,224,0.15)', borderColor: 'rgba(23,184,224,0.3)', color: 'var(--teal)' }}>Team</div>
                   <div className="indiv-price">
                     <span className="indiv-amount">$179</span>
                     <span className="indiv-period">/seat/yr</span>
