@@ -707,75 +707,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── BEST FIT ── */}
-      <section className="best-fit">
-        <div className="wrap">
-          <div className="best-fit-inner">
-            <div className="best-fit-left">
-              <div className="best-fit-intro reveal">
-                <h2>Built for teams that need<br /><em>structured development without overhead.</em></h2>
-              </div>
-              <div className="best-fit-grid reveal">
-                <div className="best-fit-card">
-                  <div className="best-fit-num">01</div>
-                  <div>
-                    <h4>First-time and emerging managers</h4>
-                    <p>Structured reps on delegation, feedback, and difficult conversations — no coach required.</p>
-                  </div>
-                </div>
-                <div className="best-fit-card">
-                  <div className="best-fit-num">02</div>
-                  <div>
-                    <h4>High-potential individual contributors</h4>
-                    <p>Applied development in communication, strategic thinking, and influence.</p>
-                  </div>
-                </div>
-                <div className="best-fit-card">
-                  <div className="best-fit-num">03</div>
-                  <div>
-                    <h4>Customer-facing and revenue teams</h4>
-                    <p>Async sprints on communication, negotiation, and client management that fit a real workweek.</p>
-                  </div>
-                </div>
-                <div className="best-fit-card">
-                  <div className="best-fit-num">04</div>
-                  <div>
-                    <h4>Managers without a dedicated L&amp;D team</h4>
-                    <p>Assign sprints, see written engagement, use outputs in 1:1s. The program is already built.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="best-fit-not reveal">
-                <span className="best-fit-not-label">Not the right fit if:</span> you need compliance training, SCORM certification, or a broad self-directed content library. SummitSkills is a structured system, not a catalog.
-              </div>
-            </div>
-            <div className="best-fit-right reveal">
-              <div className="best-fit-visual">
-                <div className="bfv-label">295 sprints across 8 categories</div>
-                {[
-                  { cat: 'Leadership',             n: '48' },
-                  { cat: 'Mindset',                n: '46' },
-                  { cat: 'Communication',          n: '42' },
-                  { cat: 'Productivity',           n: '38' },
-                  { cat: 'Strategy',               n: '35' },
-                  { cat: 'Sales',                  n: '32' },
-                  { cat: 'Financial Intelligence', n: '28' },
-                  { cat: 'Marketing',              n: '26' },
-                ].map(({ cat, n }) => (
-                  <div key={cat} className="bfv-row">
-                    <span className="bfv-cat">{cat}</span>
-                    <div className="bfv-bar-wrap">
-                      <div className="bfv-bar" style={{ width: `${Math.round((parseInt(n) / 48) * 100)}%` }} />
-                    </div>
-                    <span className="bfv-n">{n}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── DASHBOARD PREVIEW ── */}
       <section className="dashboard-preview">
         <div className="wrap">
@@ -785,6 +716,38 @@ export default function Home() {
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
+            <div className="dashboard-annotations">
+              <div className="dash-annotation dash-annotation--left">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Stage-by-stage progress per team member — not just "completed" or "not started"</div>
+              </div>
+              <div className="dash-annotation dash-annotation--right">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Written reflection responses, readable in full — not a score or a rating</div>
+              </div>
+              <div className="dash-annotation dash-annotation--bottom">
+                <div className="dash-ann-dot" />
+                <div className="dash-ann-text">Sprint assignment — assign by individual, role, or full team in one action</div>
+              </div>
+            </div>
+          </div>
+          <div className="manager-usecases reveal">
+            <div className="manager-usecase">
+              <h4>Use responses in your next 1:1</h4>
+              <p>"You wrote that your biggest challenge is X — let's work on that." The reflection log makes that conversation possible without a separate survey.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Spot who's stuck before they disengage</h4>
+              <p>If someone hasn't advanced past Stage 2 after four days, you see it and can follow up — without waiting for them to tell you.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Run a targeted skill cohort</h4>
+              <p>Assign the same sprint across a group and review their reflections together. More signal than most training debriefs.</p>
+            </div>
+            <div className="manager-usecase">
+              <h4>Build a development track without overhead</h4>
+              <p>Two or three sprints across a quarter. No scheduling, no facilitator. Assign, track, discuss the outputs.</p>
+            </div>
           </div>
         </div>
       </section>
