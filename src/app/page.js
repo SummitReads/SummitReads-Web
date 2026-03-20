@@ -730,15 +730,15 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">8–10%</div>
-                <div className="credibility-label">average retention from passive learning — reading, watching, listening — per NTL Institute research on learning retention</div>
+                <div className="credibility-label">average retention from passive learning. Reading, watching, listening. Per NTL Institute research.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">25–60%</div>
-                <div className="credibility-label">retention when learning requires active practice and application — the same principle SummitSkills is built around</div>
+                <div className="credibility-label">retention when learning requires active practice and application. The principle SummitSkills is built on.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">7 days</div>
-                <div className="credibility-label">to a real work deliverable — built from the employee's own thinking, applied to their actual job</div>
+                <div className="credibility-label">to a real work deliverable, built from the employee's own thinking and applied to their actual job.</div>
               </div>
             </div>
             <div className="credibility-pull">
@@ -774,7 +774,7 @@ export default function Home() {
               {/* Individual card */}
               <div className="indiv-card">
                 <div className="indiv-card-top">
-                  <div className="indiv-plan-tag" style={{ display: 'inline-block' }}>Individual</div>
+                  <div className="indiv-plan-tag">Individual</div>
                   <div className="indiv-price">
                     <span className="indiv-amount">{billingCycle === 'monthly' ? '$19' : '$149'}</span>
                     <span className="indiv-period">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
@@ -807,7 +807,7 @@ export default function Home() {
               {/* Team card — summary, links to calculator below */}
               <div className="indiv-card indiv-card-team">
                 <div className="indiv-card-top">
-                  <div className="indiv-plan-tag" style={{ display: 'inline-block', background: 'rgba(23,184,224,0.15)', borderColor: 'rgba(23,184,224,0.3)', color: 'var(--teal)' }}>Team</div>
+                  <div className="indiv-plan-tag" style={{ background: 'rgba(23,184,224,0.15)', borderColor: 'rgba(23,184,224,0.3)', color: 'var(--teal)' }}>Team</div>
                   <div className="indiv-price">
                     <span className="indiv-amount">$179</span>
                     <span className="indiv-period">/seat/yr</span>
@@ -843,12 +843,12 @@ export default function Home() {
                 <div className="plan-tag">Team Plan · Annual</div>
                 <div className="plan-name">Team Skill Development Plan</div>
                 <ul className="plan-features">
-                  <li>Manager dashboard — reflection logs, progress tracking, sprint assignment</li>
+                  <li>Manager dashboard: reflection logs, progress tracking, sprint assignment</li>
                   <li>Written reflection at every stage, logged and manager-visible</li>
-                  <li>Stage 7 work deliverable per sprint — not a certificate</li>
+                  <li>Stage 7 work deliverable per sprint, not a certificate</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>AI coaching companion per seat</li>
-                  <li>Self-guided setup — live in under 24 hours</li>
+                  <li>Self-guided setup, live in under 24 hours</li>
                   <li>295 sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>

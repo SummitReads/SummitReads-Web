@@ -391,6 +391,73 @@
 }
 .sprint-footer-line a:hover { opacity: 0.7; }
 
+/* ─── CREDIBILITY ─── */
+.landing-page .credibility {
+  padding: 96px 0;
+  border-top: 1px solid var(--border);
+}
+.landing-page .credibility-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+.landing-page .credibility-inner h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: var(--text);
+  line-height: 1.25;
+  margin-bottom: 16px;
+}
+.landing-page .credibility-inner h2 em { color: var(--teal); font-style: italic; }
+.landing-page .credibility-sub {
+  font-family: var(--sans);
+  font-size: 1rem;
+  color: var(--muted);
+  margin-bottom: 56px;
+  line-height: 1.6;
+}
+.landing-page .credibility-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 48px;
+  text-align: left;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.landing-page .credibility-item {
+  background: rgba(255,255,255,0.025);
+  padding: 36px 32px;
+}
+.landing-page .credibility-stat {
+  font-family: var(--mono);
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--teal);
+  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+.landing-page .credibility-label {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.landing-page .credibility-pull {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--muted);
+  max-width: 620px;
+  margin: 0 auto;
+  line-height: 1.6;
+  padding: 32px 0 0;
+  border-top: 1px solid var(--border);
+}
+
 /* ─── DASHBOARD PREVIEW ─── */
 .landing-page .dashboard-preview { padding: 0 0 100px; border-top: 1px solid var(--border); }
 .landing-page .dashboard-preview-intro {
@@ -840,6 +907,11 @@
 
   /* Wrap padding */
   .landing-page .wrap { padding: 0 16px; }
+
+  /* Credibility grid — single column on mobile */
+  .landing-page .credibility-grid { grid-template-columns: 1fr; }
+  .landing-page .credibility-item { padding: 24px 20px; }
+  .landing-page .credibility-stat { font-size: 2.2rem; }
 
   /* Individual pricing cards — single column */
   .landing-page .indiv-cards { grid-template-columns: 1fr; gap: 16px; }
