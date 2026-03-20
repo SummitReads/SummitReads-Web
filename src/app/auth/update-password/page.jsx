@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,38 +11,50 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-
-  // ── KEY FIX: wait for Supabase to establish the recovery session ────────────
-  // When a user clicks the reset link, Supabase puts the token in the URL hash
-  // and fires a PASSWORD_RECOVERY event. We must wait for that before calling
-  // updateUser(), otherwise we get "Auth session missing!".
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
 
-  useEffect(() => {
-    // Check if there's already an active session (e.g. user navigated back)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setSessionReady(true);
-    });
+  // Use a ref so the timeout callback always reads the latest value —
+  // fixes the stale closure bug that was firing sessionError too early
+  const sessionReadyRef = useRef(false);
 
-    // Listen for the PASSWORD_RECOVERY event from the reset link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session) {
+  useEffect(() => {
+    // ── 1. PKCE flow: Supabase sends ?code=xxx, exchange it for a session ──
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setSessionError(true);
+        } else {
+          sessionReadyRef.current = true;
+          setSessionReady(true);
+        }
+      });
+      return;
+    }
+
+    // ── 2. Implicit/hash flow: listen for PASSWORD_RECOVERY event ──
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        sessionReadyRef.current = true;
         setSessionReady(true);
       }
-      // If SIGNED_OUT fires without a recovery session, the link is invalid/expired
-      if (event === 'SIGNED_OUT' && !sessionReady) {
-        setSessionError(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        sessionReadyRef.current = true;
+        setSessionReady(true);
       }
     });
 
-    // Fallback: if no session event fires within 4s, show an error
+    // ── 3. Timeout — only show error if session never arrived ──
     const timeout = setTimeout(() => {
-      setSessionError(prev => {
-        if (!sessionReady) return true;
-        return prev;
-      });
-    }, 4000);
+      if (!sessionReadyRef.current) {
+        setSessionError(true);
+      }
+    }, 5000);
 
     return () => {
       subscription.unsubscribe();
@@ -69,13 +81,11 @@ export default function UpdatePasswordPage() {
 
     try {
       const { error } = await supabase.auth.updateUser({ password });
-
       if (error) {
         setError(error.message);
         setLoading(false);
         return;
       }
-
       setSuccess(true);
       setLoading(false);
       setTimeout(() => router.push('/'), 3000);
@@ -115,32 +125,26 @@ export default function UpdatePasswordPage() {
             <p style={{ color: 'var(--text-muted)' }}>Enter your new secure password below</p>
           </div>
 
-          {/* Success state */}
+          {/* Success */}
           {success && (
             <div style={{
               background: 'rgba(34, 197, 94, 0.1)',
               border: '1px solid rgba(34, 197, 94, 0.3)',
-              borderRadius: '8px',
-              padding: '16px',
-              textAlign: 'center',
-              color: '#4ade80',
-              lineHeight: '1.6',
+              borderRadius: '8px', padding: '16px',
+              textAlign: 'center', color: '#4ade80', lineHeight: '1.6',
             }}>
               Password updated! Redirecting you now...
             </div>
           )}
 
-          {/* Invalid / expired link */}
+          {/* Expired / invalid link */}
           {!success && sessionError && (
             <div style={{ textAlign: 'center' }}>
               <div style={{
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
-                padding: '16px',
-                color: '#ef4444',
-                marginBottom: '24px',
-                lineHeight: '1.6',
+                borderRadius: '8px', padding: '16px',
+                color: '#ef4444', marginBottom: '24px', lineHeight: '1.6',
               }}>
                 This reset link has expired or is invalid. Please request a new one.
               </div>
@@ -150,24 +154,22 @@ export default function UpdatePasswordPage() {
             </div>
           )}
 
-          {/* Waiting for session */}
+          {/* Verifying */}
           {!success && !sessionError && !sessionReady && (
             <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '24px 0' }}>
               Verifying reset link...
             </div>
           )}
 
-          {/* Form — only shown once session is confirmed */}
+          {/* Form */}
           {!success && !sessionError && sessionReady && (
             <form onSubmit={handleUpdatePassword}>
               {error && (
                 <div style={{
                   background: 'rgba(239, 68, 68, 0.1)',
                   border: '1px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  marginBottom: '24px',
-                  color: '#ef4444'
+                  borderRadius: '8px', padding: '12px',
+                  marginBottom: '24px', color: '#ef4444',
                 }}>
                   {error}
                 </div>
@@ -177,40 +179,24 @@ export default function UpdatePasswordPage() {
                 <label htmlFor="password" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
                   New Password
                 </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
+                <input id="password" type="password" value={password}
                   onChange={e => setPassword(e.target.value)}
-                  required
-                  placeholder="At least 6 characters"
-                  suppressHydrationWarning={true}
-                  style={inputStyle}
-                />
+                  required placeholder="At least 6 characters"
+                  suppressHydrationWarning={true} style={inputStyle} />
               </div>
 
               <div style={{ marginBottom: '24px' }}>
                 <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
                   Confirm New Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
+                <input id="confirmPassword" type="password" value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="Re-enter password"
-                  suppressHydrationWarning={true}
-                  style={inputStyle}
-                />
+                  required placeholder="Re-enter password"
+                  suppressHydrationWarning={true} style={inputStyle} />
               </div>
 
-              <button
-                type="submit"
-                className="btn-primary-large"
-                disabled={loading}
-                style={{ width: '100%' }}
-              >
+              <button type="submit" className="btn-primary-large"
+                disabled={loading} style={{ width: '100%' }}>
                 {loading ? 'Updating...' : 'Update Password'}
               </button>
             </form>
