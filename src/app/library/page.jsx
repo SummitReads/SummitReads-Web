@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient'; 
@@ -7,6 +7,42 @@ import BookRow from '@/components/BookRow';
 import StatsHoverBanner from '@/components/StatsHoverBanner';
 import StreakCounter from '@/components/StreakCounter';
 import OnboardingModal from '@/components/OnboardingModal';
+
+// ── Loading skeleton for featured card + rows ─────────────────────────────────
+function LoadingSkeleton() {
+  return (
+    <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        .skel { background: rgba(255,255,255,0.07); border-radius: 8px; }
+      `}</style>
+
+      {/* Featured card skeleton */}
+      <div className="glass-panel" style={{ marginBottom: '48px', padding: '40px' }}>
+        <div className="skel" style={{ width: '120px', height: '20px', marginBottom: '20px' }} />
+        <div className="skel" style={{ width: '65%', height: '32px', marginBottom: '12px' }} />
+        <div className="skel" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
+        <div className="skel" style={{ width: '75%', height: '16px', marginBottom: '28px' }} />
+        <div className="skel" style={{ width: '140px', height: '44px', borderRadius: '10px' }} />
+      </div>
+
+      {/* Row skeletons */}
+      {[1, 2, 3].map(i => (
+        <div key={i} style={{ marginBottom: '48px' }}>
+          <div className="skel" style={{ width: '180px', height: '22px', marginBottom: '16px' }} />
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {[1, 2, 3, 4].map(j => (
+              <div key={j} className="skel" style={{ width: '200px', height: '260px', flexShrink: 0, borderRadius: '12px' }} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Library() {
   const router = useRouter();
@@ -16,6 +52,7 @@ export default function Library() {
   const [booksByCategory, setBooksByCategory] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   
   useEffect(() => {
     setMounted(true);
@@ -50,9 +87,7 @@ export default function Library() {
     }
     fetchBooks();
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   async function handleSignOut() {
@@ -114,7 +149,51 @@ export default function Library() {
     return a.localeCompare(b);
   });
 
-  const categoriesToShow = selectedCategory === 'All' ? sortedCategories : [selectedCategory];
+  // ── Search filtering ────────────────────────────────────────────────────────
+  const filteredBooks = useMemo(() => {
+    if (!searchQuery.trim()) return null; // null = not searching
+    const q = searchQuery.toLowerCase();
+    return books.filter(book =>
+      (book.sprint_title || '').toLowerCase().includes(q) ||
+      (book.title || '').toLowerCase().includes(q) ||
+      (book.author || '').toLowerCase().includes(q) ||
+      (book.category || '').toLowerCase().includes(q) ||
+      (book.brief_content || '').toLowerCase().includes(q)
+    );
+  }, [searchQuery, books]);
+
+  const isSearching = filteredBooks !== null;
+
+  // ── Category display (respects search) ─────────────────────────────────────
+  const categoriesToShow = useMemo(() => {
+    if (isSearching) {
+      // Group filtered results by category
+      const grouped = filteredBooks.reduce((acc, book) => {
+        const cat = book.category || 'Uncategorized';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(book);
+        return acc;
+      }, {});
+      return Object.keys(grouped).sort((a, b) => {
+        const ia = categoryOrder.indexOf(a), ib = categoryOrder.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        return a.localeCompare(b);
+      }).map(cat => ({ category: cat, books: grouped[cat] }));
+    }
+    const cats = selectedCategory === 'All' ? sortedCategories : [selectedCategory];
+    return cats.map(cat => ({ category: cat, books: booksByCategory[cat] || [] }));
+  }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory]);
+
+  // ── Featured card: prefer explicitly featured, then pick a highly-rated or
+  //    well-known book rather than just whatever was inserted first ─────────────
+  const featuredBook = useMemo(() => {
+    if (!books.length) return null;
+    const explicit = books.find(b => b.featured);
+    if (explicit) return explicit;
+    // Prefer a book with both sprint_title and brief_content filled in
+    const rich = books.find(b => b.sprint_title && b.brief_content);
+    return rich || books[0];
+  }, [books]);
 
   return (
     <>
@@ -123,11 +202,14 @@ export default function Library() {
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/library" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
+            <img src="/SummitReads-Logo.png" alt="SummitReads" className="logo-img" />
             Summit<span>Reads</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <StreakCounter />
+            <button className="btn-ghost small" onClick={() => router.push('/settings')}>
+              Settings
+            </button>
             <button className="btn-primary small" onClick={handleSignOut}>
               Sign Out
             </button>
@@ -147,103 +229,161 @@ export default function Library() {
           <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
-          <input type="text" placeholder="Search sprints — habits, leadership, money..." />
+          <input
+            type="text"
+            placeholder="Search sprints: habits, leadership, money..."
+            value={searchQuery}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              // Clear category filter when searching so results aren't double-filtered
+              if (e.target.value) setSelectedCategory('All');
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(255,255,255,0.4)', fontSize: '1.1rem', lineHeight: 1, padding: '4px'
+              }}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
         </div>
       </header>
 
-      <div className="category-scroll">
-        <button
-          className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-          onClick={() => setSelectedCategory('All')}
-        >
-          All
-        </button>
-        {sortedCategories.map((category) => {
-          const isActive = selectedCategory === category;
-          const pillColor = getCategoryPillColor(category);
-          return (
-            <button
-              key={category}
-              className="pill"
-              onClick={() => setSelectedCategory(category)}
-              style={isActive ? {
-                background: pillColor,
-                borderColor: pillColor,
-                color: '#0F172A',
-                fontWeight: '700',
-                boxShadow: `0 0 12px ${pillColor}55`,
-              } : {}}
-            >
-              {getCategoryShortName(category)}
-            </button>
-          );
-        })}
-      </div>
+      {/* Hide category pills while searching — they don't apply */}
+      {!isSearching && (
+        <div className="category-scroll">
+          <button
+            className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
+            onClick={() => setSelectedCategory('All')}
+          >
+            All
+          </button>
+          {sortedCategories.map((category) => {
+            const isActive = selectedCategory === category;
+            const pillColor = getCategoryPillColor(category);
+            return (
+              <button
+                key={category}
+                className="pill"
+                onClick={() => setSelectedCategory(category)}
+                style={isActive ? {
+                  background: pillColor,
+                  borderColor: pillColor,
+                  color: '#0F172A',
+                  fontWeight: '700',
+                  boxShadow: `0 0 12px ${pillColor}55`,
+                } : {}}
+              >
+                {getCategoryShortName(category)}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <main className="container">
-        <section className="featured-section">
-          {books.length > 0 ? (() => {
-            const featured = books.find(b => b.featured) || books[0];
-            const heroTitle = featured.sprint_title || featured.title;
-            const heroDesc = featured.brief_content ||
-              `A 7-day skill sprint that turns professional concepts into real behavior change — one focused action at a time.`;
-            return (
-              <div className="featured-card glass-panel" style={{ display: 'block' }}>
-                <span className="tag-featured">
-                  <span className="pulse-dot" />
-                  Featured Sprint
-                </span>
-                <h2>{heroTitle}</h2>
-                <p className="featured-desc">{heroDesc}</p>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
-                  <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
-                    Inspired by
-                  </span>
-                  <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
-                    {featured.title}
-                  </span>
-                  <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
-                  <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
-                    {featured.author}
-                  </span>
-                </div>
+        {/* ── Loading state ── */}
+        {loading && <LoadingSkeleton />}
 
-                <Link href={`/summit/${featured.id}/day/1`} className="btn-primary">
-                  Begin Sprint →
-                </Link>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-                  {[
-                    { num: '~15 min', label: 'per day' },
-                    { num: '7 days', label: 'total' },
-                  ].map(({ num, label }, i) => (
-                    <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: '700', color: 'var(--brand-teal)' }}>{num}</span>
-                        <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '600' }}>{label}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })() : (
-            <div className="glass-panel" style={{ padding: '80px', textAlign: 'center' }}>
-              {loading ? "Loading your library..." : "No sprints available yet."}
+        {/* ── Search results ── */}
+        {!loading && isSearching && (
+          <>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+              {filteredBooks.length > 0
+                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                : `No sprints found for "${searchQuery}"`
+              }
             </div>
-          )}
-        </section>
+            {filteredBooks.length === 0 && (
+              <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
+                <p>Try a different keyword — like a skill, topic, or author name.</p>
+              </div>
+            )}
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
+                books={catBooks}
+              />
+            ))}
+          </>
+        )}
 
-        {books.length > 0 && categoriesToShow.map((category) => (
-          <BookRow 
-            key={category}
-            title={category}
-            description={`${booksByCategory[category].length} skill sprints`}
-            books={booksByCategory[category]}
-          />
-        ))}
+        {/* ── Normal (non-search) view ── */}
+        {!loading && !isSearching && (
+          <>
+            <section className="featured-section">
+              {featuredBook ? (
+                <div className="featured-card glass-panel" style={{ display: 'block' }}>
+                  <span className="tag-featured">
+                    <span className="pulse-dot" />
+                    Featured Sprint
+                  </span>
+                  <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
+                  <p className="featured-desc">
+                    {featuredBook.brief_content ||
+                      'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
+                      Inspired by
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                      {featuredBook.title}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
+                      {featuredBook.author}
+                    </span>
+                  </div>
+
+                  <Link href={`/summit/${featuredBook.id}/day/1`} className="btn-primary">
+                    Begin Sprint →
+                  </Link>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                    {[
+                      { num: '~15 min', label: 'per day' },
+                      { num: '7 days', label: 'total' },
+                    ].map(({ num, label }, i) => (
+                      <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: '700', color: 'var(--brand-teal)' }}>{num}</span>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '600' }}>{label}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="glass-panel" style={{ padding: '80px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                  No sprints available yet.
+                </div>
+              )}
+            </section>
+
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} skill sprints`}
+                books={catBooks}
+              />
+            ))}
+          </>
+        )}
+
       </main>
     </>
   );
