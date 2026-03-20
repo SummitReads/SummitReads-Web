@@ -19,7 +19,6 @@ export default function SignupPage() {
     setLoading(true);
     setError('');
 
-    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -36,11 +35,7 @@ export default function SignupPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-          }
-        }
+        options: { data: { full_name: fullName } }
       });
 
       if (error) {
@@ -49,12 +44,10 @@ export default function SignupPage() {
         return;
       }
 
-      // Check if email confirmation is required
       if (data.user && !data.session) {
         setSuccess(true);
         setLoading(false);
       } else {
-        // Auto-signed in, redirect
         router.push('/');
       }
     } catch (err) {
@@ -63,26 +56,40 @@ export default function SignupPage() {
     }
   }
 
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    background: 'rgba(15, 23, 42, 0.6)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    color: 'white',
+    fontSize: '1rem',
+    boxSizing: 'border-box',
+  };
+
+  const Nav = () => (
+    <nav className="glass-nav">
+      <div className="nav-content">
+        <Link href="/" className="logo">
+          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
+          Summit<span>Skills</span>
+        </Link>
+      </div>
+    </nav>
+  );
+
   if (success) {
     return (
       <>
         <div className="ambient-glow"></div>
-        <nav className="glass-nav">
-          <div className="nav-content">
-            <Link href="/" className="logo">
-              <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-              Summit<span>Reads</span>
-            </Link>
-          </div>
-        </nav>
-
-        <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+        <Nav />
+        <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
           <div className="glass-panel" style={{ padding: '48px', textAlign: 'center' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '24px' }}>✉️</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: '24px' }}>✉️</div>
             <h1 style={{ fontSize: '2rem', marginBottom: '16px' }}>Check Your Email</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-              We've sent you a confirmation link to <strong>{email}</strong>. 
-              Click the link to verify your account and start your journey.
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px', lineHeight: '1.6' }}>
+              We sent a confirmation link to <strong style={{ color: 'white' }}>{email}</strong>.
+              Click the link to verify your account and start your first sprint.
             </p>
             <Link href="/auth/login" className="btn-primary">
               Back to Login
@@ -96,26 +103,18 @@ export default function SignupPage() {
   return (
     <>
       <div className="ambient-glow"></div>
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <Link href="/" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Reads</span>
-          </Link>
-        </div>
-      </nav>
-
-      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+      <Nav />
+      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
         <div className="glass-panel" style={{ padding: '48px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Start Your Journey</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Create an account to begin transforming books into action</p>
+            <p style={{ color: 'var(--text-muted)' }}>Create an account to begin your first skill sprint</p>
           </div>
 
           <form onSubmit={handleSignup}>
             {error && (
-              <div style={{ 
-                background: 'rgba(239, 68, 68, 0.1)', 
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 borderRadius: '8px',
                 padding: '12px',
@@ -127,122 +126,41 @@ export default function SignupPage() {
             )}
 
             <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="fullName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Full Name
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                autoComplete="name"
-                placeholder="John Doe"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
-              />
+              <label htmlFor="fullName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Full Name</label>
+              <input id="fullName" name="fullName" type="text" value={fullName}
+                onChange={e => setFullName(e.target.value)} required autoComplete="name"
+                placeholder="Jane Smith" style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                placeholder="you@example.com"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
-              />
+              <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Email</label>
+              <input id="email" name="email" type="email" value={email}
+                onChange={e => setEmail(e.target.value)} required autoComplete="email"
+                placeholder="you@example.com" style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="password" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                placeholder="At least 6 characters"
-                suppressHydrationWarning={true}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
-              />
+              <label htmlFor="password" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Password</label>
+              <input id="password" name="password" type="password" value={password}
+                onChange={e => setPassword(e.target.value)} required autoComplete="new-password"
+                placeholder="At least 6 characters" suppressHydrationWarning={true} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                placeholder="Re-enter your password"
-                suppressHydrationWarning={true}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
-              />
+              <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Confirm Password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)} required autoComplete="new-password"
+                placeholder="Re-enter your password" suppressHydrationWarning={true} style={inputStyle} />
             </div>
 
-            <button 
-              type="submit" 
-              className="btn-primary-large" 
-              disabled={loading}
-              style={{ width: '100%' }}
-            >
+            <button type="submit" className="btn-primary-large" disabled={loading} style={{ width: '100%' }}>
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)' }}>
             Already have an account?{' '}
-            <Link href="/auth/login" style={{ color: 'var(--brand-teal)', fontWeight: '600' }}>
-              Sign in
-            </Link>
+            <Link href="/auth/login" style={{ color: 'var(--brand-teal)', fontWeight: '600' }}>Sign in</Link>
           </div>
         </div>
       </main>

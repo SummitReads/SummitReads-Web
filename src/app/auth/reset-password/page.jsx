@@ -33,26 +33,29 @@ export default function ResetPasswordPage() {
     }
   }
 
+  const Nav = () => (
+    <nav className="glass-nav">
+      <div className="nav-content">
+        <Link href="/" className="logo">
+          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
+          Summit<span>Skills</span>
+        </Link>
+      </div>
+    </nav>
+  );
+
   if (success) {
     return (
       <>
         <div className="ambient-glow"></div>
-        <nav className="glass-nav">
-          <div className="nav-content">
-            <Link href="/" className="logo">
-              <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-              Summit<span>Reads</span>
-            </Link>
-          </div>
-        </nav>
-
-        <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+        <Nav />
+        <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
           <div className="glass-panel" style={{ padding: '48px', textAlign: 'center' }}>
-            <div style={{ fontSize: '4rem', marginBottom: '24px' }}>✉️</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: '24px' }}>✉️</div>
             <h1 style={{ fontSize: '2rem', marginBottom: '16px' }}>Check Your Email</h1>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>
-              We've sent a password reset link to <strong>{email}</strong>. 
-              Click the link in the email to reset your password.
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px', lineHeight: '1.6' }}>
+              We sent a password reset link to <strong style={{ color: 'white' }}>{email}</strong>.
+              Click the link in the email to set a new password.
             </p>
             <Link href="/auth/login" className="btn-primary">
               Back to Login
@@ -66,16 +69,8 @@ export default function ResetPasswordPage() {
   return (
     <>
       <div className="ambient-glow"></div>
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <Link href="/" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Reads</span>
-          </Link>
-        </div>
-      </nav>
-
-      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px' }}>
+      <Nav />
+      <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
         <div className="glass-panel" style={{ padding: '48px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Reset Password</h1>
@@ -84,8 +79,8 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleReset}>
             {error && (
-              <div style={{ 
-                background: 'rgba(239, 68, 68, 0.1)', 
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 borderRadius: '8px',
                 padding: '12px',
@@ -105,7 +100,7 @@ export default function ResetPasswordPage() {
                 name="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
                 placeholder="you@example.com"
@@ -116,14 +111,15 @@ export default function ResetPasswordPage() {
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   borderRadius: '8px',
                   color: 'white',
-                  fontSize: '1rem'
+                  fontSize: '1rem',
+                  boxSizing: 'border-box',
                 }}
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="btn-primary-large" 
+            <button
+              type="submit"
+              className="btn-primary-large"
               disabled={loading}
               style={{ width: '100%' }}
             >

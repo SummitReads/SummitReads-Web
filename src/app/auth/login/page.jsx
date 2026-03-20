@@ -17,10 +17,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
         setError(error.message);
@@ -28,13 +25,23 @@ export default function LoginPage() {
         return;
       }
 
-      // Success - redirect to home
       router.push('/');
     } catch (err) {
       setError(err.message);
       setLoading(false);
     }
   }
+
+  const inputStyle = {
+    width: '100%',
+    padding: '12px 16px',
+    background: 'rgba(15, 23, 42, 0.6)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    color: 'white',
+    fontSize: '1rem',
+    boxSizing: 'border-box',
+  };
 
   return (
     <>
@@ -57,8 +64,8 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin}>
             {error && (
-              <div style={{ 
-                background: 'rgba(239, 68, 68, 0.1)', 
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 borderRadius: '8px',
                 padding: '12px',
@@ -78,19 +85,11 @@ export default function LoginPage() {
                 name="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
                 placeholder="you@example.com"
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
+                style={inputStyle}
               />
             </div>
 
@@ -103,20 +102,12 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
                 suppressHydrationWarning={true}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(15, 23, 42, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem'
-                }}
+                style={inputStyle}
               />
             </div>
 
@@ -126,10 +117,10 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
-              style={{ 
+              style={{
                 width: '100%',
                 padding: '14px',
                 borderRadius: '10px',
@@ -142,14 +133,8 @@ export default function LoginPage() {
                 transition: 'all 0.2s',
                 fontFamily: 'var(--font-sans)',
               }}
-              onMouseEnter={e => {
-                e.target.style.borderColor = '#17B8E0'
-                e.target.style.color = '#17B8E0'
-              }}
-              onMouseLeave={e => {
-                e.target.style.borderColor = 'rgba(255,255,255,0.25)'
-                e.target.style.color = '#fff'
-              }}
+              onMouseEnter={e => { e.target.style.borderColor = '#17B8E0'; e.target.style.color = '#17B8E0'; }}
+              onMouseLeave={e => { e.target.style.borderColor = 'rgba(255,255,255,0.25)'; e.target.style.color = '#fff'; }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
