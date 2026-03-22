@@ -730,11 +730,11 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">8–10%</div>
-                <div className="credibility-label">average retention from passive learning. Reading, watching, listening. Per NTL Institute research.</div>
+                <div className="credibility-label">Passive learning (reading, watching, listening) produces poor long-term retention. Per Make It Stick, Harvard Press.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">25–60%</div>
-                <div className="credibility-label">retention when learning requires active practice and application. The principle SummitSkills is built on.</div>
+                <div className="credibility-label">retention when learning requires active practice and application. The principle SummitSkills is built on. Per Make It Stick, Harvard Press.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">7 days</div>
