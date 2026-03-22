@@ -729,12 +729,12 @@ export default function Home() {
             <p className="credibility-sub">Most corporate training gets completed. Almost none of it changes how people work on Monday.</p>
             <div className="credibility-grid">
               <div className="credibility-item">
-                <div className="credibility-stat">8–10%</div>
-                <div className="credibility-label">Passive learning (reading, watching, listening) produces poor long-term retention. Per Make It Stick, Harvard Press.</div>
+                <div className="credibility-stat">Passive</div>
+                <div className="credibility-label">Reading, watching, and listening produce poor long-term retention. Per Make It Stick, Harvard Press.</div>
               </div>
               <div className="credibility-item">
-                <div className="credibility-stat">25–60%</div>
-                <div className="credibility-label">retention when learning requires active practice and application. The principle SummitSkills is built on. Per Make It Stick, Harvard Press.</div>
+                <div className="credibility-stat">Active</div>
+                <div className="credibility-label">Active practice and application produces dramatically better retention. Per Make It Stick, Harvard Press.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">7 days</div>
