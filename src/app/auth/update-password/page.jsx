@@ -14,13 +14,18 @@ export default function UpdatePasswordPage() {
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
 
-  // Use a ref so the timeout callback always reads the latest value —
-  // fixes the stale closure bug that was firing sessionError too early
   const sessionReadyRef = useRef(false);
 
   useEffect(() => {
-    // ── 1. PKCE flow: Supabase sends ?code=xxx, exchange it for a session ──
+    // ── 0. Check for error params first (Supabase redirects here on failure) ──
     const params = new URLSearchParams(window.location.search);
+    const urlError = params.get('error');
+    if (urlError) {
+      setSessionError(true);
+      return;
+    }
+
+    // ── 1. PKCE flow: Supabase sends ?code=xxx, exchange it for a session ──
     const code = params.get('code');
     if (code) {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {

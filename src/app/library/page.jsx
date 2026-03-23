@@ -103,8 +103,6 @@ export default function Library() {
     }
   }
 
-  if (!mounted) return null;
-
   const getCategoryShortName = (category) => {
     const shortNames = {
       'Habits & Self-Discipline': 'Habits',
@@ -167,7 +165,6 @@ export default function Library() {
   // ── Category display (respects search) ─────────────────────────────────────
   const categoriesToShow = useMemo(() => {
     if (isSearching) {
-      // Group filtered results by category
       const grouped = filteredBooks.reduce((acc, book) => {
         const cat = book.category || 'Uncategorized';
         if (!acc[cat]) acc[cat] = [];
@@ -184,16 +181,17 @@ export default function Library() {
     return cats.map(cat => ({ category: cat, books: booksByCategory[cat] || [] }));
   }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory]);
 
-  // ── Featured card: prefer explicitly featured, then pick a highly-rated or
-  //    well-known book rather than just whatever was inserted first ─────────────
+  // ── Featured card ───────────────────────────────────────────────────────────
   const featuredBook = useMemo(() => {
     if (!books.length) return null;
     const explicit = books.find(b => b.featured);
     if (explicit) return explicit;
-    // Prefer a book with both sprint_title and brief_content filled in
     const rich = books.find(b => b.sprint_title && b.brief_content);
     return rich || books[0];
   }, [books]);
+
+  // ── All hooks must be above this line ──────────────────────────────────────
+  if (!mounted) return null;
 
   return (
     <>
@@ -235,7 +233,6 @@ export default function Library() {
             value={searchQuery}
             onChange={e => {
               setSearchQuery(e.target.value);
-              // Clear category filter when searching so results aren't double-filtered
               if (e.target.value) setSelectedCategory('All');
             }}
           />
