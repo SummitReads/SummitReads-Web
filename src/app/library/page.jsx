@@ -205,6 +205,9 @@ export default function Library() {
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <StreakCounter />
+            <button className="btn-primary small" onClick={() => router.push('/dashboard')}>
+              Dashboard
+            </button>
             <button className="btn-primary small" onClick={() => router.push('/settings')}>
               Settings
             </button>
