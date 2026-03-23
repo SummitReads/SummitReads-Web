@@ -98,8 +98,11 @@ export default function SettingsPage() {
             Summit<span>Reads</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn-primary small" onClick={() => router.push('/settings')}>
-              Settings
+            <button className="btn-primary small" onClick={() => router.push('/dashboard')}>
+              Dashboard
+            </button>
+            <button className="btn-primary small" onClick={() => router.push('/library')}>
+              Library
             </button>
             <button className="btn-primary small" onClick={handleSignOut}>
               Sign Out
@@ -149,9 +152,10 @@ export default function SettingsPage() {
               </div>
             ) : (
               <button
-                className="btn-ghost small"
+                className="btn-primary small"
                 onClick={handlePasswordReset}
                 disabled={passwordResetLoading}
+                style={{ opacity: passwordResetLoading ? 0.6 : 1 }}
               >
                 {passwordResetLoading ? 'Sending...' : 'Send Password Reset Email'}
               </button>
@@ -230,7 +234,7 @@ export default function SettingsPage() {
           <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px' }}>
             You'll be returned to the home page.
           </p>
-          <button className="btn-ghost small" onClick={handleSignOut}>
+          <button className="btn-primary small" onClick={handleSignOut}>
             Sign Out
           </button>
         </div>
