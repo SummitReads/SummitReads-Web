@@ -1,11 +1,12 @@
 "use client";
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function SignupPage() {
+// Inner component reads searchParams — must be wrapped in Suspense
+function SignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isTrial = searchParams.get('trial') === 'true';
@@ -191,5 +192,18 @@ export default function SignupPage() {
         </div>
       </main>
     </>
+  );
+}
+
+// Suspense boundary required by Next.js 13+ for useSearchParams
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#0D1520', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'rgba(238,242,247,0.4)', fontFamily: 'sans-serif' }}>Loading...</div>
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
   );
 }
