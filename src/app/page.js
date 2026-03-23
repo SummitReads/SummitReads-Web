@@ -164,8 +164,7 @@ export default function Home() {
   }
 
   // FAQ state
-  const [openFaq, setOpenFaq]       = useState(null)
-  const [billingCycle, setBillingCycle] = useState('annual')
+  const [openFaq, setOpenFaq] = useState(null)
 
   async function handleIndividualCheckout() {
     setCheckoutLoading(true)
@@ -549,7 +548,7 @@ export default function Home() {
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
           <a href="/auth/login" className="nav-login">Log in</a>
-          <a href="#team-pricing" className="nav-cta">Get Started</a>
+          <a href="#team-pricing" className="nav-cta">Start Free Trial</a>
         </div>
       </nav>
 
@@ -567,11 +566,10 @@ export default function Home() {
             Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. No live sessions. No LMS.
           </p>
           <div className="hero-actions">
-            <a href="#team-pricing" className="btn-primary">Build Your Team's Skills →</a>
-            <a href="#pricing" className="btn-ghost">Start as Individual</a>
+            <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
+            <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">Teams: Signed MSA · Annual billing · 30-day refund &nbsp;·&nbsp; Individuals: No contract · Cancel anytime</p>
-          <p className="hero-footnote-indiv">Starting on your own? Individual access includes the same sprints and outputs — just without the team dashboard.</p>
+          <p className="hero-footnote">14-day free trial · No credit card required · Signed MSA · 30-day refund</p>
         </div>
 
         <div className="hero-right">
@@ -756,82 +754,6 @@ export default function Home() {
             <p>One annual price per seat. Manager dashboard, reflection logging, and sprint assignment built in. No content tiers, no per-sprint fees, no implementation costs.</p>
           </div>
 
-          {/* ── INDIVIDUAL PLANS ── */}
-          <div className="indiv-plans reveal">
-            {/* Billing toggle */}
-            <div className="billing-toggle">
-              <button
-                className={`billing-opt${billingCycle === 'monthly' ? ' active' : ''}`}
-                onClick={() => setBillingCycle('monthly')}
-              >Monthly</button>
-              <button
-                className={`billing-opt${billingCycle === 'annual' ? ' active' : ''}`}
-                onClick={() => setBillingCycle('annual')}
-              >Annual <span className="billing-save">Save 35%</span></button>
-            </div>
-
-            <div className="indiv-cards">
-              {/* Individual card */}
-              <div className="indiv-card">
-                <div className="indiv-card-top">
-                  <div className="indiv-plan-tag">Individual</div>
-                  <div className="indiv-price">
-                    <span className="indiv-amount">{billingCycle === 'monthly' ? '$19' : '$149'}</span>
-                    <span className="indiv-period">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
-                  </div>
-                  {billingCycle === 'annual' && (
-                    <div className="indiv-equiv">$12.42/month, billed annually</div>
-                  )}
-                  <p className="indiv-desc">Full system. No team required.</p>
-                  <button
-                    onClick={handleIndividualCheckout}
-                    disabled={checkoutLoading}
-                    className="btn-primary"
-                    style={{ display: 'block', width: '100%', textAlign: 'center', marginTop: 'auto', cursor: checkoutLoading ? 'wait' : 'pointer' }}
-                  >
-                    {checkoutLoading ? 'Loading…' : 'Start Today →'}
-                  </button>
-                  <p style={{ fontSize: '0.68rem', color: 'var(--faint)', textAlign: 'center', marginTop: '10px' }}>
-                    No contract · Cancel anytime · 30-day refund
-                  </p>
-                </div>
-                <ul className="indiv-features">
-                  <li>Structured 7-stage sprint system</li>
-                  <li>Written reflection required at every stage</li>
-                  <li>Stage 7 deliverable for every sprint</li>
-                  <li>AI coaching companion</li>
-                  <li>~15 min/day · Works on any device</li>
-                </ul>
-              </div>
-
-              {/* Team card — summary, links to calculator below */}
-              <div className="indiv-card indiv-card-team">
-                <div className="indiv-card-top">
-                  <div className="indiv-plan-tag" style={{ background: 'rgba(23,184,224,0.15)', borderColor: 'rgba(23,184,224,0.3)', color: 'var(--teal)' }}>Team</div>
-                  <div className="indiv-price">
-                    <span className="indiv-amount">$179</span>
-                    <span className="indiv-period">/seat/yr</span>
-                  </div>
-                  <div className="indiv-equiv">Volume discounts from 25 seats</div>
-                  <p className="indiv-desc">Assign sprints. See the writing. Track real engagement.</p>
-                  <a href="#team-pricing" className="btn-primary" style={{ display: 'block', textAlign: 'center', marginTop: 'auto' }}>
-                    Calculate Team Price →
-                  </a>
-                  <p style={{ fontSize: '0.68rem', color: 'var(--faint)', textAlign: 'center', marginTop: '10px' }}>
-                    Signed MSA · Annual billing · 30-day refund
-                  </p>
-                </div>
-                <ul className="indiv-features">
-                  <li>Manager dashboard &amp; reflection logs</li>
-                  <li>Sprint assignment by person or group</li>
-                  <li>Written engagement visible to managers</li>
-                  <li>Stage 7 deliverable for every seat</li>
-                  <li>Signed contract · Live in under 24 hours</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           {/* ── TEAM CALCULATOR ── */}
           <div className="team-calc-header reveal" id="team-pricing">
             <h3>Team pricing calculator</h3>
@@ -913,9 +835,18 @@ export default function Home() {
                 >
                   {checkoutLoading
                     ? 'Loading…'
-                    : total ? `Get Started — ${fmt(total)}/yr →` : 'Contact Sales →'}
+                    : total ? `Start Team Trial — ${fmt(total)}/yr →` : 'Contact Sales →'}
                 </button>
-                <div className="checkout-note">Contract sent before payment. Signed MSA required.</div>
+                <div className="checkout-note">14-day free trial · Signed MSA · No charge until day 15</div>
+                <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <button
+                    onClick={handleIndividualCheckout}
+                    disabled={checkoutLoading}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '0.78rem', color: 'var(--faint)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+                  >
+                    Individual access also available — $149/yr →
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -973,9 +904,9 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation calls. No LMS setup. A signed contract before payment, and your team is live within 24 hours of signing.</p>
-        <a href="#pricing" className="btn-primary">Get Team Access →</a>
-        <p className="final-note">From 1 seat · Annual billing · 30-day refund policy</p>
+        <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
+        <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
+        <p className="final-note">14-day free trial · Annual billing · 30-day refund policy</p>
       </section>
 
       {/* ── FOOTER ── */}
