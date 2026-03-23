@@ -167,10 +167,10 @@ function FullView({ stats, weeklyProgress }) {
           color="#8b5cf6"
         />
         <MetricCard
-          label="Books Completed"
+          label="Sprints Completed"
           value={stats.books_completed}
           unit="toward goal"
-          icon="📚"
+          icon="⚡"
           color="#ec4899"
         />
       </div>
@@ -300,7 +300,7 @@ function FullView({ stats, weeklyProgress }) {
             <li>Try setting a reminder for the same time each day to build consistency.</li>
           )}
           {stats.books_completed === 0 && stats.total_days >= 7 && (
-            <li>You're making progress! {7 - (stats.total_days % 7)} more days to complete your first book.</li>
+            <li>You're making progress! {7 - (stats.total_days % 7)} more days to complete your first sprint.</li>
           )}
         </ul>
       </div>

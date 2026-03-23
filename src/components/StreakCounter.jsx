@@ -154,7 +154,7 @@ export default function StreakCounter() {
                   <div className="stat-value">{stats.longestStreak} Day{stats.longestStreak !== 1 ? 's' : ''}</div>
                 </div>
                 <div className="stat-item">
-                  <div className="stat-label">Books Completed</div>
+                  <div className="stat-label">Sprints Completed</div>
                   <div className="stat-value">{stats.booksCompleted}</div>
                 </div>
                 <div className="stat-item">
