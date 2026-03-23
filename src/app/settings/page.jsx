@@ -18,6 +18,7 @@ export default function SettingsPage() {
   // Password reset
   const [passwordResetSent, setPasswordResetSent] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [passwordResetError, setPasswordResetError] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -50,11 +51,21 @@ export default function SettingsPage() {
   async function handlePasswordReset() {
     if (!user?.email) return;
     setPasswordResetLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/auth/update-password`,
-    });
-    if (!error) setPasswordResetSent(true);
-    setPasswordResetLoading(false);
+    setPasswordResetError('');
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/auth/update-password`,
+      });
+      if (error) {
+        setPasswordResetError(error.message);
+      } else {
+        setPasswordResetSent(true);
+      }
+    } catch (err) {
+      setPasswordResetError(err.message);
+    } finally {
+      setPasswordResetLoading(false);
+    }
   }
 
   async function handleSignOut() {
@@ -148,17 +159,29 @@ export default function SettingsPage() {
                 borderRadius: '8px', padding: '12px 16px',
                 color: '#4ade80', fontSize: '0.875rem',
               }}>
-                ✓ Reset link sent — check your email.
+                ✓ Reset link sent to <strong>{user?.email}</strong> — check your inbox.
               </div>
             ) : (
-              <button
-                className="btn-primary small"
-                onClick={handlePasswordReset}
-                disabled={passwordResetLoading}
-                style={{ opacity: passwordResetLoading ? 0.6 : 1 }}
-              >
-                {passwordResetLoading ? 'Sending...' : 'Send Password Reset Email'}
-              </button>
+              <>
+                {passwordResetError && (
+                  <div style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    borderRadius: '8px', padding: '12px 16px',
+                    color: '#ef4444', fontSize: '0.875rem', marginBottom: '12px',
+                  }}>
+                    {passwordResetError}
+                  </div>
+                )}
+                <button
+                  className="btn-primary small"
+                  onClick={handlePasswordReset}
+                  disabled={passwordResetLoading || loadingUser}
+                  style={{ opacity: (passwordResetLoading || loadingUser) ? 0.6 : 1 }}
+                >
+                  {passwordResetLoading ? 'Sending...' : 'Send Password Reset Email'}
+                </button>
+              </>
             )}
           </div>
         </div>
