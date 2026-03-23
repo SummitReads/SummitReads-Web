@@ -205,7 +205,7 @@ export default function Library() {
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <StreakCounter />
-            <button className="btn-ghost small" onClick={() => router.push('/settings')}>
+            <button className="btn-primary small" onClick={() => router.push('/settings')}>
               Settings
             </button>
             <button className="btn-primary small" onClick={handleSignOut}>
