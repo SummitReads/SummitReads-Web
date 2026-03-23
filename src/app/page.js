@@ -166,13 +166,19 @@ export default function Home() {
   // FAQ state
   const [openFaq, setOpenFaq] = useState(null)
 
+  async function handleFreeTrialSignup() {
+    // No card required — routes directly to signup with trial flag
+    // Supabase sets trial_expires_at on account creation
+    window.location.href = `/auth/signup?trial=true&seats=${seats}`
+  }
+
   async function handleIndividualCheckout() {
     setCheckoutLoading(true)
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'individual', billingCycle }),
+        body: JSON.stringify({ type: 'individual', billingCycle: 'annual' }),
       })
       const data = await res.json()
       if (data.url) {
@@ -548,7 +554,7 @@ export default function Home() {
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
           <a href="/auth/login" className="nav-login">Log in</a>
-          <a href="#team-pricing" className="nav-cta">Start Free Trial</a>
+          <button onClick={handleFreeTrialSignup} className="nav-cta">Start Free Trial</button>
         </div>
       </nav>
 
@@ -566,7 +572,7 @@ export default function Home() {
             Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. No live sessions. No LMS.
           </p>
           <div className="hero-actions">
-            <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
+            <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial — No card required →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
           <p className="hero-footnote">14-day free trial · No credit card required · Signed MSA</p>
@@ -829,15 +835,30 @@ export default function Home() {
 
                 <button
                   className="btn-checkout"
-                  onClick={handleTeamCheckout}
+                  onClick={handleFreeTrialSignup}
                   disabled={checkoutLoading}
                   style={{ cursor: checkoutLoading ? 'wait' : 'pointer' }}
                 >
+                  Start Free Trial — No card required →
+                </button>
+                <div className="checkout-note">14-day free trial · No credit card · Full access from day one</div>
+
+                <div style={{ textAlign: 'center', margin: '12px 0 4px' }}>
+                  <span style={{ fontFamily: 'var(--sans)', fontSize: '0.75rem', color: 'var(--faint)' }}>or</span>
+                </div>
+
+                <button
+                  className="btn-checkout"
+                  onClick={handleTeamCheckout}
+                  disabled={checkoutLoading}
+                  style={{ cursor: checkoutLoading ? 'wait' : 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--text)' }}
+                >
                   {checkoutLoading
                     ? 'Loading…'
-                    : total ? `Start Team Trial — ${fmt(total)}/yr →` : 'Contact Sales →'}
+                    : total ? `Pay Now — ${fmt(total)}/yr →` : 'Contact Sales →'}
                 </button>
-                <div className="checkout-note">14-day free trial · Signed MSA · No charge until day 15</div>
+                <div className="checkout-note">Card collected now · MSA required · Access starts immediately</div>
+
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button
                     onClick={handleIndividualCheckout}
@@ -905,7 +926,7 @@ export default function Home() {
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
         <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
-        <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
+        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial — No card required →</button>
         <p className="final-note">14-day free trial · No credit card required · Annual billing</p>
       </section>
 
