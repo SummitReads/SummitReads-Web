@@ -1,15 +1,21 @@
 "use client";
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTrial = searchParams.get('trial') === 'true';
+  const trialSeats = searchParams.get('seats') || '10';
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -35,7 +41,14 @@ export default function SignupPage() {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName } }
+        options: {
+          data: {
+            full_name: fullName,
+            company_name: companyName,
+            is_trial: isTrial,
+            trial_seats: isTrial ? parseInt(trialSeats) : null,
+          }
+        }
       });
 
       if (error) {
@@ -107,8 +120,14 @@ export default function SignupPage() {
       <main className="container" style={{ maxWidth: '480px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
         <div className="glass-panel" style={{ padding: '48px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>Start Your Journey</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Create an account to begin your first skill sprint</p>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '12px' }}>
+              {isTrial ? 'Start Your Free Trial' : 'Start Your Journey'}
+            </h1>
+            <p style={{ color: 'var(--text-muted)' }}>
+              {isTrial
+                ? '14 days free · No credit card · No contract'
+                : 'Create an account to begin your first skill sprint'}
+            </p>
           </div>
 
           <form onSubmit={handleSignup}>
@@ -130,6 +149,13 @@ export default function SignupPage() {
               <input id="fullName" name="fullName" type="text" value={fullName}
                 onChange={e => setFullName(e.target.value)} required autoComplete="name"
                 placeholder="Jane Smith" style={inputStyle} />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label htmlFor="companyName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Company Name</label>
+              <input id="companyName" name="companyName" type="text" value={companyName}
+                onChange={e => setCompanyName(e.target.value)} required autoComplete="organization"
+                placeholder="Acme Corp" style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: '24px' }}>
