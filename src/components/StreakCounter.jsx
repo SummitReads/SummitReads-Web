@@ -175,11 +175,11 @@ export default function StreakCounter() {
       )}
 
       <GoalPickerModal 
-        isOpen={showGoalModal}
+        open={showGoalModal}
         onClose={() => setShowGoalModal(false)}
-        onGoalSelected={() => {
+        onSave={() => {
           setShowGoalModal(false);
-          fetchStats(); // Refresh stats after goal is set
+          fetchStats();
         }}
       />
     </>
