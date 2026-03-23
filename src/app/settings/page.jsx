@@ -57,7 +57,10 @@ export default function SettingsPage() {
         redirectTo: `${window.location.origin}/auth/update-password`,
       });
       if (error) {
-        setPasswordResetError(error.message);
+        const msg = error.message?.toLowerCase().includes('rate limit')
+          ? 'Too many reset emails sent recently. Please wait a few minutes and try again.'
+          : error.message;
+        setPasswordResetError(msg);
       } else {
         setPasswordResetSent(true);
       }
