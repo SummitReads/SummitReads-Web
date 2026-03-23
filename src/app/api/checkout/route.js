@@ -27,14 +27,7 @@ export async function POST(req) {
 
     // ── Individual plan ─────────────────────────────────────────────────────
     if (type === 'individual') {
-      if (!billingCycle || !['monthly', 'annual'].includes(billingCycle)) {
-        return Response.json({ error: 'Invalid billingCycle' }, { status: 400 })
-      }
-
-      const priceId = billingCycle === 'monthly'
-        ? process.env.STRIPE_PRICE_INDIVIDUAL_MONTHLY
-        : process.env.STRIPE_PRICE_INDIVIDUAL_ANNUAL
-
+      const priceId = process.env.STRIPE_PRICE_INDIVIDUAL_ANNUAL
       lineItems = [{ price: priceId, quantity: 1 }]
     }
 
@@ -73,10 +66,12 @@ export async function POST(req) {
     }
 
     // ── Create Checkout Session ──────────────────────────────────────────────
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       mode,
       line_items: lineItems,
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/auth/signup?checkout=success`,
+      success_url: type === 'team'
+        ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/auth/signup?checkout=trial`
+        : `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/auth/signup?checkout=success`,
       cancel_url:  `${process.env.NEXT_PUBLIC_SITE_URL || 'https://summitskills.io'}/#pricing`,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
@@ -85,7 +80,20 @@ export async function POST(req) {
         seats: seats || '1',
         billingCycle: billingCycle || 'annual',
       },
-    })
+    }
+
+    // Team plans get a 14-day free trial — card collected now, charged on day 15
+    if (type === 'team') {
+      sessionParams.subscription_data = {
+        trial_period_days: 14,
+        metadata: {
+          type,
+          seats: seats || '1',
+        },
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams)
 
     return Response.json({ url: session.url })
 
