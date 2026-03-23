@@ -1,12 +1,11 @@
 "use client";
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-// Inner component reads searchParams — must be wrapped in Suspense
-function SignupForm() {
+export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isTrial = searchParams.get('trial') === 'true';
@@ -152,12 +151,14 @@ function SignupForm() {
                 placeholder="Jane Smith" style={inputStyle} />
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="companyName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Company Name</label>
-              <input id="companyName" name="companyName" type="text" value={companyName}
-                onChange={e => setCompanyName(e.target.value)} required autoComplete="organization"
-                placeholder="Acme Corp" style={inputStyle} />
-            </div>
+            {isTrial && (
+              <div style={{ marginBottom: '24px' }}>
+                <label htmlFor="companyName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Company Name</label>
+                <input id="companyName" name="companyName" type="text" value={companyName}
+                  onChange={e => setCompanyName(e.target.value)} required autoComplete="organization"
+                  placeholder="Acme Corp" style={inputStyle} />
+              </div>
+            )}
 
             <div style={{ marginBottom: '24px' }}>
               <label htmlFor="email" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Email</label>
@@ -192,18 +193,5 @@ function SignupForm() {
         </div>
       </main>
     </>
-  );
-}
-
-// Suspense boundary required by Next.js 13+ for useSearchParams
-export default function SignupPage() {
-  return (
-    <Suspense fallback={
-      <div style={{ minHeight: '100vh', background: '#0D1520', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: 'rgba(238,242,247,0.4)', fontFamily: 'sans-serif' }}>Loading...</div>
-      </div>
-    }>
-      <SignupForm />
-    </Suspense>
   );
 }
