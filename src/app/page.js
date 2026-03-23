@@ -575,7 +575,7 @@ export default function Home() {
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial — No card required →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · No credit card required · Signed MSA</p>
+          <p className="hero-footnote">14-day free trial · No credit card · No contract · Full access from day one</p>
         </div>
 
         <div className="hero-right">
@@ -877,8 +877,8 @@ export default function Home() {
                 <p>Pre-filled MSA via Docuseal. Sign in under 2 minutes. No back-and-forth.</p>
               </div>
               <div className="pb-item">
-                <h5>Live within 24 hours</h5>
-                <p>Accounts provisioned, invites sent, dashboard ready after payment clears.</p>
+                <h5>Live within minutes</h5>
+                <p>Accounts provisioned, invites sent, dashboard ready. Your team can start their first sprint the same day.</p>
               </div>
               <div className="pb-item">
                 <h5>Price Lock</h5>
