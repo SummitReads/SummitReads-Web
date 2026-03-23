@@ -569,7 +569,7 @@ export default function Home() {
             <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · No credit card required · Signed MSA · 30-day refund</p>
+          <p className="hero-footnote">14-day free trial · No credit card required · Signed MSA</p>
         </div>
 
         <div className="hero-right">
@@ -864,8 +864,8 @@ export default function Home() {
                 <p>Your per-seat rate is locked for the contract term. No renewal surprises.</p>
               </div>
               <div className="pb-item">
-                <h5>30-Day Refund</h5>
-                <p>Not satisfied in the first 30 days, we refund in full. No questions asked.</p>
+                <h5>14-Day Free Trial</h5>
+                <p>Full access from day one. No charge until your trial ends on day 15.</p>
               </div>
             </div>
           </div>
@@ -906,18 +906,18 @@ export default function Home() {
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
         <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
         <a href="#team-pricing" className="btn-primary">Start Free Trial — No card required →</a>
-        <p className="final-note">14-day free trial · Annual billing · 30-day refund policy</p>
+        <p className="final-note">14-day free trial · No credit card required · Annual billing</p>
       </section>
 
       {/* ── FOOTER ── */}
       <footer>
         <a href="#" className="footer-logo">Summit<em>Skills</em></a>
         <div className="footer-links">
-          <a href="#">Product</a>
-          <a href="#">Pricing</a>
-          <a href="#">Security</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms</a>
+          <a href="#how">Product</a>
+          <a href="#pricing">Pricing</a>
+          <a href="/security">Security</a>
+          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="/terms">Terms</a>
           <a href="mailto:support@summitskills.io">Contact</a>
         </div>
         <div className="footer-copy">© 2026 SummitSkills. All rights reserved.</div>

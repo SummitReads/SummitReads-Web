@@ -81,7 +81,7 @@ export default function TermsPage() {
         </Section>
 
         <Section title="6. Refund Policy">
-          <p><strong style={{ color: '#EEF2F7' }}>Individual plans:</strong> All fees are non-refundable. We encourage individual subscribers to take advantage of any available trial period before purchasing.</p>
+          <p><strong style={{ color: '#EEF2F7' }}>Individual plans:</strong> All fees are non-refundable.</p>
           <p><strong style={{ color: '#EEF2F7' }}>Team plans:</strong> All fees under a signed Master Services Agreement are non-refundable. Access to the Platform is granted immediately upon execution of the MSA. We encourage all teams to complete a free trial before signing.</p>
           <p>Notwithstanding the above, refunds may be issued where required by applicable law.</p>
         </Section>
