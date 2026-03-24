@@ -106,7 +106,7 @@ export default function SummitDayPage({ params }) {
   }
 
   async function toggleMission() {
-    if (dayData?.basecamp_question && !reflectionText.trim()) {
+    if (dayData?.milepost && !reflectionText.trim()) {
       alert("Please write your reflection before marking this stage complete.");
       return;
     }
@@ -229,26 +229,23 @@ export default function SummitDayPage({ params }) {
 
       <main className="container" style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
 
-        {/* Book header */}
+        {/* Sprint header */}
         <div style={{ marginBottom: 48 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, marginBottom: 28 }}>
-            <img
-              src={book.cover_url || book.image || '/placeholder-book.png'}
-              alt={book.title}
-              style={{ width: 90, borderRadius: 8, flexShrink: 0, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}
-            />
-            <div style={{ flex: 1 }}>
-              <div className="tag-featured">
-                <div className="pulse-dot" />
-                <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum}</span>
-                <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
-                <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
-                {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
-                {book.category && <span style={{ fontFamily: 'var(--font-sans)' }}>{book.category}</span>}
-              </div>
-              <h1 style={{ fontSize: '2rem', margin: '8px 0 6px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>{book.title}</h1>
-              <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>by {book.author}</p>
+          <div style={{ marginBottom: 28 }}>
+            <div className="tag-featured" style={{ marginBottom: 16 }}>
+              <div className="pulse-dot" />
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum}</span>
+              <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
+              {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
+              {book.category && <span style={{ fontFamily: 'var(--font-sans)' }}>{book.category}</span>}
             </div>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: '0 0 6px' }}>
+              {book.sprint_title || book.title}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.18)', margin: 0, fontSize: '0.72rem', fontStyle: 'italic' }}>
+              Inspired by {book.title}
+            </p>
           </div>
 
           {/* Progress bar */}
@@ -295,7 +292,7 @@ export default function SummitDayPage({ params }) {
           <div className="glass-panel" style={{ marginBottom: 32 }}>
             <div className="tag-featured">
               <div className="pulse-dot" />
-              Today's Insight
+              Today's Ascent
             </div>
             <div style={{ fontSize: '1.1rem', lineHeight: 1.85, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
@@ -303,11 +300,11 @@ export default function SummitDayPage({ params }) {
           </div>
 
           {/* Reflection */}
-          {dayData.basecamp_question && (
+          {dayData.milepost && (
             <div className="glass-panel" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Reflect on This</div>
+              <div className="tag-featured">Milepost</div>
               <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 28, color: 'var(--text-main)', lineHeight: 1.6 }}>
-                {dayData.basecamp_question}
+                {dayData.milepost}
               </p>
               <textarea
                 className="journal-input"
@@ -329,8 +326,8 @@ export default function SummitDayPage({ params }) {
               <button
                 onClick={toggleMission}
                 className="btn-primary-large"
-                disabled={!missionComplete && dayData?.basecamp_question && !reflectionText.trim()}
-                style={{ opacity: !missionComplete && dayData?.basecamp_question && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
+                disabled={!missionComplete && dayData?.milepost && !reflectionText.trim()}
+                style={{ opacity: !missionComplete && dayData?.milepost && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
               >
                 {missionComplete ? (
                   <>
