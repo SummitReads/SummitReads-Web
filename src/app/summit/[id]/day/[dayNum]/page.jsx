@@ -240,11 +240,8 @@ export default function SummitDayPage({ params }) {
               {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
               {book.category && <span style={{ fontFamily: 'var(--font-sans)' }}>{book.category}</span>}
             </div>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: '0 0 6px' }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: 0 }}>
               {book.sprint_title || book.title}
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.18)', margin: 0, fontSize: '0.72rem', fontStyle: 'italic' }}>
-              Inspired by {book.title}
             </p>
           </div>
 
