@@ -71,6 +71,7 @@ export default function Library() {
       const { data, error } = await supabase
         .from('books')
         .select('*')
+        .eq('review_status', 'approved')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
