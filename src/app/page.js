@@ -166,10 +166,12 @@ export default function Home() {
   // FAQ state
   const [openFaq, setOpenFaq] = useState(null)
 
-  async function handleFreeTrialSignup() {
-    // No card required — routes directly to signup with trial flag
-    // Supabase sets trial_expires_at on account creation
-    window.location.href = `/auth/signup?trial=true&seats=${seats}`
+  function handleFreeTrialSignup() {
+    // Scrolls to the pricing calculator so the user picks their seat count
+    // before being sent to Stripe. The calculator CTA (handleTeamCheckout)
+    // then fires the actual Stripe session with the 14-day trial.
+    const el = document.getElementById('pricing')
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   async function handleIndividualCheckout() {
@@ -542,7 +544,7 @@ export default function Home() {
             color: var(--faint);
             font-style: italic;
             text-align: center;
-            margin-top: -16px;
+            margin-top: -8px;
             margin-bottom: 0;
           }
         `}</style>
@@ -846,11 +848,11 @@ export default function Home() {
 
                 <button
                   className="btn-checkout"
-                  onClick={handleFreeTrialSignup}
+                  onClick={handleTeamCheckout}
                   disabled={checkoutLoading}
                   style={{ cursor: checkoutLoading ? 'wait' : 'pointer' }}
                 >
-                  Start Free Trial →
+                  {checkoutLoading ? 'Loading…' : 'Start Free Trial →'}
                 </button>
                 <div className="checkout-note">14-day free trial · Card required · Full access from day one</div>
 
