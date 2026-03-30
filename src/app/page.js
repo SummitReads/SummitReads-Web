@@ -587,7 +587,7 @@ export default function Home() {
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · Card required · No contract · Full access from day one</p>
+          <p className="hero-footnote">14-day free trial · Card required · MSA required · Billed on day 15</p>
         </div>
 
         <div className="hero-right">
@@ -854,23 +854,7 @@ export default function Home() {
                 >
                   {checkoutLoading ? 'Loading…' : 'Start Free Trial →'}
                 </button>
-                <div className="checkout-note">14-day free trial · Card required · Full access from day one</div>
-
-                <div style={{ textAlign: 'center', margin: '12px 0 4px' }}>
-                  <span style={{ fontFamily: 'var(--sans)', fontSize: '0.75rem', color: 'var(--faint)' }}>or</span>
-                </div>
-
-                <button
-                  className="btn-checkout"
-                  onClick={handleTeamCheckout}
-                  disabled={checkoutLoading}
-                  style={{ cursor: checkoutLoading ? 'wait' : 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: 'var(--text)' }}
-                >
-                  {checkoutLoading
-                    ? 'Loading…'
-                    : total ? `Pay Now — ${fmt(total)}/yr →` : 'Contact Sales →'}
-                </button>
-                <div className="checkout-note">Card collected now · MSA required · Access starts immediately</div>
+                <div className="checkout-note">14-day free trial · Card required · MSA required · Billed on day 15</div>
 
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button
@@ -940,7 +924,7 @@ export default function Home() {
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
         <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial →</button>
-        <p className="final-note">14-day free trial · Card required · Annual billing</p>
+        <p className="final-note">14-day free trial · Card required · MSA required · Billed on day 15</p>
       </section>
 
       {/* ── FOOTER ── */}
