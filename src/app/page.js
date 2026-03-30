@@ -534,6 +534,16 @@ export default function Home() {
             text-align: left;
             border-radius: 0 8px 8px 0;
             background: rgba(23,184,224,0.04);
+            margin-bottom: 40px;
+          }
+          .credibility-citation {
+            font-family: var(--sans);
+            font-size: 0.78rem;
+            color: var(--faint);
+            font-style: italic;
+            text-align: center;
+            margin-top: -16px;
+            margin-bottom: 0;
           }
         `}</style>
       </Head>
@@ -569,13 +579,13 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. No live sessions. No LMS.
+            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. Team members can also choose a sprint on their own and work through it at their own pace.
           </p>
           <div className="hero-actions">
-            <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial — No card required →</button>
+            <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · No credit card · No contract · Full access from day one</p>
+          <p className="hero-footnote">14-day free trial · Card required · No contract · Full access from day one</p>
         </div>
 
         <div className="hero-right">
@@ -731,23 +741,24 @@ export default function Home() {
           <div className="credibility-inner reveal">
             <h2>Why completion rates<br /><em>aren't enough.</em></h2>
             <p className="credibility-sub">Most corporate training gets completed. Almost none of it changes how people work on Monday.</p>
-            <div className="credibility-grid">
-              <div className="credibility-item">
-                <div className="credibility-stat">Passive</div>
-                <div className="credibility-label">Reading, watching, and listening produce poor long-term retention. Per Make It Stick, Harvard Press.</div>
-              </div>
-              <div className="credibility-item">
-                <div className="credibility-stat">Active</div>
-                <div className="credibility-label">Active practice and application produces dramatically better retention. Per Make It Stick, Harvard Press.</div>
-              </div>
-              <div className="credibility-item">
-                <div className="credibility-stat">7 days</div>
-                <div className="credibility-label">to a real work deliverable, built from the employee's own thinking and applied to their actual job.</div>
-              </div>
-            </div>
             <div className="credibility-pull">
               Written reflection isn't a comprehension check. It's what separates content someone consumed from a skill they actually built.
             </div>
+            <div className="credibility-grid">
+              <div className="credibility-item">
+                <div className="credibility-stat">Passive</div>
+                <div className="credibility-label">Reading, watching, and listening produce poor long-term retention.</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">Active</div>
+                <div className="credibility-label">Active practice and application produces dramatically better retention.</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">7 days</div>
+                <div className="credibility-label">One sprint. A real work deliverable. Built from their own thinking, applied to their actual job.</div>
+              </div>
+            </div>
+            <p className="credibility-citation">Both per <em>Make It Stick</em>, Harvard University Press.</p>
           </div>
         </div>
       </section>
@@ -839,9 +850,9 @@ export default function Home() {
                   disabled={checkoutLoading}
                   style={{ cursor: checkoutLoading ? 'wait' : 'pointer' }}
                 >
-                  Start Free Trial — No card required →
+                  Start Free Trial →
                 </button>
-                <div className="checkout-note">14-day free trial · No credit card · Full access from day one</div>
+                <div className="checkout-note">14-day free trial · Card required · Full access from day one</div>
 
                 <div style={{ textAlign: 'center', margin: '12px 0 4px' }}>
                   <span style={{ fontFamily: 'var(--sans)', fontSize: '0.75rem', color: 'var(--faint)' }}>or</span>
@@ -886,7 +897,7 @@ export default function Home() {
               </div>
               <div className="pb-item">
                 <h5>14-Day Free Trial</h5>
-                <p>Full access from day one. No charge until your trial ends on day 15.</p>
+                <p>Full access from day one. Card collected at signup. No charge until your trial ends on day 15.</p>
               </div>
             </div>
           </div>
@@ -926,8 +937,8 @@ export default function Home() {
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
         <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
-        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial — No card required →</button>
-        <p className="final-note">14-day free trial · No credit card required · Annual billing</p>
+        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial →</button>
+        <p className="final-note">14-day free trial · Card required · Annual billing</p>
       </section>
 
       {/* ── FOOTER ── */}
