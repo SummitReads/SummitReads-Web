@@ -789,7 +789,7 @@ export default function Home() {
                   <li>Stage 7 work deliverable per sprint, not a certificate</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>AI coaching companion per seat</li>
-                  <li>Self-guided setup, live in under 24 hours</li>
+                  <li>Self-guided setup, live in minutes</li>
                   <li>295 sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
@@ -922,7 +922,7 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation calls. No LMS setup. Start your free trial today — your team is live within 24 hours of signing.</p>
+        <p>No implementation calls. No LMS setup. Start your free trial today — your team is live in minutes.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial →</button>
         <p className="final-note">14-day free trial · Card required · MSA required · Billed on day 15</p>
       </section>
