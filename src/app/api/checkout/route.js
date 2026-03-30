@@ -82,10 +82,13 @@ export async function POST(req) {
       },
     }
 
-    // Team plans get a 14-day free trial — card collected now, charged on day 15
-    if (type === 'team') {
+    // Trial periods — card collected now, charged after trial ends
+    // Team: 14-day trial, charged on day 15
+    // Individual: 7-day trial, charged on day 8
+    const trialDays = type === 'team' ? 14 : type === 'individual' ? 7 : null
+    if (trialDays) {
       sessionParams.subscription_data = {
-        trial_period_days: 14,
+        trial_period_days: trialDays,
         metadata: {
           type,
           seats: seats || '1',
