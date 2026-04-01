@@ -319,14 +319,27 @@ export default function Library() {
         {/* Normal (non-search) view */}
         {!loading && !isSearching && (
           <>
-            <section className="featured-section">
+            <section className="featured-section" style={{ marginTop: '-8px' }}>
               {featuredBook ? (
-                <div className="featured-card glass-panel" style={{ display: 'block' }}>
+                <div className="featured-card glass-panel" style={{
+                  display: 'block',
+                  background: (() => {
+                    const c = featuredBook.category?.toLowerCase() || '';
+                    if (c.includes('financial') || c.includes('money'))    return 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, transparent 60%)';
+                    if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.06) 0%, transparent 60%)';
+                    if (c.includes('productivity') || c.includes('habit')) return 'linear-gradient(135deg, rgba(6,182,212,0.06) 0%, transparent 60%)';
+                    if (c.includes('sales') || c.includes('negotiation'))  return 'linear-gradient(135deg, rgba(251,113,133,0.06) 0%, transparent 60%)';
+                    if (c.includes('strategy') || c.includes('innovation')) return 'linear-gradient(135deg, rgba(14,165,233,0.06) 0%, transparent 60%)';
+                    return 'linear-gradient(135deg, rgba(25,190,227,0.05) 0%, transparent 60%)';
+                  })(),
+                }}>
                   <span className="tag-featured">
                     <span className="pulse-dot" />
                     Featured Sprint
                   </span>
-                  <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
+                  <h2 style={{ fontSize: '2.8rem', fontWeight: '800', letterSpacing: '-0.03em', lineHeight: 1.1, marginBottom: '16px' }}>
+                    {featuredBook.sprint_title || featuredBook.title}
+                  </h2>
                   <p className="featured-desc">
                     {featuredBook.brief_content ||
                       'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
