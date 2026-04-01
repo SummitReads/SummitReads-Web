@@ -106,10 +106,8 @@ export default function SummitDayPage({ params }) {
   }
 
   async function toggleMission() {
-    if (dayData?.milepost && !reflectionText.trim()) {
-      alert("Please write your reflection before marking this stage complete.");
-      return;
-    }
+    // Day 7 only: nudge but don't hard-block if milepost is empty
+    // Days 1-6: milepost is optional, no gate
     if (!user) { alert('Please sign in to save progress.'); return; }
 
     const newState = !missionComplete;
@@ -219,7 +217,7 @@ export default function SummitDayPage({ params }) {
         <div className="nav-content">
           <Link href="/" className="logo">
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Reads</span>
+            Summit<span>Skills</span>
           </Link>
           <div className="nav-actions">
             <Link href="/library" className="btn-outline small">Exit to Library</Link>
@@ -296,20 +294,68 @@ export default function SummitDayPage({ params }) {
             </div>
           </div>
 
-          {/* Reflection */}
+          {/* Milepost */}
           {dayData.milepost && (
-            <div className="glass-panel" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Milepost</div>
-              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 28, color: 'var(--text-main)', lineHeight: 1.6 }}>
+            <div className="glass-panel" style={{
+              marginBottom: 32,
+              ...(dayNum === 7 && {
+                borderColor: 'rgba(25,190,227,0.35)',
+                boxShadow: '0 0 24px rgba(25,190,227,0.08)',
+              })
+            }}>
+              <div className="tag-featured">
+                {dayNum === 7 ? '🏔 Your Commitment' : 'Milepost'}
+              </div>
+
+              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.6 }}>
                 {dayData.milepost}
               </p>
+
+              {/* Hint line — shows the three ingredients */}
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
+                The best ones are specific. Include:{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
+                {' '}(after my 9am standup) +{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>what</span>
+                {' '}(I will open the tracker) +{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
+                {' '}(on my second monitor)
+              </p>
+
+              {/* Ghost text from madlib template if available */}
               <textarea
                 className="journal-input"
                 value={reflectionText}
                 onChange={e => setReflectionText(e.target.value)}
                 onBlur={saveReflection}
-                placeholder="Write your thoughts here…"
+                placeholder={
+                  dayData.madlib_template
+                    ? dayData.madlib_template
+                    : dayNum === 7
+                    ? 'For the next [time period], I will [specific action] after [trigger]…'
+                    : 'After I [specific moment], I will [behavior]…'
+                }
+                style={{
+                  ...(dayNum === 7 && {
+                    borderColor: 'rgba(25,190,227,0.25)',
+                    minHeight: '100px',
+                  })
+                }}
               />
+
+              {/* Skip option — Days 1-6 only */}
+              {dayNum < 7 && (
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 10, textAlign: 'right' }}>
+                  Writing it down helps it stick — but you can skip and continue below.
+                </p>
+              )}
+
+              {/* Day 7 nudge */}
+              {dayNum === 7 && (
+                <p style={{ fontSize: '0.82rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
+                  This is the one sentence that makes next week different. Take 60 seconds and write yours.
+                </p>
+              )}
             </div>
           )}
 
@@ -323,8 +369,6 @@ export default function SummitDayPage({ params }) {
               <button
                 onClick={toggleMission}
                 className="btn-primary-large"
-                disabled={!missionComplete && dayData?.milepost && !reflectionText.trim()}
-                style={{ opacity: !missionComplete && dayData?.milepost && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
               >
                 {missionComplete ? (
                   <>
