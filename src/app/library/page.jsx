@@ -1,428 +1,388 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Check } from 'lucide-react';
-import { supabase } from '@/app/supabaseClient';
-import DayGuard from '@/components/DayGuard';
-import CompletionCelebration from '@/components/CompletionCelebration';
-import SummitCoach from '@/components/SummitCoach';
-import PacingNudge from '@/components/PacingNudge';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/app/supabaseClient'; 
+import BookRow from '@/components/BookRow'; 
+import StatsHoverBanner from '@/components/StatsHoverBanner';
+import StreakCounter from '@/components/StreakCounter';
+import OnboardingModal from '@/components/OnboardingModal';
 
-export default function SummitDayPage({ params }) {
-  const unwrappedParams = React.use(params);
-  const id      = unwrappedParams.id;
-  const dayNum  = parseInt(unwrappedParams.dayNum);
+// ── Loading skeleton for featured card + rows ─────────────────────────────────
+function LoadingSkeleton() {
+  return (
+    <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        .skel { background: rgba(255,255,255,0.07); border-radius: 8px; }
+      `}</style>
 
-  const [book,                setBook]                = useState(null);
-  const [dayData,             setDayData]             = useState(null);
-  const [allDays,             setAllDays]             = useState([]);
-  const [loading,             setLoading]             = useState(true);
-  const [error,               setError]               = useState(null);
-  const [reflectionText,      setReflectionText]      = useState('');
-  const [missionComplete,     setMissionComplete]     = useState(false);
-  const [user,                setUser]                = useState(null);
-  const [previousDayProgress, setPreviousDayProgress] = useState(null);
-  const [showCelebration,     setShowCelebration]     = useState(false);
-  const [nextDayData,         setNextDayData]         = useState(null);
-  const [pacingDismissed,     setPacingDismissed]     = useState(false);
+      {/* Featured card skeleton */}
+      <div className="glass-panel" style={{ marginBottom: '48px', padding: '40px' }}>
+        <div className="skel" style={{ width: '120px', height: '20px', marginBottom: '20px' }} />
+        <div className="skel" style={{ width: '65%', height: '32px', marginBottom: '12px' }} />
+        <div className="skel" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
+        <div className="skel" style={{ width: '75%', height: '16px', marginBottom: '28px' }} />
+        <div className="skel" style={{ width: '140px', height: '44px', borderRadius: '10px' }} />
+      </div>
 
+      {/* Row skeletons */}
+      {[1, 2, 3].map(i => (
+        <div key={i} style={{ marginBottom: '48px' }}>
+          <div className="skel" style={{ width: '180px', height: '22px', marginBottom: '16px' }} />
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {[1, 2, 3, 4].map(j => (
+              <div key={j} className="skel" style={{ width: '200px', height: '260px', flexShrink: 0, borderRadius: '12px' }} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Library() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState(null);
+  const [books, setBooks] = useState([]); 
+  const [booksByCategory, setBooksByCategory] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        setUser(currentUser);
+    setMounted(true);
+    
+    async function checkUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    }
+    checkUser();
 
-        if (!id || !dayNum) {
-          setError('Missing parameters');
-          setLoading(false);
-          return;
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-        const { data: bookData,       error: bookError } = await supabase.from('books').select('*').eq('id', id).single();
-        const { data: daysData }                          = await supabase.from('summit_days').select('day_number, title').eq('book_id', id).order('day_number', { ascending: true });
-        const { data: currentDayData, error: dayError  } = await supabase.from('summit_days').select('*').eq('book_id', id).eq('day_number', dayNum).maybeSingle();
+    async function fetchBooks() {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('review_status', 'approved')
+        .order('created_at', { ascending: false });
 
-        if (dayNum < 7) {
-          const { data: nextDay } = await supabase
-            .from('summit_days')
-            .select('title, ascent_content')
-            .eq('book_id', id)
-            .eq('day_number', dayNum + 1)
-            .maybeSingle();
-          setNextDayData(nextDay);
-        }
-
-        if (currentUser && dayNum > 1) {
-          const { data: prevProgress } = await supabase
-            .from('user_progress')
-            .select('completed_at, completed, action_commitment, unlocked_at')
-            .eq('user_id', currentUser.id)
-            .eq('book_id', id)
-            .eq('day_number', dayNum - 1)
-            .maybeSingle();
-          setPreviousDayProgress(prevProgress);
-        }
-
-        if (currentUser) {
-          const { data: currentProgress } = await supabase
-            .from('user_progress')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .eq('book_id', id)
-            .eq('day_number', dayNum)
-            .maybeSingle();
-
-          if (currentProgress) {
-            setReflectionText(currentProgress.reflection_data || '');
-            setMissionComplete(currentProgress.completed || false);
-          }
-        }
-
-        if (bookError) setError('Book not found');
-        if (dayError)  setError('Stage content not found');
-
-        setBook(bookData);
-        setDayData(currentDayData);
-        setAllDays(daysData || []);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+      if (!error && data) {
+        setBooks(data);
+        const grouped = data.reduce((acc, book) => {
+          const category = book.category || 'Uncategorized';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(book);
+          return acc;
+        }, {});
+        setBooksByCategory(grouped);
       }
+      setLoading(false);
     }
-    fetchData();
-  }, [id, dayNum]);
+    fetchBooks();
 
-  async function saveReflection() {
-    if (!user || !reflectionText.trim()) return;
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
     try {
-      await supabase.from('user_progress').upsert({
-        user_id:         user.id,
-        book_id:         id,
-        day_number:      dayNum,
-        reflection_data: reflectionText,
-      }, { onConflict: 'user_id,book_id,day_number' });
-    } catch (err) { console.error('Error saving reflection:', err?.message ?? err); }
-  }
-
-  async function toggleMission() {
-    if (dayData?.milepost && !reflectionText.trim()) {
-      alert("Please write your reflection before marking this stage complete.");
-      return;
-    }
-    if (!user) { alert('Please sign in to save progress.'); return; }
-
-    const newState = !missionComplete;
-
-    if (newState) {
-      const now = new Date().toISOString();
-      setMissionComplete(true);
-      try {
-        const { error } = await supabase.from('user_progress').upsert({
-          user_id:      user.id,
-          book_id:      id,
-          day_number:   dayNum,
-          completed:    true,
-          completed_at: now,
-        }, { onConflict: 'user_id,book_id,day_number' });
-
-        if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(false); return; }
-
-        // ── Fire stage-complete email (only if there's a next stage) ──
-        if (dayNum < 7 && user?.email) {
-          try {
-            await fetch('/api/send-stage-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email:          user.email,
-                bookTitle:      book?.title,
-                currentStage:   dayNum,
-                nextStage:      dayNum + 1,
-                nextStageTitle: nextDayData?.title || `Stage ${dayNum + 1}`,
-                bookId:         id,
-                reflection:     reflectionText.trim() || null,
-              }),
-            });
-          } catch (emailErr) {
-            console.error('Email send failed:', emailErr);
-          }
-        }
-
-        setShowCelebration(true);
-      } catch (err) { console.error('Critical error:', err?.message ?? err); setMissionComplete(false); }
-    } else {
-      setMissionComplete(false);
-      try {
-        const { error } = await supabase.from('user_progress').upsert({
-          user_id:      user.id,
-          book_id:      id,
-          day_number:   dayNum,
-          completed:    false,
-          completed_at: null,
-        }, { onConflict: 'user_id,book_id,day_number' });
-        if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(true); }
-      } catch (err) { console.error('Critical error:', err?.message ?? err); }
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        alert('Error signing out: ' + error.message);
+      } else {
+        router.push('/');
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
     }
   }
 
-  async function handleSaveTakeaway(takeaway) {
-    if (!user || !takeaway.trim()) return;
-    try {
-      await supabase.from('user_progress').upsert({
-        user_id:        user.id,
-        book_id:        id,
-        day_number:     dayNum,
-        progress_notes: takeaway,
-      }, { onConflict: 'user_id,book_id,day_number' });
-    } catch (err) { console.error('Error saving takeaway:', err?.message ?? err); }
-  }
+  const getCategoryShortName = (category) => {
+    const shortNames = {
+      'Habits & Self-Discipline': 'Habits',
+      'Money & Investing': 'Money',
+      'Productivity & Performance': 'Productivity',
+      'Mindset & Mental Toughness': 'Mindset',
+      'Strategic Thinking': 'Strategy',
+      'Communication & Influence': 'Communication',
+      'Leadership & Business': 'Leadership',
+      'Philosophy & Wisdom': 'Philosophy',
+      'Health & Wellness': 'Health'
+    };
+    return shortNames[category] || category;
+  };
 
-  function handleCloseCelebration() {
-    setShowCelebration(false);
-    if (dayNum === 7) window.location.href = '/library';
-  }
+  const getCategoryPillColor = (category) => {
+    if (!category) return 'var(--brand-teal)';
+    const lower = category.toLowerCase();
+    if (['financial', 'investing', 'money', 'wealth'].some(k => lower.includes(k)))        return '#10B981';
+    if (['leadership', 'people management', 'management'].some(k => lower.includes(k)))    return '#6B8FD6';
+    if (['productivity', 'habits', 'performance', 'minimal'].some(k => lower.includes(k))) return '#06B6D4';
+    if (['marketing', 'branding', 'storytelling'].some(k => lower.includes(k)))            return '#84CC16';
+    if (['sales', 'persuasion', 'negotiation', 'influence'].some(k => lower.includes(k)))  return '#FB7185';
+    if (['strategy', 'innovation', 'business model'].some(k => lower.includes(k)))         return '#0EA5E9';
+    if (['communication', 'conversation', 'writing'].some(k => lower.includes(k)))         return '#F43F5E';
+    if (['mindset', 'psychology', 'mental', 'emotional'].some(k => lower.includes(k)))     return '#8B5CF6';
+    if (['entrepreneurship', 'startup', 'founder'].some(k => lower.includes(k)))           return '#EF4444';
+    if (['relationships', 'network', 'social'].some(k => lower.includes(k)))               return '#EAB308';
+    return 'var(--brand-teal)';
+  };
 
-  // ─── Loading / error states ──────────────────────────────────────────────
-  if (loading) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
-          Loading
-        </div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', color: 'var(--text-muted)' }}>
-          Your journey…
-        </div>
-      </div>
-    </div>
-  );
+  const categoryOrder = [
+    'Habits & Self-Discipline', 'Money & Investing', 'Productivity & Performance',
+    'Mindset & Mental Toughness', 'Strategic Thinking', 'Communication & Influence',
+    'Leadership & Business', 'Philosophy & Wisdom', 'Health & Wellness'
+  ];
+  
+  const sortedCategories = Object.keys(booksByCategory).sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a);
+    const indexB = categoryOrder.indexOf(b);
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    return a.localeCompare(b);
+  });
 
-  if (error || !book || !dayData) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: 8 }}>Content not found</div>
-        <Link href="/library" style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>← Back to library</Link>
-      </div>
-    </div>
-  );
+  // ── Search filtering ────────────────────────────────────────────────────────
+  const filteredBooks = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase();
+    return books.filter(book =>
+      (book.sprint_title || '').toLowerCase().includes(q) ||
+      (book.title || '').toLowerCase().includes(q) ||
+      (book.author || '').toLowerCase().includes(q) ||
+      (book.category || '').toLowerCase().includes(q) ||
+      (book.brief_content || '').toLowerCase().includes(q)
+    );
+  }, [searchQuery, books]);
 
-  const progressPercent = Math.round(((dayNum - 1) / 7) * 100);
-  const nextStagePreview = nextDayData?.ascent_content
-    ? nextDayData.ascent_content.substring(0, 150) + '…'
-    : 'Continue your transformation journey.';
+  const isSearching = filteredBooks !== null;
+
+  // ── Category display (respects search) ─────────────────────────────────────
+  const categoriesToShow = useMemo(() => {
+    if (isSearching) {
+      const grouped = filteredBooks.reduce((acc, book) => {
+        const cat = book.category || 'Uncategorized';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(book);
+        return acc;
+      }, {});
+      return Object.keys(grouped).sort((a, b) => {
+        const ia = categoryOrder.indexOf(a), ib = categoryOrder.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        return a.localeCompare(b);
+      }).map(cat => ({ category: cat, books: grouped[cat] }));
+    }
+    const cats = selectedCategory === 'All' ? sortedCategories : [selectedCategory];
+    return cats.map(cat => ({ category: cat, books: booksByCategory[cat] || [] }));
+  }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory]);
+
+  // ── Featured card ───────────────────────────────────────────────────────────
+  const featuredBook = useMemo(() => {
+    if (!books.length) return null;
+    const explicit = books.find(b => b.featured);
+    if (explicit) return explicit;
+    const rich = books.find(b => b.sprint_title && b.brief_content);
+    return rich || books[0];
+  }, [books]);
+
+  if (!mounted) return null;
 
   return (
     <>
-      <div className="ambient-glow" />
-
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/" className="logo">
+          <Link href="/library" className="logo">
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions">
-            <Link href="/library" className="btn-outline small">Exit to Library</Link>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <StreakCounter />
+            <button className="btn-primary small" onClick={() => router.push('/dashboard')}>
+              Dashboard
+            </button>
+            <button className="btn-primary small" onClick={() => router.push('/settings')}>
+              Settings
+            </button>
+            <button className="btn-primary small" onClick={handleSignOut}>
+              Sign Out
+            </button>
           </div>
         </div>
       </nav>
 
-      <main className="container" style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
-
-        {/* Sprint header */}
-        <div style={{ marginBottom: 48 }}>
-          <div style={{ marginBottom: 28 }}>
-            <div className="tag-featured" style={{ marginBottom: 16 }}>
-              <div className="pulse-dot" />
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum}</span>
-              <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
-              {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
-              {book.category && <span style={{ fontFamily: 'var(--font-sans)' }}>{book.category}</span>}
-            </div>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: 0 }}>
-              {book.sprint_title || book.title}
-            </p>
-          </div>
-
-          {/* Progress bar */}
-          <div className="progress-bar-container">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-              {[1,2,3,4,5,6,7].map(stage => (
-                <div key={stage} style={{
-                  flex: 1,
-                  height: 5,
-                  borderRadius: 3,
-                  background: stage < dayNum
-                    ? 'var(--brand-teal)'
-                    : stage === dayNum
-                    ? 'rgba(25,190,227,0.5)'
-                    : 'rgba(255,255,255,0.08)',
-                  transition: 'background 0.3s ease',
-                }} />
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <span>Your journey</span>
-              <span style={{ fontFamily: "'DM Mono', monospace", color: 'var(--brand-teal)', fontWeight: 600 }}>
-                {progressPercent}% complete
-              </span>
-            </div>
-          </div>
+      <header className="hero">
+        <StatsHoverBanner totalSummaries={books.length} />
+        <div className="hero-badge">
+          <span className="pulse-dot"></span>
+          <span>295 Skill Sprints • Ready to Start Today</span>
         </div>
-
-        {/* Stage content — gated by DayGuard */}
-        <DayGuard
-          userId={user?.id}
-          bookId={id}
-          currentDay={dayNum}
-          previousDayProgress={previousDayProgress}
-        >
-          {/* Stage title */}
-          <div style={{ marginBottom: 48, textAlign: 'center' }}>
-            <h2 className="text-gradient" style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              {dayData.title}
-            </h2>
-          </div>
-
-          {/* Today's insight */}
-          <div className="glass-panel" style={{ marginBottom: 32 }}>
-            <div className="tag-featured">
-              <div className="pulse-dot" />
-              Today's Ascent
-            </div>
-            <div style={{ fontSize: '1.1rem', lineHeight: 1.85, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
-              {dayData.ascent_content}
-            </div>
-          </div>
-
-          {/* Milepost */}
-          {dayData.milepost && (
-            <div className="glass-panel" style={{
-              marginBottom: 32,
-              ...(dayNum === 7 && {
-                borderColor: 'rgba(25,190,227,0.35)',
-                boxShadow: '0 0 24px rgba(25,190,227,0.08)',
-              })
-            }}>
-              <div className="tag-featured">
-                {dayNum === 7 ? '🏔 Your Commitment' : 'Milepost'}
-              </div>
-
-              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.6 }}>
-                {dayData.milepost}
-              </p>
-
-              {/* Hint line — the three ingredients */}
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
-                The best ones are specific. Include:{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
-                {' '}(after my 9am standup) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>what</span>
-                {' '}(I will open the tracker) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
-                {' '}(on my second monitor)
-              </p>
-
-              <textarea
-                className="journal-input"
-                value={reflectionText}
-                onChange={e => setReflectionText(e.target.value)}
-                onBlur={saveReflection}
-                placeholder={
-                  dayData.madlib_template
-                    ? dayData.madlib_template
-                    : dayNum === 7
-                    ? 'For the next [time period], I will [specific action] after [trigger]…'
-                    : 'After I [specific moment], I will [behavior]…'
-                }
-                style={{
-                  ...(dayNum === 7 && { minHeight: '100px' })
-                }}
-              />
-
-              {/* Soft skip note — Days 1–6 only */}
-              {dayNum < 7 && (
-                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 10, textAlign: 'right' }}>
-                  Writing it down helps it stick — but you can skip and continue below.
-                </p>
-              )}
-
-              {/* Day 7 nudge */}
-              {dayNum === 7 && (
-                <p style={{ fontSize: '0.82rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
-                  This is the one sentence that makes next week different. Take 60 seconds and write yours.
-                </p>
-              )}
-            </div>
+        <h1>What do you want to <span className="text-gradient">work on?</span></h1>
+        <p className="hero-sub">Find your next sprint below, or search by skill, topic, or goal.</p>
+        <div className="search-wrapper">
+          <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search sprints: habits, leadership, money..."
+            value={searchQuery}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              if (e.target.value) setSelectedCategory('All');
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(255,255,255,0.4)', fontSize: '1.1rem', lineHeight: 1, padding: '4px'
+              }}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
           )}
+        </div>
+      </header>
 
-          {/* Mission */}
-          {dayData.summit_mission && (
-            <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Stage Mission</div>
-              <p style={{ fontSize: '1.15rem', marginBottom: 28, lineHeight: 1.7, color: 'var(--text-main)' }}>
-                {dayData.summit_mission}
-              </p>
+      {/* Hide category pills while searching */}
+      {!isSearching && (
+        <div className="category-scroll">
+          <button
+            className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
+            onClick={() => setSelectedCategory('All')}
+          >
+            All
+          </button>
+          {sortedCategories.map((category) => {
+            const isActive = selectedCategory === category;
+            const pillColor = getCategoryPillColor(category);
+            return (
               <button
-                onClick={toggleMission}
-                className="btn-primary-large"
-                disabled={!missionComplete && dayData?.milepost && !reflectionText.trim()}
-                style={{ opacity: !missionComplete && dayData?.milepost && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
+                key={category}
+                className="pill"
+                onClick={() => setSelectedCategory(category)}
+                style={isActive ? {
+                  background: pillColor,
+                  borderColor: pillColor,
+                  color: '#0F172A',
+                  fontWeight: '700',
+                  boxShadow: `0 0 12px ${pillColor}55`,
+                } : {}}
               >
-                {missionComplete ? (
-                  <>
-                    <Check size={20} strokeWidth={2.5} />
-                    Stage Complete
-                  </>
-                ) : (
-                  <>
-                    Complete This Stage
-                    <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
-                  </>
-                )}
+                {getCategoryShortName(category)}
               </button>
-            </div>
-          )}
-        </DayGuard>
-
-        {/* Stage navigation */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
-          {dayNum > 1 && (
-            <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Stage {dayNum - 1}</span>
-            </Link>
-          )}
-          {dayNum < 7 && missionComplete && (
-            <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum + 1} →</span>
-            </Link>
-          )}
+            );
+          })}
         </div>
+      )}
+
+      <main className="container">
+
+        {/* Loading state */}
+        {loading && <LoadingSkeleton />}
+
+        {/* Search results */}
+        {!loading && isSearching && (
+          <>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+              {filteredBooks.length > 0
+                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                : `No sprints found for "${searchQuery}"`
+              }
+            </div>
+            {filteredBooks.length === 0 && (
+              <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
+                <p>Try a different keyword — like a skill, topic, or author name.</p>
+              </div>
+            )}
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
+                books={catBooks}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Normal (non-search) view */}
+        {!loading && !isSearching && (
+          <>
+            <section className="featured-section">
+              {featuredBook ? (
+                <div className="featured-card glass-panel" style={{ display: 'block' }}>
+                  <span className="tag-featured">
+                    <span className="pulse-dot" />
+                    Featured Sprint
+                  </span>
+                  <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
+                  <p className="featured-desc">
+                    {featuredBook.brief_content ||
+                      'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
+                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>
+                      Inspired by
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                      {featuredBook.title}
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
+                      {featuredBook.author}
+                    </span>
+                  </div>
+
+                  <Link href={`/summit/${featuredBook.id}/day/1`} className="btn-primary">
+                    Begin Sprint →
+                  </Link>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                    {[
+                      { num: '~15 min', label: 'per day' },
+                      { num: '7 days', label: 'total' },
+                    ].map(({ num, label }, i) => (
+                      <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: '700', color: 'var(--brand-teal)' }}>{num}</span>
+                          <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '600' }}>{label}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="glass-panel" style={{ padding: '80px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                  No sprints available yet.
+                </div>
+              )}
+            </section>
+
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} skill sprints`}
+                books={catBooks}
+              />
+            ))}
+          </>
+        )}
 
       </main>
-
-      <CompletionCelebration
-        isOpen={showCelebration}
-        onClose={handleCloseCelebration}
-        dayNum={dayNum}
-        bookTitle={book.title}
-        nextDayTitle={nextDayData?.title || `Stage ${dayNum + 1}`}
-        nextDayPreview={nextStagePreview}
-        nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
-        onSaveTakeaway={handleSaveTakeaway}
-      />
-
-      <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
-
-      {/* Pacing nudge — shown if user is rushing */}
-      {!pacingDismissed && dayNum > 1 && (
-        <PacingNudge
-          dayNum={dayNum}
-          previousDayProgress={previousDayProgress}
-          onContinue={() => setPacingDismissed(true)}
-        />
-      )}
     </>
   );
 }
