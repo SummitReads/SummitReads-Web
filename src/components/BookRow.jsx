@@ -200,7 +200,7 @@ function SprintCard({ book }) {
         {/* Card body */}
         <div style={{ padding: '18px 18px 14px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
 
-          {/* Category — abbreviated, never wraps */}
+          {/* Tag — specific to this book, not the section header */}
           <div style={{
             fontSize: '0.62rem',
             fontWeight: '800',
@@ -211,13 +211,13 @@ function SprintCard({ book }) {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}>
-            {categoryLabel}
+            {book.tag || categoryLabel}
           </div>
 
           {/* Sprint title */}
           <h3 style={{
-            fontSize: '1.05rem',
-            fontWeight: '700',
+            fontSize: '1.08rem',
+            fontWeight: '750',
             color: 'white',
             fontFamily: 'var(--font-serif)',
             margin: 0,
