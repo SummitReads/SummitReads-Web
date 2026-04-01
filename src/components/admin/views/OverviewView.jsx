@@ -2,17 +2,70 @@
 
 import { useState, useEffect } from "react";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { Target } from "lucide-react";
 import { C, font } from "@/lib/admin/constants";
 import { CHART_DATA, FEED } from "@/lib/admin/mockData";
 import { Card, SectionTitle } from "@/components/ui/Card";
 import { Pbar, TrendChip } from "@/components/ui/Badges";
 import Avatar from "@/components/ui/Avatar";
 import ChartTooltip from "@/components/admin/ChartTooltip";
+import { supabase } from "@/app/supabaseClient";
 
 export default function OverviewView({ team }) {
-  const [range,   setRange]   = useState(30);
-  const [visible, setVisible] = useState(false);
+  const [range,       setRange]       = useState(30);
+  const [visible,     setVisible]     = useState(false);
+  const [commitments, setCommitments] = useState([]);
+
   useEffect(() => { setTimeout(() => setVisible(true), 50); }, []);
+
+  // Fetch real Day 7 commitments from Supabase
+  useEffect(() => {
+    async function fetchCommitments() {
+      const { data, error } = await supabase
+        .from("user_progress")
+        .select("user_id, reflection_data, completed_at, book_id")
+        .eq("day_number", 7)
+        .eq("completed", true)
+        .not("reflection_data", "eq", "")
+        .not("reflection_data", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(8);
+
+      if (!error && data?.length) {
+        // Fetch book titles
+        const bookIds = [...new Set(data.map(r => r.book_id))];
+        const { data: books } = await supabase
+          .from("books")
+          .select("id, sprint_title, title")
+          .in("id", bookIds);
+
+        const bookMap = {};
+        books?.forEach(b => { bookMap[b.id] = b.sprint_title || b.title; });
+
+        // Fetch user emails from auth
+        const userIds = [...new Set(data.map(r => r.user_id))];
+        const { data: users } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
+
+        // Fall back to auth.users if no profiles table
+        const userMap = {};
+        users?.forEach(u => {
+          userMap[u.id] = u.full_name || u.email || "Team member";
+        });
+
+        setCommitments(data.map(r => ({
+          ...r,
+          sprintTitle:   bookMap[r.book_id] || "Sprint",
+          memberName:    userMap[r.user_id]  || "Team member",
+          initials:      (userMap[r.user_id] || "TM").split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+          completedDate: new Date(r.completed_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        })));
+      }
+    }
+    fetchCommitments();
+  }, []);
 
   const active     = team.filter(u => u.status === "active");
   const totalAI    = active.reduce((a, u) => a + u.aiSessWeek, 0);
@@ -150,7 +203,7 @@ export default function OverviewView({ team }) {
       </div>
 
       {/* Bottom row */}
-      <div style={{ ...stagger(3), display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ ...stagger(3), display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
         {/* Sprints in progress */}
         <Card>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
@@ -223,6 +276,46 @@ export default function OverviewView({ team }) {
               );
             })}
           </div>
+        </Card>
+
+        {/* Team Commitments */}
+        <Card>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div>
+              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: C.text }}>Team commitments</div>
+              <div style={{ fontSize: "0.7rem", color: C.sub, marginTop: 2 }}>Day 7 commitments from completed sprints</div>
+            </div>
+            <Target size={14} color={C.teal} />
+          </div>
+
+          {commitments.length === 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "24px 0", gap: 8 }}>
+              <Target size={22} color={C.dim} />
+              <div style={{ fontSize: "0.74rem", color: C.sub, textAlign: "center", lineHeight: 1.5 }}>
+                Commitments will appear here when team members complete a sprint.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {commitments.map((c, i) => (
+                <div key={i} style={{ background: "rgba(25,190,227,0.03)", border: `1px solid ${C.tealBd}`, borderRadius: 8, padding: "11px 13px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Avatar initials={c.initials} size={22} />
+                      <div>
+                        <div style={{ fontSize: "0.74rem", fontWeight: 600, color: C.text }}>{c.memberName}</div>
+                        <div style={{ fontFamily: font.mono, fontSize: "0.6rem", color: C.teal }}>{c.sprintTitle}</div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "0.62rem", color: C.dim, flexShrink: 0 }}>{c.completedDate}</span>
+                  </div>
+                  <div style={{ fontSize: "0.73rem", color: C.sub, lineHeight: 1.6, fontStyle: "italic", paddingLeft: 30, borderLeft: `2px solid ${C.tealBd}` }}>
+                    "{c.reflection_data}"
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>
