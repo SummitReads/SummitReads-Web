@@ -296,20 +296,64 @@ export default function SummitDayPage({ params }) {
             </div>
           </div>
 
-          {/* Reflection */}
+          {/* Milepost */}
           {dayData.milepost && (
-            <div className="glass-panel" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Milepost</div>
-              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 28, color: 'var(--text-main)', lineHeight: 1.6 }}>
+            <div className="glass-panel" style={{
+              marginBottom: 32,
+              ...(dayNum === 7 && {
+                borderColor: 'rgba(25,190,227,0.35)',
+                boxShadow: '0 0 24px rgba(25,190,227,0.08)',
+              })
+            }}>
+              <div className="tag-featured">
+                {dayNum === 7 ? '🏔 Your Commitment' : 'Milepost'}
+              </div>
+
+              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.6 }}>
                 {dayData.milepost}
               </p>
+
+              {/* Hint line — the three ingredients */}
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
+                The best ones are specific. Include:{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
+                {' '}(after my 9am standup) +{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>what</span>
+                {' '}(I will open the tracker) +{' '}
+                <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
+                {' '}(on my second monitor)
+              </p>
+
               <textarea
                 className="journal-input"
                 value={reflectionText}
                 onChange={e => setReflectionText(e.target.value)}
                 onBlur={saveReflection}
-                placeholder="Write your thoughts here…"
+                placeholder={
+                  dayData.madlib_template
+                    ? dayData.madlib_template
+                    : dayNum === 7
+                    ? 'For the next [time period], I will [specific action] after [trigger]…'
+                    : 'After I [specific moment], I will [behavior]…'
+                }
+                style={{
+                  ...(dayNum === 7 && { minHeight: '100px' })
+                }}
               />
+
+              {/* Soft skip note — Days 1–6 only */}
+              {dayNum < 7 && (
+                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 10, textAlign: 'right' }}>
+                  Writing it down helps it stick — but you can skip and continue below.
+                </p>
+              )}
+
+              {/* Day 7 nudge */}
+              {dayNum === 7 && (
+                <p style={{ fontSize: '0.82rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
+                  This is the one sentence that makes next week different. Take 60 seconds and write yours.
+                </p>
+              )}
             </div>
           )}
 
