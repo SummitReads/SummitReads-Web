@@ -106,8 +106,10 @@ export default function SummitDayPage({ params }) {
   }
 
   async function toggleMission() {
-    // Day 7 only: nudge but don't hard-block if milepost is empty
-    // Days 1-6: milepost is optional, no gate
+    if (dayData?.milepost && !reflectionText.trim()) {
+      alert("Please write your reflection before marking this stage complete.");
+      return;
+    }
     if (!user) { alert('Please sign in to save progress.'); return; }
 
     const newState = !missionComplete;
@@ -311,7 +313,7 @@ export default function SummitDayPage({ params }) {
                 {dayData.milepost}
               </p>
 
-              {/* Hint line — shows the three ingredients */}
+              {/* Hint line — the three ingredients */}
               <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
                 The best ones are specific. Include:{' '}
                 <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
@@ -322,7 +324,6 @@ export default function SummitDayPage({ params }) {
                 {' '}(on my second monitor)
               </p>
 
-              {/* Ghost text from madlib template if available */}
               <textarea
                 className="journal-input"
                 value={reflectionText}
@@ -332,18 +333,15 @@ export default function SummitDayPage({ params }) {
                   dayData.madlib_template
                     ? dayData.madlib_template
                     : dayNum === 7
-                    ? 'For the next [time period], I will [specific action] after [trigger]…'
-                    : 'After I [specific moment], I will [behavior]…'
+                    ? 'For the next two weeks, I will check my habit tracker after I pour my morning coffee.'
+                    : 'After I close the 9am standup, I will open the budget sheet on my second monitor.'
                 }
                 style={{
-                  ...(dayNum === 7 && {
-                    borderColor: 'rgba(25,190,227,0.25)',
-                    minHeight: '100px',
-                  })
+                  ...(dayNum === 7 && { minHeight: '100px' })
                 }}
               />
 
-              {/* Skip option — Days 1-6 only */}
+              {/* Soft skip note — Days 1–6 only */}
               {dayNum < 7 && (
                 <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 10, textAlign: 'right' }}>
                   Writing it down helps it stick — but you can skip and continue below.
@@ -369,6 +367,8 @@ export default function SummitDayPage({ params }) {
               <button
                 onClick={toggleMission}
                 className="btn-primary-large"
+                disabled={!missionComplete && dayData?.milepost && !reflectionText.trim()}
+                style={{ opacity: !missionComplete && dayData?.milepost && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
               >
                 {missionComplete ? (
                   <>
