@@ -820,10 +820,10 @@
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1000px) {
-  .landing-page .hero { grid-template-columns: 1fr; padding: 100px 32px 56px; }
+  .landing-page .hero { grid-template-columns: 1fr; padding: 100px 32px 52px; }
   .landing-page .credibility { padding: 60px 0; }
-  .landing-page .sprint-section { padding: 0 0 60px; }
-  .landing-page .sprint-intro { padding: 56px 0 36px; }
+  .landing-page .sprint-section { padding: 0 0 56px; }
+  .landing-page .sprint-intro { padding: 56px 0 32px; }
   .landing-page .hero-left { padding-right: 0; margin-bottom: 48px; }
   .landing-page .hero-right { display: none; }
   .landing-page .mechanic-inner { grid-template-columns: 1fr; gap: 48px; }
@@ -843,15 +843,16 @@
 @media (max-width: 768px) {
   .landing-page nav { padding: 0 20px; }
   .landing-page .wrap { padding: 0 20px; }
-  .landing-page .hero { padding: 96px 20px 52px; }
+  .landing-page .hero { padding: 96px 20px 48px; }
   .landing-page footer { padding: 28px 20px; }
-  .landing-page .final-cta { padding: 80px 20px; }
-  .landing-page .faq { padding: 64px 0; }
-  .landing-page .mechanic { padding: 80px 0; }
-  .landing-page .credibility { padding: 60px 0; }
-  .landing-page .sprint-section { padding: 0 0 60px; }
-  .landing-page .sprint-intro { padding: 56px 0 32px; }
-  .landing-page .dashboard-preview-intro { padding: 48px 0 28px; }
+  .landing-page .final-cta { padding: 72px 20px; }
+  .landing-page .faq { padding: 60px 0; }
+  .landing-page .mechanic { padding: 72px 0; }
+  .landing-page .credibility { padding: 56px 0; }
+  .landing-page .sprint-section { padding: 0 0 56px; }
+  .landing-page .sprint-intro { padding: 52px 0 28px; }
+  .landing-page .dashboard-preview { padding: 0 0 56px; }
+  .landing-page .dashboard-preview-intro { padding: 48px 0 24px; }
   .landing-page .pricing-bottom { grid-template-columns: 1fr; }
   .landing-page .pb-item { border-right: none; border-top: 1px solid var(--border); }
   .pb-item:first-child { border-top: none; }
@@ -871,7 +872,7 @@
   /* Hero — single column */
   .landing-page .hero {
     grid-template-columns: 1fr;
-    padding: 88px 16px 44px;
+    padding: 88px 16px 40px;
     gap: 48px;
   }
   .landing-page .hero-left { padding-right: 0; }
@@ -910,13 +911,17 @@
   .landing-page .mechanic,
   .landing-page .dashboard-preview { padding: 64px 0; }
 
-  /* Additional section reductions on mobile */
-  .landing-page .credibility { padding: 52px 0; }
-  .landing-page .sprint-section { padding: 0 0 48px; }
-  .landing-page .sprint-intro { padding: 44px 0 28px; }
-  .landing-page .dashboard-preview-intro { padding: 40px 0 20px; }
-  .landing-page .credibility-pull { padding: 24px 0 0; }
-  .landing-page .faq { padding: 52px 0; }
+  /* Fix dashboard double-padding: section was 0-top on desktop, blanket rule adds 64px — undo it */
+  .landing-page .dashboard-preview { padding: 0 0 44px; }
+
+  /* Additional mobile reductions */
+  .landing-page .credibility { padding: 48px 0; }
+  .landing-page .sprint-section { padding: 0 0 44px; }
+  .landing-page .sprint-intro { padding: 40px 0 24px; }
+  .landing-page .dashboard-preview-intro { padding: 36px 0 16px; }
+  .landing-page .credibility-pull { padding: 20px 0 0; }
+  .landing-page .faq { padding: 48px 0; }
+  .landing-page .final-cta { padding: 52px 16px; }
 
   /* Wrap padding */
   .landing-page .wrap { padding: 0 16px; }
@@ -957,7 +962,6 @@
   .landing-page .faq-lede { position: static; }
 
   /* Final CTA */
-  .landing-page .final-cta { padding: 64px 16px; }
   .landing-page .final-cta h2 { font-size: clamp(1.8rem, 7vw, 2.8rem); }
   .landing-page .cta-actions { flex-direction: column; align-items: stretch; gap: 10px; }
   .landing-page .cta-actions .btn-primary,
