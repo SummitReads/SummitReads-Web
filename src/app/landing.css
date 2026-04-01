@@ -113,12 +113,11 @@
 
 /* ─── HERO ─── */
 .landing-page .hero {
-  min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
   gap: 0;
-  padding: 60px 48px 60px;
+  padding: 120px 48px 64px;
   max-width: var(--max);
   margin: 0 auto;
 }
@@ -821,7 +820,10 @@
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 1000px) {
-  .landing-page .hero { grid-template-columns: 1fr; padding: 80px 32px 60px; }
+  .landing-page .hero { grid-template-columns: 1fr; padding: 100px 32px 56px; }
+  .landing-page .credibility { padding: 60px 0; }
+  .landing-page .sprint-section { padding: 0 0 60px; }
+  .landing-page .sprint-intro { padding: 56px 0 36px; }
   .landing-page .hero-left { padding-right: 0; margin-bottom: 48px; }
   .landing-page .hero-right { display: none; }
   .landing-page .mechanic-inner { grid-template-columns: 1fr; gap: 48px; }
@@ -841,11 +843,15 @@
 @media (max-width: 768px) {
   .landing-page nav { padding: 0 20px; }
   .landing-page .wrap { padding: 0 20px; }
-  .landing-page .hero { padding: 80px 20px 60px; }
+  .landing-page .hero { padding: 96px 20px 52px; }
   .landing-page footer { padding: 28px 20px; }
   .landing-page .final-cta { padding: 80px 20px; }
-  .landing-page .faq { padding: 80px 0; }
+  .landing-page .faq { padding: 64px 0; }
   .landing-page .mechanic { padding: 80px 0; }
+  .landing-page .credibility { padding: 60px 0; }
+  .landing-page .sprint-section { padding: 0 0 60px; }
+  .landing-page .sprint-intro { padding: 56px 0 32px; }
+  .landing-page .dashboard-preview-intro { padding: 48px 0 28px; }
   .landing-page .pricing-bottom { grid-template-columns: 1fr; }
   .landing-page .pb-item { border-right: none; border-top: 1px solid var(--border); }
   .pb-item:first-child { border-top: none; }
@@ -865,9 +871,8 @@
   /* Hero — single column */
   .landing-page .hero {
     grid-template-columns: 1fr;
-    padding: 72px 16px 48px;
+    padding: 88px 16px 44px;
     gap: 48px;
-    min-height: auto;
   }
   .landing-page .hero-left { padding-right: 0; }
   .landing-page .hero-right { display: none; }
@@ -904,6 +909,14 @@
   .landing-page .purchase,
   .landing-page .mechanic,
   .landing-page .dashboard-preview { padding: 64px 0; }
+
+  /* Additional section reductions on mobile */
+  .landing-page .credibility { padding: 52px 0; }
+  .landing-page .sprint-section { padding: 0 0 48px; }
+  .landing-page .sprint-intro { padding: 44px 0 28px; }
+  .landing-page .dashboard-preview-intro { padding: 40px 0 20px; }
+  .landing-page .credibility-pull { padding: 24px 0 0; }
+  .landing-page .faq { padding: 52px 0; }
 
   /* Wrap padding */
   .landing-page .wrap { padding: 0 16px; }
