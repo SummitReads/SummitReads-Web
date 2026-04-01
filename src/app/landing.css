@@ -245,7 +245,7 @@
 }
 
 /* ─── MECHANIC — numbered prose ─── */
-.landing-page .mechanic { padding: 120px 0; }
+.landing-page .mechanic { padding: 80px 0; }
 .landing-page .mechanic-inner {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -289,11 +289,11 @@
 }
 
 /* ─── SPRINT WIDGET ─── */
-.landing-page .sprint-section { padding: 0 0 120px; }
+.landing-page .sprint-section { padding: 0 0 80px; }
 .landing-page .sprint-intro {
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 40px; flex-wrap: wrap;
-  padding: 100px 0 44px;
+  padding: 68px 0 40px;
   border-top: 1px solid var(--border);
 }
 .landing-page .sprint-intro h2 {
@@ -393,7 +393,7 @@
 
 /* ─── CREDIBILITY ─── */
 .landing-page .credibility {
-  padding: 96px 0;
+  padding: 76px 0;
   border-top: 1px solid var(--border);
 }
 .landing-page .credibility-inner {
@@ -459,9 +459,9 @@
 }
 
 /* ─── DASHBOARD PREVIEW ─── */
-.landing-page .dashboard-preview { padding: 0 0 100px; border-top: 1px solid var(--border); }
+.landing-page .dashboard-preview { padding: 0 0 72px; border-top: 1px solid var(--border); }
 .landing-page .dashboard-preview-intro {
-  padding: 80px 0 44px;
+  padding: 60px 0 36px;
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 40px; flex-wrap: wrap;
 }
@@ -568,8 +568,8 @@
 }
 
 /* ─── PRICING ─── */
-.landing-page .pricing { padding: 100px 0; border-top: 1px solid var(--border); }
-.landing-page .pricing-header { margin-bottom: 52px; }
+.landing-page .pricing { padding: 80px 0; border-top: 1px solid var(--border); }
+.landing-page .pricing-header { margin-bottom: 36px; }
 .landing-page .pricing-header h2 {
   font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 800; line-height: 1.1; letter-spacing: -0.025em; color: var(--text);
@@ -670,7 +670,7 @@
 .landing-page .pb-item p { font-size: 0.75rem; color: var(--faint); line-height: 1.6; }
 
 /* ─── FAQ ─── */
-.landing-page .faq { padding: 100px 0; border-top: 1px solid var(--border); }
+.landing-page .faq { padding: 80px 0; border-top: 1px solid var(--border); }
 .landing-page .faq-layout {
   display: grid; grid-template-columns: 280px 1fr;
   gap: 80px; align-items: start;
@@ -719,7 +719,7 @@
 /* ─── FINAL CTA ─── */
 .landing-page .final-cta {
   border-top: 1px solid var(--border);
-  padding: 110px 48px;
+  padding: 88px 48px;
   text-align: center;
 }
 .landing-page .final-cta h2 {
