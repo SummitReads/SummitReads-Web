@@ -106,10 +106,6 @@ export default function SummitDayPage({ params }) {
   }
 
   async function toggleMission() {
-    if (dayData?.milepost && !reflectionText.trim()) {
-      alert("Please write your reflection before marking this stage complete.");
-      return;
-    }
     if (!user) { alert('Please sign in to save progress.'); return; }
 
     const newState = !missionComplete;
@@ -367,8 +363,6 @@ export default function SummitDayPage({ params }) {
               <button
                 onClick={toggleMission}
                 className="btn-primary-large"
-                disabled={!missionComplete && dayData?.milepost && !reflectionText.trim()}
-                style={{ opacity: !missionComplete && dayData?.milepost && !reflectionText.trim() ? 0.4 : 1, transition: 'opacity 0.2s ease' }}
               >
                 {missionComplete ? (
                   <>
