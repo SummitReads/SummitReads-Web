@@ -325,12 +325,12 @@ export default function Library() {
                   display: 'block',
                   background: (() => {
                     const c = featuredBook.category?.toLowerCase() || '';
-                    if (c.includes('financial') || c.includes('money'))       return 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, transparent 60%)';
-                    if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.06) 0%, transparent 60%)';
-                    if (c.includes('productivity') || c.includes('habit'))    return 'linear-gradient(135deg, rgba(6,182,212,0.06) 0%, transparent 60%)';
-                    if (c.includes('sales') || c.includes('negotiation'))     return 'linear-gradient(135deg, rgba(251,113,133,0.06) 0%, transparent 60%)';
-                    if (c.includes('strategy') || c.includes('innovation'))   return 'linear-gradient(135deg, rgba(14,165,233,0.06) 0%, transparent 60%)';
-                    return 'linear-gradient(135deg, rgba(25,190,227,0.05) 0%, transparent 60%)';
+                    if (c.includes('financial') || c.includes('money'))       return 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 60%)';
+                    if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.08) 0%, transparent 60%)';
+                    if (c.includes('productivity') || c.includes('habit'))    return 'linear-gradient(135deg, rgba(6,182,212,0.10) 0%, transparent 60%)';
+                    if (c.includes('sales') || c.includes('negotiation'))     return 'linear-gradient(135deg, rgba(251,113,133,0.08) 0%, transparent 60%)';
+                    if (c.includes('strategy') || c.includes('innovation'))   return 'linear-gradient(135deg, rgba(14,165,233,0.08) 0%, transparent 60%)';
+                    return 'linear-gradient(135deg, rgba(25,190,227,0.08) 0%, transparent 60%)';
                   })(),
                 }}>
                   <span className="tag-featured">
