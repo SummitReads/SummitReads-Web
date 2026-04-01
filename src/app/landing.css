@@ -288,7 +288,7 @@
 }
 
 /* ─── SPRINT WIDGET ─── */
-.landing-page .sprint-section { padding: 0 0 80px; }
+.landing-page .sprint-section { padding: 0 0 64px; }
 .landing-page .sprint-intro {
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 40px; flex-wrap: wrap;
@@ -392,7 +392,7 @@
 
 /* ─── CREDIBILITY ─── */
 .landing-page .credibility {
-  padding: 76px 0;
+  padding: 72px 0 60px;
   border-top: 1px solid var(--border);
 }
 .landing-page .credibility-inner {
@@ -460,7 +460,7 @@
 /* ─── DASHBOARD PREVIEW ─── */
 .landing-page .dashboard-preview { padding: 0 0 72px; border-top: 1px solid var(--border); }
 .landing-page .dashboard-preview-intro {
-  padding: 60px 0 36px;
+  padding: 48px 0 32px;
   display: flex; align-items: flex-end; justify-content: space-between;
   gap: 40px; flex-wrap: wrap;
 }
