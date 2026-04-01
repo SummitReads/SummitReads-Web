@@ -538,15 +538,6 @@ export default function Home() {
             background: rgba(23,184,224,0.04);
             margin-bottom: 40px;
           }
-          .credibility-citation {
-            font-family: var(--sans);
-            font-size: 0.78rem;
-            color: var(--faint);
-            font-style: italic;
-            text-align: center;
-            margin-top: -8px;
-            margin-bottom: 0;
-          }
         `}</style>
       </Head>
       {/* ── NAV ── */}
@@ -576,7 +567,7 @@ export default function Home() {
           <div className="hero-stats-row">
             <div className="hero-stat-pill"><strong>15</strong> min/day</div>
             <div className="hero-stat-pill"><strong>7-stage</strong> sprints</div>
-            <div className="hero-stat-pill">Written application <strong>required</strong></div>
+            <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
@@ -587,7 +578,7 @@ export default function Home() {
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · Card required · MSA required · Billed on day 15</p>
+          <p className="hero-footnote">14-day free trial · No charge until day 15</p>
         </div>
 
         <div className="hero-right">
@@ -709,7 +700,7 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Every stage requires a written response before the next one unlocks. Stage 7 produces a deliverable, not a score. Every response is logged to your manager dashboard.</p>
+              <p>Same structure across all 295 sprints. Stage 7 always produces a real work deliverable — not a certificate, not a score.</p>
               <a href="#pricing">Get access to see the full sprint →</a>
             </div>
             <div className="sprint-deliverable reveal">
@@ -743,24 +734,23 @@ export default function Home() {
           <div className="credibility-inner reveal">
             <h2>Why completion rates<br /><em>aren't enough.</em></h2>
             <p className="credibility-sub">Most corporate training gets completed. Almost none of it changes how people work on Monday.</p>
+            <div className="credibility-grid">
+              <div className="credibility-item">
+                <div className="credibility-stat">Written.</div>
+                <div className="credibility-label">Every stage requires a written response connecting the concept to real work. Not multiple choice. Not a checkbox. They write it out before the next stage opens.</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">Logged.</div>
+                <div className="credibility-label">Every response goes to the manager dashboard — the actual writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
+              </div>
+              <div className="credibility-item">
+                <div className="credibility-stat">Delivered.</div>
+                <div className="credibility-label">Stage 7 ends with a real work output built from their own reflections. Not a certificate. Something they made for their actual job.</div>
+              </div>
+            </div>
             <div className="credibility-pull">
               Written reflection isn't a comprehension check. It's what separates content someone consumed from a skill they actually built.
             </div>
-            <div className="credibility-grid">
-              <div className="credibility-item">
-                <div className="credibility-stat">Passive</div>
-                <div className="credibility-label">Reading, watching, and listening produce poor long-term retention.</div>
-              </div>
-              <div className="credibility-item">
-                <div className="credibility-stat">Active</div>
-                <div className="credibility-label">Active practice and application produces dramatically better retention.</div>
-              </div>
-              <div className="credibility-item">
-                <div className="credibility-stat">7 days</div>
-                <div className="credibility-label">One sprint. A real work deliverable. Built from their own thinking, applied to their actual job.</div>
-              </div>
-            </div>
-            <p className="credibility-citation">Both per <em>Make It Stick</em>, Harvard University Press.</p>
           </div>
         </div>
       </section>
