@@ -241,6 +241,7 @@ export default function Home() {
   return (
     <div className="landing-page" style={cssVars}>
       <Head>
+        <link rel="icon" href="/SummitSkills-Logo.png" type="image/png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -267,6 +268,7 @@ export default function Home() {
             color: var(--faint);
             margin-top: 12px;
             line-height: 1.5;
+            text-align: center;
           }
           .checkout-note {
             font-family: var(--sans);
