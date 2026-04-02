@@ -461,6 +461,10 @@ export default function Home() {
             .best-fit-right { position: static; }
           }
 
+          @media (max-width: 640px) {
+            .nav-logo-img { height: 34px !important; }
+          }
+
           /* ── Dashboard Annotations ── */
           .dashboard-annotations {
             display: flex;
@@ -563,6 +567,7 @@ export default function Home() {
             src="/SummitSkills-Logo.png"
             alt="SummitSkills"
             style={{ height: '42px', width: 'auto', opacity: 0.95, marginRight: '10px', verticalAlign: 'middle' }}
+            className="nav-logo-img"
             onError={e => { e.target.style.display = 'none' }}
           />
           Summit<em>Skills</em>
