@@ -732,7 +732,17 @@
   font-size: 0.95rem; color: var(--muted); max-width: 380px;
   margin: 0 auto 36px; line-height: 1.72;
 }
-.landing-page .final-note { margin-top: 18px; font-size: 0.7rem; color: var(--faint); white-space: nowrap; text-align: center; max-width: none; }
+.landing-page .final-note {
+  display: block;
+  width: 100%;
+  max-width: 100% !important;
+  margin: 12px auto 0 !important;
+  font-size: 0.72rem;
+  color: var(--faint);
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.5;
+}
 
 /* ─── FOOTER ─── */
 .landing-page footer {
