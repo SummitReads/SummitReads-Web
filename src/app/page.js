@@ -261,6 +261,28 @@ export default function Home() {
             margin-top: 8px;
             line-height: 1.5;
           }
+          .hero-footnote {
+            font-family: var(--sans);
+            font-size: 0.78rem;
+            color: var(--faint);
+            margin-top: 12px;
+            line-height: 1.5;
+          }
+          .checkout-note {
+            font-family: var(--sans);
+            font-size: 0.78rem;
+            color: var(--faint);
+            margin-top: 8px;
+            text-align: center;
+            line-height: 1.5;
+          }
+          .final-note {
+            font-family: var(--sans);
+            font-size: 0.78rem;
+            color: var(--faint);
+            margin-top: 10px;
+            line-height: 1.5;
+          }
           .nav-login {
             font-family: var(--sans);
             font-size: 0.88rem;
@@ -572,7 +594,7 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable — something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. Team members can also choose a sprint on their own and work through it at their own pace.
+            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable. Something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. Team members can also choose a sprint on their own and work through it at their own pace.
           </p>
           <div className="hero-actions">
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
@@ -601,10 +623,10 @@ export default function Home() {
             <div className="hw-body">
               <div className="hw-body-label">Stage 3 · Basecamp</div>
               <div className="hw-body-heading">Before Stage 4 unlocks</div>
-              <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on — something in your own day, your own team.</div>
+              <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on. Something in your own day, your own team.</div>
               <div className="hw-gate">
                 <div className="hw-gate-label">Your response</div>
-                <div className="hw-gate-text">Think about one behavior you already do reliably at work — something that happens almost automatically. What triggers it?</div>
+                <div className="hw-gate-text">Think about one behavior you already do reliably at work. Something that happens almost automatically. What triggers it?</div>
                 <div className="hw-gate-btn">Submit response to unlock Stage 4 →</div>
               </div>
             </div>
@@ -640,21 +662,21 @@ export default function Home() {
                 <div>
                   <h3>One 15-minute stage per day</h3>
                   <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
-                  <p className="aside">✓ Async — no scheduling, no time zones</p>
+                  <p className="aside">✓ Async. No scheduling, no time zones.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
                   <h3>Every stage requires a written response. No skipping.</h3>
-                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice — they write it out. Every response is logged. Managers see the writing, not just a checkmark.</p>
+                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice. They write it out. Every response is logged. Managers see the writing, not just a checkmark.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
                   <h3>Stage 7 produces a real work deliverable</h3>
-                  <p>A prioritization framework, a communication plan, a habit system — built from their own reflections. Not a certificate. Something they made for their actual job.</p>
+                  <p>A prioritization framework, a communication plan, a habit system built from their own reflections. Not a certificate. Something they made for their actual job.</p>
                 </div>
               </div>
             </div>
@@ -668,7 +690,7 @@ export default function Home() {
           <div className="sprint-intro reveal">
             <h2>What a completed sprint produces.</h2>
             <div className="sprint-intro-aside">
-              <p>Productivity &amp; Habits — one of 295 sprints. Same structure, every sprint.</p>
+              <p>Productivity &amp; Habits, one of 295 sprints. Same structure, every sprint.</p>
             </div>
           </div>
           <div className="sprint-wrap reveal">
@@ -700,7 +722,7 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Same structure across all 295 sprints. Stage 7 always produces a real work deliverable — not a certificate, not a score.</p>
+              <p>Same structure across all 295 sprints. Stage 7 always produces a real work deliverable. Not a certificate, not a score.</p>
               <a href="#pricing">Get access to see the full sprint →</a>
             </div>
             <div className="sprint-deliverable reveal">
@@ -720,7 +742,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Written reflection responses, stage-by-stage progress, sprint assignment — all in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
+            <p>Written reflection responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -741,7 +763,7 @@ export default function Home() {
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Logged.</div>
-                <div className="credibility-label">Every response goes to the manager dashboard — the actual writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
+                <div className="credibility-label">Every response goes to the manager dashboard. The actual writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Delivered.</div>
