@@ -546,7 +546,7 @@ export default function Home() {
           <img
             src="/SummitSkills-Logo.png"
             alt="SummitSkills"
-            style={{ height: '28px', width: 'auto', filter: 'brightness(0) invert(1)', opacity: 0.9, marginRight: '8px', verticalAlign: 'middle' }}
+            style={{ height: '28px', width: 'auto', opacity: 0.9, marginRight: '8px', verticalAlign: 'middle' }}
             onError={e => { e.target.style.display = 'none' }}
           />
           Summit<em>Skills</em>
@@ -675,7 +675,7 @@ export default function Home() {
             <div className="sprint-chrome">
               <div className="sprint-chrome-left">
                 <div className="sprint-icon">
-                  <img src="/SummitSkills-Logo.png" alt="SummitSkills" style={{ width: '22px', height: '22px', objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }} />
+                  <img src="/SummitSkills-Logo.png" alt="SummitSkills" style={{ width: '22px', height: '22px', objectFit: 'contain', opacity: 0.9 }} />
                 </div>
                 <div>
                   <div className="sprint-name">Building Consistent Habits</div>
