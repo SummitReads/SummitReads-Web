@@ -340,7 +340,7 @@ export default function Home() {
 
           /* ── Best Fit Section ── */
           .best-fit {
-            padding: 96px 0;
+            padding: 72px 0;
             background: rgba(255,255,255,0.015);
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
@@ -348,7 +348,7 @@ export default function Home() {
           .best-fit-inner {
             display: grid;
             grid-template-columns: 1fr 380px;
-            gap: 72px;
+            gap: 56px;
             align-items: start;
           }
           .best-fit-intro {
@@ -476,7 +476,7 @@ export default function Home() {
 
           /* ── Credibility Section ── */
           .credibility {
-            padding: 96px 0;
+            padding: 72px 0;
             border-top: 1px solid var(--border);
           }
           .credibility-inner {
@@ -557,7 +557,7 @@ export default function Home() {
           <a href="#pricing"      className="nav-link">Pricing</a>
           <a href="#faq"          className="nav-link">FAQ</a>
           <a href="/auth/login" className="nav-login">Log in</a>
-          <button onClick={handleFreeTrialSignup} className="nav-cta">Start Free Trial</button>
+          <button onClick={handleFreeTrialSignup} className="nav-cta">Start Team Pilot</button>
         </div>
       </nav>
 
@@ -578,7 +578,7 @@ export default function Home() {
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day free trial · No charge until day 15</p>
+          <p className="hero-footnote">14-day team pilot · Card required · MSA required · No charge until day 15</p>
         </div>
 
         <div className="hero-right">
@@ -842,9 +842,9 @@ export default function Home() {
                   disabled={checkoutLoading}
                   style={{ cursor: checkoutLoading ? 'wait' : 'pointer' }}
                 >
-                  {checkoutLoading ? 'Loading…' : 'Start Free Trial →'}
+                  {checkoutLoading ? 'Loading…' : 'Start Team Pilot →'}
                 </button>
-                <div className="checkout-note">14-day free trial · Card required · MSA required · Billed on day 15</div>
+                <div className="checkout-note">14-day team pilot · Card required · MSA required · Billed on day 15</div>
 
                 <div style={{ textAlign: 'center', marginTop: '16px' }}>
                   <button
@@ -852,7 +852,7 @@ export default function Home() {
                     disabled={checkoutLoading}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '0.78rem', color: 'var(--faint)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
                   >
-                    Individual access also available — $149/yr →
+                    Individual access also available — $149/yr · 7-day free trial →
                   </button>
                 </div>
               </div>
@@ -872,8 +872,8 @@ export default function Home() {
                 <p>Your per-seat rate is locked for the contract term. No renewal surprises.</p>
               </div>
               <div className="pb-item">
-                <h5>14-Day Free Trial</h5>
-                <p>Full access from day one. Card collected at signup. No charge until your trial ends on day 15.</p>
+                <h5>14-Day Team Pilot</h5>
+                <p>Full team access from day one. Card collected at signup. No charge until your pilot ends on day 15.</p>
               </div>
             </div>
           </div>
@@ -912,9 +912,9 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation calls. No LMS setup. Start your free trial today — your team is live in minutes.</p>
-        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Free Trial →</button>
-        <p className="final-note">14-day free trial · Card required · MSA required · Billed on day 15</p>
+        <p>No implementation calls. No LMS setup. Start your team pilot today — your team is live in minutes.</p>
+        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
+        <p className="final-note">14-day team pilot · Card required · MSA required · Billed on day 15</p>
       </section>
 
       {/* ── FOOTER ── */}
