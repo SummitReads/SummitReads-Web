@@ -201,12 +201,12 @@ export default function Library() {
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <StreakCounter />
-            <button className="btn-primary small" onClick={() => router.push('/dashboard')}>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>
               Dashboard
             </button>
-            <button className="btn-primary small" onClick={() => router.push('/settings')}>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>
               Settings
             </button>
             <button className="btn-primary small" onClick={handleSignOut}>
