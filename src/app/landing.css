@@ -728,15 +728,15 @@
   color: var(--text); margin-bottom: 18px;
 }
 .landing-page .final-cta h2 em { font-style: italic; color: var(--teal); }
-.landing-page .final-cta p {
+.landing-page .final-cta p:not(.final-note) {
   font-size: 0.95rem; color: var(--muted); max-width: 380px;
   margin: 0 auto 36px; line-height: 1.72;
 }
 .landing-page .final-note {
   display: block;
   width: 100%;
-  max-width: 100% !important;
-  margin: 12px auto 0 !important;
+  max-width: none;
+  margin: 12px 0 0;
   font-size: 0.72rem;
   color: var(--faint);
   white-space: nowrap;

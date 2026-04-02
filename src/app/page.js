@@ -277,15 +277,6 @@ export default function Home() {
             text-align: center;
             line-height: 1.5;
           }
-          .final-note {
-            font-family: var(--sans);
-            font-size: 0.78rem;
-            color: var(--faint);
-            margin-top: 10px;
-            line-height: 1.5;
-            text-align: center;
-            white-space: nowrap;
-          }
           .nav-login {
             font-family: var(--sans);
             font-size: 0.88rem;
