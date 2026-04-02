@@ -30,6 +30,7 @@ const dmMono = DM_Mono({
 // ── Metadata ──────────────────────────────────────────────────────────────────
 export const metadata = {
   metadataBase: new URL('https://summitskills.io'),
+  viewport: 'width=device-width, initial-scale=1',
 
   title: {
     default: 'SummitSkills — Skill Development That Actually Sticks',
