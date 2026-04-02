@@ -129,10 +129,9 @@ nav {
 .logo span { color: var(--brand-teal); }
 
 .logo-img {
-  height: 36px;
+  height: 42px;
   width: auto;
   display: block;
-  filter: brightness(0) invert(1);
   opacity: 0.95;
   margin-right: 10px;
 }
