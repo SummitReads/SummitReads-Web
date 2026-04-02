@@ -245,50 +245,12 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>{`
-          .indiv-desc {
-            font-family: var(--sans);
-            font-size: 0.8rem !important;
-            color: var(--muted) !important;
-            font-style: italic;
-            margin: 4px 0 16px !important;
-            line-height: 1.4;
-            display: table;
-          }
           .hero-footnote-indiv {
             font-family: var(--sans);
             font-size: 0.78rem;
             color: var(--faint);
             margin-top: 8px;
             line-height: 1.5;
-          }
-          .hero-footnote {
-            font-family: var(--sans);
-            font-size: 0.78rem;
-            color: var(--faint);
-            margin-top: 12px;
-            line-height: 1.5;
-            text-align: center;
-          }
-          .checkout-note {
-            font-family: var(--sans);
-            font-size: 0.78rem;
-            color: var(--faint);
-            margin-top: 8px;
-            text-align: center;
-            line-height: 1.5;
-          }
-          .nav-login {
-            font-family: var(--sans);
-            font-size: 0.88rem;
-            font-weight: 500;
-            color: var(--muted);
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: color 0.15s ease;
-          }
-          .nav-login:hover {
-            color: var(--text);
           }
           .manager-usecases {
             display: grid;
@@ -461,7 +423,7 @@ export default function Home() {
             .best-fit-right { position: static; }
           }
 
-/* ── Dashboard Annotations ── */
+          /* ── Dashboard Annotations ── */
           .dashboard-annotations {
             display: flex;
             flex-wrap: wrap;
@@ -488,71 +450,6 @@ export default function Home() {
             font-size: 0.8rem;
             color: var(--muted);
             line-height: 1.5;
-          }
-
-          /* ── Credibility Section ── */
-          .credibility {
-            padding: 72px 0;
-            border-top: 1px solid var(--border);
-          }
-          .credibility-inner {
-            max-width: 860px;
-            margin: 0 auto;
-            text-align: center;
-          }
-          .credibility-inner h2 {
-            font-family: var(--serif);
-            font-size: clamp(1.6rem, 3vw, 2.2rem);
-            color: var(--text);
-            line-height: 1.25;
-            margin-bottom: 16px;
-          }
-          .credibility-inner h2 em { color: var(--teal); font-style: italic; }
-          .credibility-sub {
-            font-family: var(--sans);
-            font-size: 1rem;
-            color: var(--muted);
-            margin-bottom: 56px;
-            line-height: 1.6;
-          }
-          .credibility-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 24px;
-            margin-bottom: 48px;
-            text-align: left;
-          }
-          .credibility-item {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px 24px;
-          }
-          .credibility-stat {
-            font-family: var(--serif);
-            font-size: 2.4rem;
-            font-weight: 700;
-            color: var(--teal);
-            margin-bottom: 10px;
-            line-height: 1;
-          }
-          .credibility-label {
-            font-family: var(--sans);
-            font-size: 0.85rem;
-            color: var(--muted);
-            line-height: 1.6;
-          }
-          .credibility-pull {
-            font-family: var(--serif);
-            font-size: 1.05rem;
-            font-style: italic;
-            color: var(--muted);
-            border-left: 3px solid rgba(23,184,224,0.4);
-            padding: 16px 24px;
-            text-align: left;
-            border-radius: 0 8px 8px 0;
-            background: rgba(23,184,224,0.04);
-            margin-bottom: 40px;
           }
         `}</style>
       </Head>
