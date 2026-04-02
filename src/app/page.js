@@ -566,7 +566,7 @@ export default function Home() {
           <img
             src="/SummitSkills-Logo.png"
             alt="SummitSkills"
-            style={{ height: '42px', width: 'auto', opacity: 0.95, marginRight: '10px', verticalAlign: 'middle' }}
+            style={{ height: '38px', width: 'auto', opacity: 0.95, marginRight: '10px', verticalAlign: 'middle' }}
             className="nav-logo-img"
             onError={e => { e.target.style.display = 'none' }}
           />
