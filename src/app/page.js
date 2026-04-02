@@ -282,6 +282,8 @@ export default function Home() {
             color: var(--faint);
             margin-top: 10px;
             line-height: 1.5;
+            text-align: center;
+            white-space: nowrap;
           }
           .nav-login {
             font-family: var(--sans);
@@ -934,7 +936,7 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation calls. No LMS setup. Start your team pilot today — your team is live in minutes.</p>
+        <p>No implementation calls. No LMS setup. Start your team pilot today. Your team is live in minutes.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
         <p className="final-note">14-day team pilot · Card required · MSA required · Billed on day 15</p>
       </section>
