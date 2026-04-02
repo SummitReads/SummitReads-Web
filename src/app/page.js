@@ -572,7 +572,7 @@ export default function Home() {
           <img
             src="/SummitSkills-Logo.png"
             alt="SummitSkills"
-            style={{ height: '28px', width: 'auto', opacity: 0.9, marginRight: '8px', verticalAlign: 'middle' }}
+            style={{ height: '42px', width: 'auto', opacity: 0.95, marginRight: '10px', verticalAlign: 'middle' }}
             onError={e => { e.target.style.display = 'none' }}
           />
           Summit<em>Skills</em>
