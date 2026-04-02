@@ -873,11 +873,12 @@
 
   /* Nav — logo + Log in + Get Started only */
   .landing-page nav { padding: 0 16px; height: 56px; }
+  .landing-page .nav-logo { font-size: 1.1rem; letter-spacing: -0.5px; }
   .landing-page .nav-link { display: none; }
   .landing-page .nav-link-teams { display: none; }
   .landing-page .nav-links { gap: 2px; }
-  .landing-page .nav-login { font-size: 0.8rem; padding: 6px 10px; }
-  .landing-page .nav-cta { padding: 7px 14px; font-size: 0.8rem; margin-left: 4px; }
+  .landing-page .nav-login { font-size: 0.75rem; padding: 5px 8px; }
+  .landing-page .nav-cta { padding: 7px 12px; font-size: 0.75rem; margin-left: 4px; white-space: nowrap; }
 
   /* Hero — single column */
   .landing-page .hero {
