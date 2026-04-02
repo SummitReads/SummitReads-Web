@@ -50,12 +50,6 @@
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
-.landing-page .nav-logo {
-  display: flex; align-items: center;
-  font-weight: 800; font-size: 1.4rem; letter-spacing: -1px;
-  color: var(--text); text-decoration: none;
-}
-.landing-page .nav-logo em { font-style: normal; color: var(--teal); }
 .landing-page .nav-links {
   display: flex; align-items: center; gap: 6px;
 }
@@ -873,7 +867,6 @@
 
   /* Nav — logo + Log in + Get Started only */
   .landing-page nav { padding: 0 16px; height: 56px; }
-  .landing-page .nav-logo { font-size: 1.1rem; letter-spacing: -0.5px; }
   .landing-page .nav-link { display: none; }
   .landing-page .nav-link-teams { display: none; }
   .landing-page .nav-links { gap: 2px; }

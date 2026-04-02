@@ -461,11 +461,7 @@ export default function Home() {
             .best-fit-right { position: static; }
           }
 
-          @media (max-width: 640px) {
-            .nav-logo-img { height: 34px !important; }
-          }
-
-          /* ── Dashboard Annotations ── */
+/* ── Dashboard Annotations ── */
           .dashboard-annotations {
             display: flex;
             flex-wrap: wrap;
@@ -562,15 +558,14 @@ export default function Home() {
       </Head>
       {/* ── NAV ── */}
       <nav>
-        <a href="#" className="nav-logo">
+        <a href="#" className="logo">
           <img
             src="/SummitSkills-Logo.png"
             alt="SummitSkills"
-            style={{ height: '38px', width: 'auto', opacity: 0.95, marginRight: '10px', verticalAlign: 'middle' }}
-            className="nav-logo-img"
+            className="logo-img"
             onError={e => { e.target.style.display = 'none' }}
           />
-          Summit<em>Skills</em>
+          Summit<span>Skills</span>
         </a>
         <div className="nav-links">
           <a href="#how"          className="nav-link">How it works</a>
