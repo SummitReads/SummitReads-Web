@@ -554,7 +554,7 @@ export default function Home() {
           <div className="sprint-intro reveal">
             <h2>What a completed sprint produces.</h2>
             <div className="sprint-intro-aside">
-              <p>Productivity &amp; Habits, one of 295 sprints. Same structure, every sprint.</p>
+              <p>Same structure, every sprint.</p>
             </div>
           </div>
           <div className="sprint-wrap reveal">
@@ -583,16 +583,15 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Same structure across all 295 sprints. Stage 7 always produces a real work deliverable. Not a certificate, not a score.</p>
-              <a href="#pricing">Get access to see the full sprint →</a>
+              <p>Same structure, every sprint. Stage 7 always produces a real work deliverable. Not a certificate, not a score.</p>
+              <a href="#pricing">See pricing →</a>
             </div>
-            <div className="sprint-deliverable reveal">
+            <div className="sprint-deliverable">
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
                 Built from their own reflections across the sprint, including the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
               </div>
-              <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
           </div>
         </div>
