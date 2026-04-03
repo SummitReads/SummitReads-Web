@@ -65,13 +65,13 @@ const FAQ_ITEMS = [
 // ── Stage data ────────────────────────────────────────────────────────────────
 
 const STAGES = [
-  { n: '01', type: 'Ascent',   desc: 'Why small consistent actions outperform intense sporadic effort',           cls: 'is-done'   },
-  { n: '02', type: 'Ascent',   desc: 'How your environment shapes your behavior more than willpower does',        cls: 'is-done'   },
-  { n: '03', type: 'Basecamp', desc: 'Identify one habit loop already running in your work week',                 cls: 'is-active' },
-  { n: '04', type: 'Ascent',   desc: 'Design friction out — make the right action the path of least resistance',  cls: ''          },
-  { n: '05', type: 'Ascent',   desc: 'Linking new behaviors to existing routines you already do reliably',        cls: ''          },
-  { n: '06', type: 'Ascent',   desc: 'The two-minute entry point — reduce any habit to its smallest start',       cls: ''          },
-  { n: '07', type: 'Summit',   desc: 'Build your personal behavior framework — a working tool built from your own reflections',   cls: ''          },
+  { n: '01', type: 'Ascent',   desc: 'Attach the behavior to one existing moment that already happens',           cls: 'is-done'   },
+  { n: '02', type: 'Ascent',   desc: 'Design your space so the cue is visible before you can drift past it',      cls: 'is-done'   },
+  { n: '03', type: 'Milepost', desc: 'Write the smallest version of the behavior that still counts',              cls: 'is-active' },
+  { n: '04', type: 'Ascent',   desc: 'Lock in the exact day, time, place, and action so there is no room for drift', cls: ''       },
+  { n: '05', type: 'Ascent',   desc: 'Create a simple mark-right-after loop so finished work stays visible',      cls: ''          },
+  { n: '06', type: 'Ascent',   desc: 'Review what actually happened and tighten the plan based on reality',       cls: ''          },
+  { n: '07', type: 'Summit',   desc: 'Choose one repeatable next-week move based on what the week produced',      cls: ''          },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -478,14 +478,14 @@ export default function Home() {
             <div className="hw-stages">
               <div className="hw-stage done"><span className="hw-stage-num">01</span><div className="hw-stage-label">Ascent</div></div>
               <div className="hw-stage done"><span className="hw-stage-num">02</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage active"><span className="hw-stage-num">03</span><div className="hw-stage-label">Basecamp</div></div>
+              <div className="hw-stage active"><span className="hw-stage-num">03</span><div className="hw-stage-label">Milepost</div></div>
               <div className="hw-stage"><span className="hw-stage-num">04</span><div className="hw-stage-label">Ascent</div></div>
               <div className="hw-stage"><span className="hw-stage-num">05</span><div className="hw-stage-label">Ascent</div></div>
               <div className="hw-stage"><span className="hw-stage-num">06</span><div className="hw-stage-label">Ascent</div></div>
               <div className="hw-stage"><span className="hw-stage-num">07</span><div className="hw-stage-label">Summit</div></div>
             </div>
             <div className="hw-body">
-              <div className="hw-body-label">Stage 3 · Basecamp</div>
+              <div className="hw-body-label">Stage 3 · Milepost</div>
               <div className="hw-body-heading">Before Stage 4 unlocks</div>
               <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on. Something in your own day, your own team.</div>
               <div className="hw-gate">
