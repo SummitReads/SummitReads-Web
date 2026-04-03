@@ -553,9 +553,6 @@ export default function Home() {
         <div className="wrap">
           <div className="sprint-intro reveal">
             <h2>What a completed sprint produces.</h2>
-            <div className="sprint-intro-aside">
-              <p>Same structure, every sprint.</p>
-            </div>
           </div>
           <div className="sprint-wrap reveal">
             <div className="sprint-chrome">
