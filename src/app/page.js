@@ -81,7 +81,6 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [authChecked, setAuthChecked] = useState(false)
 
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
@@ -232,7 +231,6 @@ export default function Home() {
   // Hold render until we know the user isn't logged in.
   // Prevents the landing page from flashing for logged-in users before
   // the /library redirect fires.
-  if (!authChecked) return <div style={{ minHeight: '100vh', background: '#0D1520' }} />
 
   const cssVars = {
     '--ink':      '#0D1520',
