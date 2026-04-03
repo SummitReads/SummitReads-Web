@@ -591,7 +591,7 @@ export default function Home() {
               <p>Same structure across all 295 sprints. Stage 7 always produces a real work deliverable. Not a certificate, not a score.</p>
               <a href="#pricing">Get access to see the full sprint →</a>
             </div>
-            <div className="sprint-deliverable reveal">
+            <div className="sprint-deliverable">
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
