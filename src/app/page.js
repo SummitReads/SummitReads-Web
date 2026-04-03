@@ -593,7 +593,7 @@ export default function Home() {
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
-                Built from their own reflections across the sprint — the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
+                Built from their own reflections across the sprint, including the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
               </div>
               <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
