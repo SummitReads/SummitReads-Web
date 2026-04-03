@@ -560,9 +560,6 @@ export default function Home() {
           <div className="sprint-wrap reveal">
             <div className="sprint-chrome">
               <div className="sprint-chrome-left">
-                <div className="sprint-icon">
-                  <img src="/SummitSkills-Logo.png" alt="SummitSkills" style={{ width: '22px', height: '22px', objectFit: 'contain', opacity: 0.9 }} />
-                </div>
                 <div>
                   <div className="sprint-name">Building Consistent Habits</div>
                   <div className="sprint-cat">Productivity &amp; Habits · 7-Stage Skill Sprint</div>
