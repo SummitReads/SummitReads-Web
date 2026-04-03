@@ -6,7 +6,6 @@ import { supabase } from '@/app/supabaseClient';
 import BookRow from '@/components/BookRow'; 
 import StatsHoverBanner from '@/components/StatsHoverBanner';
 import StreakCounter from '@/components/StreakCounter';
-import OnboardingModal from '@/components/OnboardingModal';
 
 // ── Loading skeleton for featured card + rows ─────────────────────────────────
 function LoadingSkeleton() {
@@ -46,8 +45,6 @@ function LoadingSkeleton() {
 
 export default function Library() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState(null);
   const [books, setBooks] = useState([]); 
   const [booksByCategory, setBooksByCategory] = useState({});
   const [loading, setLoading] = useState(true);
@@ -55,16 +52,8 @@ export default function Library() {
   const [searchQuery, setSearchQuery] = useState('');
   
   useEffect(() => {
-    setMounted(true);
-    
-    async function checkUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-    }
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (event === 'SIGNED_OUT') router.push('/auth/login');
     });
 
     async function fetchBooks() {
@@ -190,8 +179,6 @@ export default function Library() {
     const rich = books.find(b => b.sprint_title && b.brief_content);
     return rich || books[0];
   }, [books]);
-
-  if (!mounted) return null;
 
   return (
     <>

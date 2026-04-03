@@ -81,12 +81,19 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) router.replace('/library')
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (session?.user) {
+          router.replace('/library')
+        } else {
+          setAuthChecked(true)
+        }
+      })
+      .catch(() => setAuthChecked(true))
   }, [])
 
   // Reset checkout loading on mount (handles browser back button)
@@ -222,6 +229,11 @@ export default function Home() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
+  // Hold render until we know the user isn't logged in.
+  // Prevents the landing page from flashing for logged-in users before
+  // the /library redirect fires.
+  if (!authChecked) return <div style={{ minHeight: '100vh', background: '#0D1520' }} />
+
   const cssVars = {
     '--ink':      '#0D1520',
     '--ink-2':    '#101C2C',
@@ -277,43 +289,6 @@ export default function Home() {
             color: var(--muted);
             line-height: 1.6;
             margin: 0;
-          }
-
-          /* ── Sprint Deliverable ── */
-          .sprint-deliverable {
-            margin-top: 32px;
-            background: rgba(23,184,224,0.06);
-            border: 1px solid rgba(23,184,224,0.2);
-            border-radius: 12px;
-            padding: 28px 32px;
-          }
-          .sprint-deliverable-label {
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            color: var(--teal);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-          }
-          .sprint-deliverable-title {
-            font-family: var(--sans);
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 10px;
-          }
-          .sprint-deliverable-desc {
-            font-family: var(--sans);
-            font-size: 0.9rem;
-            color: var(--muted);
-            line-height: 1.65;
-            margin-bottom: 12px;
-          }
-          .sprint-deliverable-note {
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            color: var(--faint);
-            font-style: italic;
           }
 
           /* ── Best Fit Section ── */
@@ -620,7 +595,7 @@ export default function Home() {
               <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
-                Built from their own reflections across the sprint — the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
+                Built from their own reflections across the sprint, including the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
               </div>
               <div className="sprint-deliverable-note">Every person's output is different because every person's reflections are different.</div>
             </div>
