@@ -18,50 +18,6 @@ const BASE_PRICE = 179
 const getTier = n => TIERS.find(t => n >= t.min && n <= t.max)
 const fmt = n => '$' + n.toLocaleString('en-US')
 
-// ── FAQ content ───────────────────────────────────────────────────────────────
-
-const FAQ_ITEMS = [
-  {
-    q: 'Do we need an LMS or other software?',
-    a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
-  },
-  {
-    q: "What's the minimum seat count?",
-    a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats. No discount code needed, it's built into the calculator.</p>,
-  },
-  {
-    q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
-  },
-  {
-    q: "What if someone doesn't finish?",
-    a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint, so you can follow up directly if you want to.</p>,
-  },
-  {
-    q: 'What does the contract commit us to?',
-    a: <>
-      <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
-      <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
-    </>,
-  },
-  {
-    q: 'Does this work for remote or distributed teams?',
-    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
-  },
-  {
-    q: 'How is this different from a course library or passive learning platform?',
-    a: <>
-      <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
-      <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
-    </>,
-  },
-  {
-    q: 'What does the written reflection actually look like?',
-    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
-  },
-]
-
 // ── Stage data ────────────────────────────────────────────────────────────────
 
 const STAGES = [
@@ -120,6 +76,17 @@ export default function Home() {
     return () => obs.disconnect()
   }, [])
 
+  // Approved sprint count
+  const [sprintCount, setSprintCount] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('review_status', 'approved')
+      .then(({ count }) => { if (count !== null) setSprintCount(count) })
+  }, [])
+
   // Pricing state
   const [seats, setSeats]     = useState(10)
   const tier  = getTier(seats)
@@ -131,6 +98,49 @@ export default function Home() {
   const [modalSuccess, setModalSuccess] = useState(false)
   const [form,         setForm]         = useState({ name: '', company: '', email: '' })
   const [submitting,   setSubmitting]   = useState(false)
+
+  // FAQ content — defined inside component so it can reference sprintCount
+  const FAQ_ITEMS = [
+    {
+      q: 'Do we need an LMS or other software?',
+      a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
+    },
+    {
+      q: "What's the minimum seat count?",
+      a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats. No discount code needed, it's built into the calculator.</p>,
+    },
+    {
+      q: 'Can we assign specific sprints to specific roles?',
+      a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. Hundreds of sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
+    },
+    {
+      q: "What if someone doesn't finish?",
+      a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint, so you can follow up directly if you want to.</p>,
+    },
+    {
+      q: 'What does the contract commit us to?',
+      a: <>
+        <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
+        <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
+      </>,
+    },
+    {
+      q: 'Does this work for remote or distributed teams?',
+      a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
+    },
+    {
+      q: 'How is this different from a course library or passive learning platform?',
+      a: <>
+        <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
+        <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
+        <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
+      </>,
+    },
+    {
+      q: 'What does the written reflection actually look like?',
+      a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
+    },
+  ]
 
   function openModal() {
     if (!tier?.price) {
@@ -654,7 +664,7 @@ export default function Home() {
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>295 sprints across leadership, communication, productivity, and more</li>
+                  <li>{sprintCount ?? '—'} sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
