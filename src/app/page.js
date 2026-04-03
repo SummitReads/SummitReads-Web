@@ -505,7 +505,7 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
-              <p>Completion rates tell you who clicked through. Written reflection logs tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
+              <p>Completion rates tell you who clicked through. Written responses tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
@@ -594,7 +594,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Written reflection responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
+            <p>Written responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -646,7 +646,7 @@ export default function Home() {
             <div className="pricing-top">
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
-                <div className="plan-name">Team Skill Development Plan</div>
+                <div className="plan-name">Team Sprint Plan</div>
                 <ul className="plan-features">
                   <li>Manager dashboard: reflection logs, progress tracking, sprint assignment</li>
                   <li>Written reflection at every stage, logged and manager-visible</li>
