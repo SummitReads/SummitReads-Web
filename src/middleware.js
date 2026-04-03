@@ -2,9 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 // ── Coming Soon ───────────────────────────────────────────────────────────────
-const COMING_SOON  = true
+const COMING_SOON   = true
 const PREVIEW_TOKEN = 'sk-launch-2026-xk9m'  // change this to anything hard to guess
 const COOKIE_NAME   = 'ss_preview'
+
+const ALLOWED_IPS = [
+  '73.131.213.38',  // home network
+]
 
 const COMING_SOON_BYPASS = [
   '/coming-soon',
@@ -23,8 +27,15 @@ export async function middleware(request) {
     const isBypassed = COMING_SOON_BYPASS.some(p => pathname.startsWith(p))
 
     if (!isBypassed) {
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+        || request.headers.get('x-real-ip')
+        || ''
+
+      const isAllowedIP = ALLOWED_IPS.includes(ip)
       const cookie = request.cookies.get(COOKIE_NAME)
-      if (!cookie || cookie.value !== 'granted') {
+      const hasCookie = cookie?.value === 'granted'
+
+      if (!isAllowedIP && !hasCookie) {
         return NextResponse.rewrite(new URL('/coming-soon', request.url))
       }
     }
