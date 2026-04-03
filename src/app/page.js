@@ -289,43 +289,6 @@ export default function Home() {
             margin: 0;
           }
 
-          /* ── Sprint Deliverable ── */
-          .sprint-deliverable {
-            margin-top: 32px;
-            background: rgba(23,184,224,0.06);
-            border: 1px solid rgba(23,184,224,0.2);
-            border-radius: 12px;
-            padding: 28px 32px;
-          }
-          .sprint-deliverable-label {
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            color: var(--teal);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-          }
-          .sprint-deliverable-title {
-            font-family: var(--sans);
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 10px;
-          }
-          .sprint-deliverable-desc {
-            font-family: var(--sans);
-            font-size: 0.9rem;
-            color: var(--muted);
-            line-height: 1.65;
-            margin-bottom: 12px;
-          }
-          .sprint-deliverable-note {
-            font-family: var(--mono);
-            font-size: 0.72rem;
-            color: var(--faint);
-            font-style: italic;
-          }
-
           /* ── Best Fit Section ── */
           .best-fit {
             padding: 72px 0;
