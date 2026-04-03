@@ -456,8 +456,9 @@ export default function Home() {
       <div className="hero">
         <div className="hero-left">
           <div className="hero-stats-row">
+            <div className="hero-stat-pill"><strong>{sprintCount ?? '—'}</strong> sprints</div>
             <div className="hero-stat-pill"><strong>15</strong> min/day</div>
-            <div className="hero-stat-pill"><strong>7-stage</strong> sprints</div>
+            <div className="hero-stat-pill"><strong>7-stage</strong> format</div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
