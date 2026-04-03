@@ -23,42 +23,42 @@ const fmt = n => '$' + n.toLocaleString('en-US')
 const FAQ_ITEMS = [
   {
     q: 'Do we need an LMS or other software?',
-    a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser — no app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
+    a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
   },
   {
     q: "What's the minimum seat count?",
-    a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats — no discount code needed, it's built into the calculator.</p>,
+    a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats. No discount code needed, it's built into the calculator.</p>,
   },
   {
     q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint — useful for a shared skill gap — or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
   },
   {
     q: "What if someone doesn't finish?",
-    a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint — so you can follow up directly if you want to.</p>,
+    a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint, so you can follow up directly if you want to.</p>,
   },
   {
     q: 'What does the contract commit us to?',
     a: <>
-      <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term</strong> — it won't increase at renewal without your agreement.</p>
+      <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
       <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
     </>,
   },
   {
     q: 'Does this work for remote or distributed teams?',
-    a: <p>Yes — it's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
+    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
   },
   {
     q: 'How is this different from a course library or passive learning platform?',
     a: <>
-      <p>Most learning platforms optimize for content consumption — watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
+      <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
       <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
-      <p>By Stage 7, the employee has produced a real work deliverable — not a certificate, not a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
+      <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
     </>,
   },
   {
     q: 'What does the written reflection actually look like?',
-    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material — they're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard — they reveal how team members actually think, not just whether they clicked through a course.</p>,
+    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
   },
 ]
 
@@ -86,13 +86,8 @@ export default function Home() {
   useEffect(() => {
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
-        if (session?.user) {
-          router.replace('/library')
-        } else {
-          setAuthChecked(true)
-        }
+        if (session?.user) router.replace('/library')
       })
-      .catch(() => setAuthChecked(true))
   }, [])
 
   // Reset checkout loading on mount (handles browser back button)
@@ -458,7 +453,7 @@ export default function Home() {
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Most team learning ends with a completion rate. SummitSkills ends with written engagement logs and a real work deliverable. Something each person built from their own thinking. Managers assign sprints, see every written reflection, and track progress by individual. Team members can also choose a sprint on their own and work through it at their own pace.
+            Skill development built around required written reflection and real behavior change. Managers assign sprints, see every written response, and track actual progress by individual. Built-in coaching support helps team members apply the work as they go. Teams set up in minutes, no implementation call, no LMS.
           </p>
           <div className="hero-actions">
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
@@ -533,7 +528,7 @@ export default function Home() {
                 <div className="mechanic-num">03</div>
                 <div>
                   <h3>Every stage requires a written response. No skipping.</h3>
-                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice. They write it out. Every response is logged. Managers see the writing, not just a checkmark.</p>
+                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice. They write it out. Every response is logged. Managers see the actual writing, stage by stage.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
@@ -580,7 +575,7 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Same structure, every sprint. Stage 7 always produces a real work deliverable. Not a certificate, not a score.</p>
+              <p>Same structure, every sprint. Stage 7 always produces a real work deliverable.</p>
               <a href="#pricing">See pricing →</a>
             </div>
             <div className="sprint-deliverable">
@@ -616,15 +611,15 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">Written.</div>
-                <div className="credibility-label">Every stage requires a written response connecting the concept to real work. Not multiple choice. Not a checkbox. They write it out before the next stage opens.</div>
+                <div className="credibility-label">Written responses are required before the next stage opens. No quiz, no multiple choice. The actual thinking, in their own words.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Logged.</div>
-                <div className="credibility-label">Every response goes to the manager dashboard. The actual writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
+                <div className="credibility-label">Every response goes to the manager dashboard. The writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Delivered.</div>
-                <div className="credibility-label">Stage 7 ends with a real work output built from their own reflections. Not a certificate. Something they made for their actual job.</div>
+                <div className="credibility-label">Stage 7 ends with a real work output built from their own reflections. Not a certificate to file away. A tool they'll actually use.</div>
               </div>
             </div>
             <div className="credibility-pull">
@@ -657,8 +652,8 @@ export default function Home() {
                   <li>Written reflection at every stage, logged and manager-visible</li>
                   <li>Stage 7 work deliverable per sprint, not a certificate</li>
                   <li>Assign by individual, role, or full team</li>
-                  <li>AI coaching companion per seat</li>
-                  <li>Self-guided setup, live in minutes</li>
+                  <li>Built-in coaching support per seat</li>
+                  <li>Self-serve setup, live in minutes</li>
                   <li>295 sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
@@ -731,7 +726,7 @@ export default function Home() {
                     disabled={checkoutLoading}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '0.78rem', color: 'var(--faint)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
                   >
-                    Individual access also available — $149/yr · 7-day free trial →
+                    Individual access also available · $149/yr · 7-day free trial →
                   </button>
                 </div>
               </div>
@@ -791,7 +786,7 @@ export default function Home() {
       {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation calls. No LMS setup. Start your team pilot today. Your team is live in minutes.</p>
+        <p>No implementation call, no LMS, no IT ticket. Your team is live in minutes.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
         <p className="final-note">14-day team pilot · Card required · MSA required · Billed on day 15</p>
       </section>
@@ -825,7 +820,7 @@ export default function Home() {
                 <h3>Contract sent!</h3>
                 <p>
                   Your MSA is on its way to <strong style={{ color: '#fff' }}>{form.email}</strong>.<br /><br />
-                  Sign at your convenience — takes under 2 minutes. Once signed, you'll receive a Stripe payment link automatically.
+                  Sign at your convenience. Takes under 2 minutes. Once signed, you'll receive a Stripe payment link automatically.
                 </p>
                 <button className="btn-done" onClick={() => setModalOpen(false)}>Done</button>
               </div>
