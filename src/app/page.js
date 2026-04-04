@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Head from 'next/head'
+// NOTE: next/head is not supported in App Router — removed.
+// Google Fonts are loaded via @import in the <style> tag below.
+// For production, move fonts to app/layout.js using next/font/google.
 import { supabase } from '@/app/supabaseClient'
 import './landing.css'
 
@@ -81,9 +83,14 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [sprintCount, setSprintCount] = useState(null)
+
+  // FIX #2: Seed with last-known count so the pill never shows "..." on load.
+  // The Supabase fetch below still runs and updates this to the live value.
+  const [sprintCount, setSprintCount] = useState(18)
 
   // Auth redirect — logged-in users go to /library
+  // NOTE: For a flash-free experience, also handle this in middleware.js so
+  // the redirect happens server-side before this page renders at all.
   useEffect(() => {
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
@@ -126,7 +133,9 @@ export default function Home() {
     }
   }, [])
 
-  // Scroll reveal
+  // FIX #4: Scroll reveal — pre-scan elements already in the viewport on
+  // refresh before handing them to the observer, so a mid-page refresh
+  // doesn't leave visible elements stuck in their hidden state.
   useEffect(() => {
     const obs = new IntersectionObserver(
       entries => entries.forEach(e => {
@@ -134,7 +143,13 @@ export default function Home() {
       }),
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
     )
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) {
+        el.classList.add('visible')
+      } else {
+        obs.observe(el)
+      }
+    })
     return () => obs.disconnect()
   }, [])
 
@@ -259,180 +274,186 @@ export default function Home() {
 
   return (
     <div className="landing-page" style={cssVars}>
-      <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-        <style>{`
-          .hero-footnote-indiv {
-            font-family: var(--sans);
-            font-size: 0.78rem;
-            color: var(--faint);
-            margin-top: 8px;
-            line-height: 1.5;
-          }
-          .manager-usecases {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-top: 48px;
-          }
-          .manager-usecase {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 28px 24px;
-          }
-          .manager-usecase h4 {
-            font-family: var(--sans);
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--teal);
-            margin: 0 0 10px;
-          }
-          .manager-usecase p {
-            font-family: var(--sans);
-            font-size: 0.88rem;
-            color: var(--muted);
-            line-height: 1.6;
-            margin: 0;
-          }
+      {/*
+        FIX #1: Replaced <Head> (next/head — Pages Router only, ignored during
+        SSR in App Router) with a plain <style> element. This guarantees the
+        fonts and supplementary CSS are present on every render without a FOUC.
 
-          .best-fit {
-            padding: 72px 0;
-            background: rgba(255,255,255,0.015);
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-          }
-          .best-fit-inner {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 56px;
-            align-items: start;
-          }
-          .best-fit-intro {
-            margin-bottom: 40px;
-          }
-          .best-fit-intro h2 {
-            font-family: var(--serif);
-            font-size: clamp(1.6rem, 3vw, 2.2rem);
-            color: var(--text);
-            line-height: 1.25;
-            margin-bottom: 0;
-          }
-          .best-fit-intro h2 em { color: var(--teal); font-style: italic; }
-          .best-fit-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-          }
-          .best-fit-card {
-            display: flex;
-            gap: 18px;
-            align-items: flex-start;
-          }
-          .best-fit-num {
-            font-family: var(--mono);
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--teal);
-            background: rgba(23,184,224,0.1);
-            border: 1px solid rgba(23,184,224,0.2);
-            border-radius: 6px;
-            padding: 4px 8px;
-            min-width: 32px;
-            text-align: center;
-            margin-top: 2px;
-            flex-shrink: 0;
-          }
-          .best-fit-card h4 {
-            font-family: var(--sans);
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text);
-            margin: 0 0 6px;
-          }
-          .best-fit-card p {
-            font-family: var(--sans);
-            font-size: 0.84rem;
-            color: var(--muted);
-            line-height: 1.65;
-            margin: 0;
-          }
-          .best-fit-not {
-            font-family: var(--sans);
-            font-size: 0.84rem;
-            color: var(--faint);
-            line-height: 1.6;
-            padding: 16px 20px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-top: 32px;
-          }
-          .best-fit-not-label {
-            font-weight: 600;
-            color: var(--muted);
-            margin-right: 6px;
-          }
-          .best-fit-right { position: sticky; top: 100px; }
-          .best-fit-visual {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 28px 28px 24px;
-          }
-          .bfv-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--faint);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 20px;
-          }
-          .bfv-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 14px;
-          }
-          .bfv-cat { font-size: 0.8rem; color: var(--muted); width: 130px; flex-shrink: 0; }
-          .bfv-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
-          .bfv-bar { height: 100%; background: var(--teal); border-radius: 2px; opacity: 0.7; }
-          .bfv-n { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); width: 24px; text-align: right; }
-          @media (max-width: 768px) {
-            .best-fit-inner { grid-template-columns: 1fr; gap: 48px; }
-            .best-fit-right { position: static; }
-          }
+        RECOMMENDED NEXT STEP: Move the Google Fonts @import to app/layout.js
+        using next/font/google for proper SSR font loading and font-display
+        optimization. The @import here is a correct stopgap.
+      */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap');
 
-          .dashboard-annotations {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 20px;
-            justify-content: space-between;
-          }
-          .dash-annotation {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            max-width: 280px;
-          }
-          .dash-ann-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--teal);
-            flex-shrink: 0;
-            margin-top: 5px;
-          }
-          .dash-ann-text {
-            font-family: var(--sans);
-            font-size: 0.8rem;
-            color: var(--muted);
-            line-height: 1.5;
-          }
-        `}</style>
-      </Head>
+        .hero-footnote-indiv {
+          font-family: var(--sans);
+          font-size: 0.78rem;
+          color: var(--faint);
+          margin-top: 8px;
+          line-height: 1.5;
+        }
+        .manager-usecases {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 24px;
+          margin-top: 48px;
+        }
+        .manager-usecase {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          padding: 28px 24px;
+        }
+        .manager-usecase h4 {
+          font-family: var(--sans);
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--teal);
+          margin: 0 0 10px;
+        }
+        .manager-usecase p {
+          font-family: var(--sans);
+          font-size: 0.88rem;
+          color: var(--muted);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .best-fit {
+          padding: 72px 0;
+          background: rgba(255,255,255,0.015);
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+        .best-fit-inner {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 56px;
+          align-items: start;
+        }
+        .best-fit-intro {
+          margin-bottom: 40px;
+        }
+        .best-fit-intro h2 {
+          font-family: var(--serif);
+          font-size: clamp(1.6rem, 3vw, 2.2rem);
+          color: var(--text);
+          line-height: 1.25;
+          margin-bottom: 0;
+        }
+        .best-fit-intro h2 em { color: var(--teal); font-style: italic; }
+        .best-fit-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .best-fit-card {
+          display: flex;
+          gap: 18px;
+          align-items: flex-start;
+        }
+        .best-fit-num {
+          font-family: var(--mono);
+          font-size: 0.7rem;
+          font-weight: 500;
+          color: var(--teal);
+          background: rgba(23,184,224,0.1);
+          border: 1px solid rgba(23,184,224,0.2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          min-width: 32px;
+          text-align: center;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+        .best-fit-card h4 {
+          font-family: var(--sans);
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 6px;
+        }
+        .best-fit-card p {
+          font-family: var(--sans);
+          font-size: 0.84rem;
+          color: var(--muted);
+          line-height: 1.65;
+          margin: 0;
+        }
+        .best-fit-not {
+          font-family: var(--sans);
+          font-size: 0.84rem;
+          color: var(--faint);
+          line-height: 1.6;
+          padding: 16px 20px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          margin-top: 32px;
+        }
+        .best-fit-not-label {
+          font-weight: 600;
+          color: var(--muted);
+          margin-right: 6px;
+        }
+        .best-fit-right { position: sticky; top: 100px; }
+        .best-fit-visual {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 28px 28px 24px;
+        }
+        .bfv-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: var(--faint);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 20px;
+        }
+        .bfv-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .bfv-cat { font-size: 0.8rem; color: var(--muted); width: 130px; flex-shrink: 0; }
+        .bfv-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+        .bfv-bar { height: 100%; background: var(--teal); border-radius: 2px; opacity: 0.7; }
+        .bfv-n { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); width: 24px; text-align: right; }
+        @media (max-width: 768px) {
+          .best-fit-inner { grid-template-columns: 1fr; gap: 48px; }
+          .best-fit-right { position: static; }
+        }
+
+        .dashboard-annotations {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-top: 20px;
+          justify-content: space-between;
+        }
+        .dash-annotation {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          max-width: 280px;
+        }
+        .dash-ann-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--teal);
+          flex-shrink: 0;
+          margin-top: 5px;
+        }
+        .dash-ann-text {
+          font-family: var(--sans);
+          font-size: 0.8rem;
+          color: var(--muted);
+          line-height: 1.5;
+        }
+      `}</style>
       <nav>
         <a href="#" className="logo">
           <img
