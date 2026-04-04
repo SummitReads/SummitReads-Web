@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 // NOTE: next/head is not supported in App Router — removed.
-// Google Fonts are loaded via @import in the <style> tag below.
+// Google Fonts are loaded server-side via next/font/google in app/layout.js.
 // For production, move fonts to app/layout.js using next/font/google.
 import { supabase } from '@/app/supabaseClient'
 import './landing.css'
@@ -266,9 +266,9 @@ export default function Home() {
     '--text':     '#EEF2F7',
     '--muted':    'rgba(238,242,247,0.58)',
     '--faint':    'rgba(238,242,247,0.32)',
-    '--sans':     "'DM Sans', system-ui, sans-serif",
-    '--serif':    "'Playfair Display', serif",
-    '--mono':     "'DM Mono', monospace",
+    '--sans':     "var(--font-geist-sans)",
+    '--serif':    "var(--font-serif)",
+    '--mono':     "var(--font-geist-mono)",
     '--max':      '1120px',
   }
 
@@ -279,13 +279,8 @@ export default function Home() {
         SSR in App Router) with a plain <style> element. This guarantees the
         fonts and supplementary CSS are present on every render without a FOUC.
 
-        RECOMMENDED NEXT STEP: Move the Google Fonts @import to app/layout.js
-        using next/font/google for proper SSR font loading and font-display
-        optimization. The @import here is a correct stopgap.
       */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700;1,800&family=DM+Mono:wght@400;500&display=swap');
-
         .hero-footnote-indiv {
           font-family: var(--sans);
           font-size: 0.78rem;
