@@ -81,7 +81,7 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [sprintCount, setSprintCount] = useState(null)
+  const [sprintCount, setSprintCount] = useState(295)
 
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
@@ -457,7 +457,7 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill"><strong>15</strong> min/day</div>
-            {sprintCount && <div className="hero-stat-pill"><strong>{sprintCount}</strong> sprints</div>}
+            <div className="hero-stat-pill"><strong>{sprintCount}</strong> sprints</div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
@@ -494,8 +494,8 @@ export default function Home() {
               <div className="hw-body-heading">Before Stage 4 unlocks</div>
               <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on. Something in your own day, your own team.</div>
               <div className="hw-gate">
-                <div className="hw-gate-label">Your response</div>
-                <div className="hw-gate-text">Think about one behavior you already do reliably at work. Something that happens almost automatically. What triggers it?</div>
+                <div className="hw-gate-label">Example response</div>
+                <div className="hw-gate-text">I'll write the first three bullet points of the report. Not the whole thing. Just enough to have something on the page.</div>
                 <div className="hw-gate-btn">Submit response to unlock Stage 4 →</div>
               </div>
             </div>
@@ -664,7 +664,7 @@ export default function Home() {
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{sprintCount ? `${sprintCount} sprints` : 'Sprints'} across leadership, communication, productivity, and more</li>
+                  <li>295 sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
