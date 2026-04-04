@@ -18,16 +18,60 @@ const BASE_PRICE = 179
 const getTier = n => TIERS.find(t => n >= t.min && n <= t.max)
 const fmt = n => '$' + n.toLocaleString('en-US')
 
+// ── FAQ content ───────────────────────────────────────────────────────────────
+
+const FAQ_ITEMS = [
+  {
+    q: 'Do we need an LMS or other software?',
+    a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
+  },
+  {
+    q: "What's the minimum seat count?",
+    a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats. No discount code needed, it's built into the calculator.</p>,
+  },
+  {
+    q: 'Can we assign specific sprints to specific roles?',
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
+  },
+  {
+    q: "What if someone doesn't finish?",
+    a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint, so you can follow up directly if you want to.</p>,
+  },
+  {
+    q: 'What does the contract commit us to?',
+    a: <>
+      <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
+      <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
+    </>,
+  },
+  {
+    q: 'Does this work for remote or distributed teams?',
+    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
+  },
+  {
+    q: 'How is this different from a course library or passive learning platform?',
+    a: <>
+      <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
+      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
+      <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
+    </>,
+  },
+  {
+    q: 'What does the written reflection actually look like?',
+    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
+  },
+]
+
 // ── Stage data ────────────────────────────────────────────────────────────────
 
 const STAGES = [
-  { n: '01', type: 'Ascent',   desc: 'Attach the behavior to one existing moment that already happens',           cls: 'is-done'   },
-  { n: '02', type: 'Ascent',   desc: 'Design your space so the cue is visible before you can drift past it',      cls: 'is-done'   },
-  { n: '03', type: 'Milepost', desc: 'Write the smallest version of the behavior that still counts',              cls: 'is-active' },
-  { n: '04', type: 'Ascent',   desc: 'Lock in the exact day, time, place, and action so there is no room for drift', cls: ''       },
-  { n: '05', type: 'Ascent',   desc: 'Create a simple mark-right-after loop so finished work stays visible',      cls: ''          },
-  { n: '06', type: 'Ascent',   desc: 'Review what actually happened and tighten the plan based on reality',       cls: ''          },
-  { n: '07', type: 'Summit',   desc: 'Choose one repeatable next-week move based on what the week produced',      cls: ''          },
+  { n: '01', type: 'Anchor',      desc: 'Attach the behavior to one existing moment that already happens',              cls: 'is-done'   },
+  { n: '02', type: 'Environment', desc: 'Design your space so the cue is visible before you can drift past it',         cls: 'is-done'   },
+  { n: '03', type: 'Small Start', desc: 'Write the smallest version of the behavior that still counts',                 cls: 'is-active' },
+  { n: '04', type: 'Specify',     desc: 'Lock in the exact day, time, place, and action so there is no room for drift', cls: ''          },
+  { n: '05', type: 'Track',       desc: 'Create a simple mark-right-after loop so finished work stays visible',         cls: ''          },
+  { n: '06', type: 'Adjust',      desc: 'Review what actually happened and tighten the plan based on reality',          cls: ''          },
+  { n: '07', type: 'Commit',      desc: 'Choose one repeatable next-week move based on what the week produced',         cls: ''          },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,17 +120,6 @@ export default function Home() {
     return () => obs.disconnect()
   }, [])
 
-  // Approved sprint count
-  const [sprintCount, setSprintCount] = useState(null)
-
-  useEffect(() => {
-    supabase
-      .from('books')
-      .select('id', { count: 'exact', head: true })
-      .eq('review_status', 'approved')
-      .then(({ count }) => { if (count !== null) setSprintCount(count) })
-  }, [])
-
   // Pricing state
   const [seats, setSeats]     = useState(10)
   const tier  = getTier(seats)
@@ -98,49 +131,6 @@ export default function Home() {
   const [modalSuccess, setModalSuccess] = useState(false)
   const [form,         setForm]         = useState({ name: '', company: '', email: '' })
   const [submitting,   setSubmitting]   = useState(false)
-
-  // FAQ content — defined inside component so it can reference sprintCount
-  const FAQ_ITEMS = [
-    {
-      q: 'Do we need an LMS or other software?',
-      a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
-    },
-    {
-      q: "What's the minimum seat count?",
-      a: <p>One seat. No minimum. Volume pricing tiers kick in automatically at 25, 100, and 500 seats. No discount code needed, it's built into the calculator.</p>,
-    },
-    {
-      q: 'Can we assign specific sprints to specific roles?',
-      a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. Hundreds of sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
-    },
-    {
-      q: "What if someone doesn't finish?",
-      a: <p>Their progress saves where they left off. There are no expiring assignments. The manager dashboard shows exactly who's active and where each person is in their sprint, so you can follow up directly if you want to.</p>,
-    },
-    {
-      q: 'What does the contract commit us to?',
-      a: <>
-        <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
-        <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
-      </>,
-    },
-    {
-      q: 'Does this work for remote or distributed teams?',
-      a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
-    },
-    {
-      q: 'How is this different from a course library or passive learning platform?',
-      a: <>
-        <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-        <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
-        <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
-      </>,
-    },
-    {
-      q: 'What does the written reflection actually look like?',
-      a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
-    },
-  ]
 
   function openModal() {
     if (!tier?.price) {
@@ -456,9 +446,8 @@ export default function Home() {
       <div className="hero">
         <div className="hero-left">
           <div className="hero-stats-row">
-            <div className="hero-stat-pill"><strong>{sprintCount ?? '—'}</strong> sprints</div>
             <div className="hero-stat-pill"><strong>15</strong> min/day</div>
-            <div className="hero-stat-pill"><strong>7-stage</strong> format</div>
+            <div className="hero-stat-pill"><strong>7-stage</strong> sprints</div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
@@ -482,16 +471,16 @@ export default function Home() {
               <div className="hw-title">Building Consistent Habits · Stage 3 of 7</div>
             </div>
             <div className="hw-stages">
-              <div className="hw-stage done"><span className="hw-stage-num">01</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage done"><span className="hw-stage-num">02</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage active"><span className="hw-stage-num">03</span><div className="hw-stage-label">Milepost</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">04</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">05</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">06</span><div className="hw-stage-label">Ascent</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">07</span><div className="hw-stage-label">Summit</div></div>
+              <div className="hw-stage done"><span className="hw-stage-num">01</span><div className="hw-stage-label">Anchor</div></div>
+              <div className="hw-stage done"><span className="hw-stage-num">02</span><div className="hw-stage-label">Environment</div></div>
+              <div className="hw-stage active"><span className="hw-stage-num">03</span><div className="hw-stage-label">Small Start</div></div>
+              <div className="hw-stage"><span className="hw-stage-num">04</span><div className="hw-stage-label">Specify</div></div>
+              <div className="hw-stage"><span className="hw-stage-num">05</span><div className="hw-stage-label">Track</div></div>
+              <div className="hw-stage"><span className="hw-stage-num">06</span><div className="hw-stage-label">Adjust</div></div>
+              <div className="hw-stage"><span className="hw-stage-num">07</span><div className="hw-stage-label">Commit</div></div>
             </div>
             <div className="hw-body">
-              <div className="hw-body-label">Stage 3 · Milepost</div>
+              <div className="hw-body-label">Stage 3 · Small Start</div>
               <div className="hw-body-heading">Before Stage 4 unlocks</div>
               <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on. Something in your own day, your own team.</div>
               <div className="hw-gate">
@@ -516,7 +505,7 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
-              <p>Completion rates tell you who clicked through. Written responses tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
+              <p>Completion rates tell you who clicked through. Written reflection logs tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
@@ -605,7 +594,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Written responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
+            <p>Written reflection responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -657,7 +646,7 @@ export default function Home() {
             <div className="pricing-top">
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
-                <div className="plan-name">Team Sprint Plan</div>
+                <div className="plan-name">Team Skill Development Plan</div>
                 <ul className="plan-features">
                   <li>Manager dashboard: reflection logs, progress tracking, sprint assignment</li>
                   <li>Written reflection at every stage, logged and manager-visible</li>
@@ -665,7 +654,7 @@ export default function Home() {
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{sprintCount ?? '—'} sprints across leadership, communication, productivity, and more</li>
+                  <li>295 sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
