@@ -20,7 +20,7 @@ const fmt = n => '$' + n.toLocaleString('en-US')
 
 // ── FAQ content ───────────────────────────────────────────────────────────────
 
-const FAQ_ITEMS = [
+const getFaqItems = sprintCountLabel => [
   {
     q: 'Do we need an LMS or other software?',
     a: <p>No. SummitSkills is fully self-contained. Your team accesses sprints through a web browser. No app download, no LMS integration, no IT setup. You invite users by email and they're in.</p>,
@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. 295 sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. {sprintCountLabel} sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
   },
   {
     q: "What if someone doesn't finish?",
@@ -81,7 +81,7 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [sprintCount, setSprintCount] = useState(295)
+  const [sprintCount, setSprintCount] = useState(null)
 
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
@@ -93,17 +93,25 @@ export default function Home() {
 
   // Fetch live approved sprint count
   useEffect(() => {
+    let isMounted = true
+
     supabase
       .from('books')
       .select('id', { count: 'exact', head: true })
       .eq('review_status', 'approved')
-      .then(({ count }) => { if (count) setSprintCount(count) })
+      .then(({ count, error }) => {
+        if (!isMounted || error) return
+        if (typeof count === 'number') setSprintCount(count)
+      })
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Reset checkout loading on mount (handles browser back button)
   useEffect(() => {
     setCheckoutLoading(false)
-    // Also reset when user navigates back to this tab/page
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         setCheckoutLoading(false)
@@ -178,9 +186,6 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState(null)
 
   function handleFreeTrialSignup() {
-    // Scrolls to the pricing calculator so the user picks their seat count
-    // before being sent to Stripe. The calculator CTA (handleTeamCheckout)
-    // then fires the actual Stripe session with the 14-day trial.
     const el = document.getElementById('pricing')
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -210,8 +215,6 @@ export default function Home() {
       window.location.href = `mailto:sales@summitskills.io?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
       return
     }
-    // TODO: When Docuseal is ready, replace this with openModal() to collect
-    // name/company/email, generate the MSA, and trigger Stripe after signing.
     setCheckoutLoading(true)
     try {
       const res = await fetch('/api/checkout', {
@@ -231,11 +234,12 @@ export default function Home() {
     }
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const sprintCountLabel =
+    typeof sprintCount === 'number'
+      ? sprintCount.toLocaleString('en-US')
+      : '...'
 
-  // Hold render until we know the user isn't logged in.
-  // Prevents the landing page from flashing for logged-in users before
-  // the /library redirect fires.
+  const faqItems = getFaqItems(sprintCountLabel)
 
   const cssVars = {
     '--ink':      '#0D1520',
@@ -294,7 +298,6 @@ export default function Home() {
             margin: 0;
           }
 
-          /* ── Best Fit Section ── */
           .best-fit {
             padding: 72px 0;
             background: rgba(255,255,255,0.015);
@@ -401,7 +404,6 @@ export default function Home() {
             .best-fit-right { position: static; }
           }
 
-          /* ── Dashboard Annotations ── */
           .dashboard-annotations {
             display: flex;
             flex-wrap: wrap;
@@ -431,7 +433,6 @@ export default function Home() {
           }
         `}</style>
       </Head>
-      {/* ── NAV ── */}
       <nav>
         <a href="#" className="logo">
           <img
@@ -443,21 +444,21 @@ export default function Home() {
           Summit<span>Skills</span>
         </a>
         <div className="nav-links">
-          <a href="#how"          className="nav-link">How it works</a>
+          <a href="#how" className="nav-link">How it works</a>
           <a href="#team-pricing" className="nav-link nav-link-teams">For Managers</a>
-          <a href="#pricing"      className="nav-link">Pricing</a>
-          <a href="#faq"          className="nav-link">FAQ</a>
+          <a href="#pricing" className="nav-link">Pricing</a>
+          <a href="#faq" className="nav-link">FAQ</a>
           <a href="/auth/login" className="nav-login">Log in</a>
           <button onClick={handleFreeTrialSignup} className="nav-cta">Start Team Pilot</button>
         </div>
       </nav>
 
-      {/* ── HERO ── */}
       <div className="hero">
         <div className="hero-left">
           <div className="hero-stats-row">
-            <div className="hero-stat-pill"><strong>15</strong> min/day</div>
-            <div className="hero-stat-pill"><strong>{sprintCount}</strong> sprints</div>
+            <div className="hero-stat-pill">
+              <strong>15</strong> min / day <span aria-hidden="true">·</span> <strong>{sprintCountLabel}</strong> sprints
+            </div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
@@ -509,7 +510,6 @@ export default function Home() {
 
       <hr className="section-divider" />
 
-      {/* ── MECHANIC ── */}
       <section className="mechanic" id="how">
         <div className="wrap">
           <div className="mechanic-inner">
@@ -553,7 +553,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SPRINT EXAMPLE ── */}
       <section className="sprint-section">
         <div className="wrap">
           <div className="sprint-intro reveal">
@@ -599,7 +598,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── DASHBOARD PREVIEW ── */}
       <section className="dashboard-preview">
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
@@ -612,7 +610,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CREDIBILITY ── */}
       <section className="credibility">
         <div className="wrap">
           <div className="credibility-inner reveal">
@@ -639,7 +636,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── PRICING ── */}
       <section className="pricing" id="pricing">
         <div className="wrap">
           <div className="pricing-header reveal">
@@ -647,7 +643,6 @@ export default function Home() {
             <p>One annual price per seat. Manager dashboard, reflection logging, and sprint assignment built in. No content tiers, no per-sprint fees, no implementation costs.</p>
           </div>
 
-          {/* ── TEAM CALCULATOR ── */}
           <div className="team-calc-header reveal" id="team-pricing">
             <h3>Team pricing calculator</h3>
             <p>Volume discounts apply automatically. No negotiation required.</p>
@@ -664,7 +659,7 @@ export default function Home() {
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>295 sprints across leadership, communication, productivity, and more</li>
+                  <li>{sprintCountLabel} sprints across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
@@ -764,7 +759,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
       <section className="faq" id="faq">
         <div className="wrap">
           <div className="faq-layout">
@@ -774,7 +768,7 @@ export default function Home() {
               <a href="mailto:support@summitskills.io" className="faq-email">support@summitskills.io →</a>
             </div>
             <div className="faq-list">
-              {FAQ_ITEMS.map((item, i) => (
+              {faqItems.map((item, i) => (
                 <div key={i} className="faq-item">
                   <button
                     className={`faq-q${openFaq === i ? ' open' : ''}`}
@@ -793,7 +787,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FINAL CTA ── */}
       <section className="final-cta">
         <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
         <p>No implementation call, no LMS, no IT ticket. Your team is live in minutes.</p>
@@ -801,7 +794,6 @@ export default function Home() {
         <p className="final-note">14-day team pilot · Card required · MSA required · Billed on day 15</p>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer>
         <a href="#" className="footer-logo">Summit<em>Skills</em></a>
         <div className="footer-links">
@@ -815,7 +807,6 @@ export default function Home() {
         <div className="footer-copy">© 2026 SummitSkills. All rights reserved.</div>
       </footer>
 
-      {/* ── CHECKOUT MODAL ── */}
       {modalOpen && (
         <div
           className="modal-overlay open"
