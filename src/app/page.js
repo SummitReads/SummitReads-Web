@@ -81,7 +81,7 @@ export default function Home() {
 
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [sprintCount, setSprintCount] = useState(295)
+  const [sprintCount, setSprintCount] = useState(null)
 
   // Auth redirect — logged-in users go to /library
   useEffect(() => {
@@ -457,7 +457,7 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill"><strong>15</strong> min/day</div>
-            <div className="hero-stat-pill"><strong>{sprintCount}</strong> sprints</div>
+            {sprintCount && <div className="hero-stat-pill"><strong>{sprintCount}</strong> sprints</div>}
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
@@ -664,7 +664,7 @@ export default function Home() {
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>295 sprints across leadership, communication, productivity, and more</li>
+                  <li>{sprintCount ? `${sprintCount} sprints` : 'Sprints'} across leadership, communication, productivity, and more</li>
                   <li>Signed MSA · Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
