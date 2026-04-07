@@ -11,10 +11,8 @@ export default function CompletionCelebration({
   nextDayTitle,
   nextDayPreview,
   nextDayUrl,
-  onSaveTakeaway
 }) {
-  const [step, setStep] = useState(1); // 1: celebration, 2: takeaway, 3: preview
-  const [takeaway, setTakeaway] = useState('');
+  const [step, setStep] = useState(1); // 1: celebration, 2: preview / journey complete
 
   useEffect(() => {
     if (isOpen && step === 1) {
@@ -44,23 +42,6 @@ export default function CompletionCelebration({
       return () => clearTimeout(timer);
     }
   }, [isOpen, step]);
-
-  const handleSaveTakeaway = () => {
-    if (takeaway.trim()) onSaveTakeaway(takeaway);
-    if (dayNum < 7) {
-      setStep(3);
-    } else {
-      onClose();
-    }
-  };
-
-  const handleSkipTakeaway = () => {
-    if (dayNum < 7) {
-      setStep(3);
-    } else {
-      onClose();
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -100,44 +81,14 @@ export default function CompletionCelebration({
           </div>
         )}
 
-        {/* Step 2: Key Takeaway */}
-        {step === 2 && (
-          <div className="celebration-step fade-in">
-            <div className="takeaway-icon">💡</div>
-            <h2 className="celebration-title">What's your key takeaway?</h2>
-            <p className="celebration-subtitle">Capture your biggest insight from this stage</p>
-            <textarea
-              className="takeaway-input"
-              placeholder="What will you remember most from today's lesson?"
-              value={takeaway}
-              onChange={(e) => setTakeaway(e.target.value)}
-              autoFocus
-              rows={4}
-            />
-            <div className="button-group">
-              <button onClick={handleSkipTakeaway} className="btn-ghost">
-                Skip
-              </button>
-              <button
-                onClick={handleSaveTakeaway}
-                className="btn-primary-celebration"
-                disabled={!takeaway.trim()}
-              >
-                Save & Continue →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Next Stage Preview */}
-        {step === 3 && dayNum < 7 && (
+        {/* Step 2: Next Stage Preview (Days 1-6) */}
+        {step === 2 && dayNum < 7 && (
           <div className="celebration-step fade-in">
             <div className="preview-badge">Up Next</div>
             <h2 className="celebration-title">Stage {dayNum + 1}</h2>
             <h3 className="next-day-title">{nextDayTitle}</h3>
             <p className="next-day-preview">{nextDayPreview}</p>
 
-            {/* Action reminder — replaces the old clock/timer message */}
             <div style={{
               background: 'rgba(0, 217, 255, 0.05)',
               border: '1px solid rgba(0, 217, 255, 0.2)',
@@ -151,7 +102,7 @@ export default function CompletionCelebration({
             }}>
               <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>⚡</span>
               <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
-                Stage {dayNum + 1} is ready when you are. Complete this stage's action challenge first — 
+                Stage {dayNum + 1} is ready when you are. Complete this stage's action challenge first —
                 your response unlocks what's next.
               </p>
             </div>
@@ -170,7 +121,7 @@ export default function CompletionCelebration({
           </div>
         )}
 
-        {/* Journey Complete (Day 7) */}
+        {/* Step 2: Journey Complete (Day 7) */}
         {step === 2 && dayNum === 7 && (
           <div className="celebration-step fade-in">
             <div className="celebration-icon">🏆</div>
