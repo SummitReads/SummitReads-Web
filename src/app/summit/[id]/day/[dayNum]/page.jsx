@@ -162,18 +162,6 @@ export default function SummitDayPage({ params }) {
     }
   }
 
-  async function handleSaveTakeaway(takeaway) {
-    if (!user || !takeaway.trim()) return;
-    try {
-      await supabase.from('user_progress').upsert({
-        user_id:        user.id,
-        book_id:        id,
-        day_number:     dayNum,
-        progress_notes: takeaway,
-      }, { onConflict: 'user_id,book_id,day_number' });
-    } catch (err) { console.error('Error saving takeaway:', err?.message ?? err); }
-  }
-
   function handleCloseCelebration() {
     setShowCelebration(false);
     if (dayNum === 7) window.location.href = '/library';
@@ -380,6 +368,28 @@ export default function SummitDayPage({ params }) {
           )}
         </DayGuard>
 
+        {/* Go Deeper link — only shown once stage is complete */}
+        {missionComplete && (
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <Link
+              href={`/summit/${id}/day/${dayNum}/deep`}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '0.75rem',
+                color: 'rgba(25,190,227,0.55)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              Want to go deeper? →
+            </Link>
+          </div>
+        )}
+
         {/* Stage navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
           {dayNum > 1 && (
@@ -404,7 +414,6 @@ export default function SummitDayPage({ params }) {
         nextDayTitle={nextDayData?.title || `Stage ${dayNum + 1}`}
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
-        onSaveTakeaway={handleSaveTakeaway}
       />
 
       <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />

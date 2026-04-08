@@ -95,12 +95,8 @@ export default function CompletionCelebration({
               borderRadius: '12px',
               padding: '16px',
               marginBottom: '24px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
               textAlign: 'left'
             }}>
-              <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>⚡</span>
               <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
                 Stage {dayNum + 1} is ready when you are. Complete this stage's action challenge first —
                 your response unlocks what's next.
