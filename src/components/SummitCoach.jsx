@@ -12,25 +12,24 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Focus input when chat opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen]);
 
-  // Initial greeting when chat first opens
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{
-        role: 'assistant',
-        content: INITIAL_GREETING
-      }]);
+      setMessages([
+        {
+          role: 'assistant',
+          content: INITIAL_GREETING
+        }
+      ]);
     }
   }, [isOpen, messages.length]);
 
@@ -39,15 +38,14 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
     if (!trimmedInput || loading) return;
 
     const userMsg = { role: 'user', content: trimmedInput };
-    const updatedHistory = [...messages, userMsg];
-    setMessages(updatedHistory);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setLoading(true);
     setError(null);
 
     try {
       const recentHistory = messages
-        .filter(msg => msg?.content && msg.content !== INITIAL_GREETING)
+        .filter((msg) => msg?.content && msg.content !== INITIAL_GREETING)
         .slice(-6);
 
       const res = await fetch('/api/coach', {
@@ -73,7 +71,13 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
       }
 
       const data = await res.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: data?.message || 'What feels most true for you about today\'s stage?'
+        }
+      ]);
     } catch (err) {
       setError('Something went wrong. Try again.');
       console.error(err);
@@ -91,7 +95,6 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
   return (
     <>
-      {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
@@ -120,76 +123,85 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         </svg>
       </button>
 
-      {/* Coach Label — shows on hover when closed */}
       {!isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '24px',
-          background: 'rgba(15, 23, 42, 0.9)',
-          border: '1px solid rgba(25, 190, 227, 0.3)',
-          borderRadius: '8px',
-          padding: '6px 12px',
-          color: 'var(--text-muted)',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          letterSpacing: '0.5px',
-          zIndex: 999,
-          backdropFilter: 'blur(8px)',
-          pointerEvents: 'none',
-          opacity: 0.8
-        }}>
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '100px',
+            right: '24px',
+            background: 'rgba(15, 23, 42, 0.9)',
+            border: '1px solid rgba(25, 190, 227, 0.3)',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            color: 'var(--text-muted)',
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            letterSpacing: '0.5px',
+            zIndex: 999,
+            backdropFilter: 'blur(8px)',
+            pointerEvents: 'none',
+            opacity: 0.8
+          }}
+        >
           Summit Coach
         </div>
       )}
 
-      {/* Chat Panel */}
       {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '380px',
-          maxWidth: 'calc(100vw - 48px)',
-          height: '520px',
-          maxHeight: '70vh',
-          borderRadius: '20px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          border: '1px solid rgba(25, 190, 227, 0.25)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 999,
-          overflow: 'hidden',
-          animation: 'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}>
-          {/* Header */}
-          <div style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            width: '380px',
+            maxWidth: 'calc(100vw - 48px)',
+            height: '520px',
+            maxHeight: '70vh',
+            borderRadius: '20px',
+            background: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(25, 190, 227, 0.25)',
+            boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
+            backdropFilter: 'blur(20px)',
             display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            background: 'rgba(30, 41, 59, 0.4)'
-          }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(25, 190, 227, 0.15)',
-              border: '1px solid rgba(25, 190, 227, 0.3)',
+            flexDirection: 'column',
+            zIndex: 999,
+            overflow: 'hidden',
+            animation: 'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          }}
+        >
+          <div
+            style={{
+              padding: '20px 24px',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+              gap: '12px',
+              background: 'rgba(30, 41, 59, 0.4)'
+            }}
+          >
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'rgba(25, 190, 227, 0.15)',
+                border: '1px solid rgba(25, 190, 227, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Day {dayNum} of 7</div>
+              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)' }}>
+                Summit Coach
+              </div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+                Day {dayNum} of 7
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -224,17 +236,18 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
             </button>
           </div>
 
-          {/* Messages */}
-          <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(25, 190, 227, 0.3) transparent'
-          }}>
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'rgba(25, 190, 227, 0.3) transparent'
+            }}
+          >
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -244,20 +257,20 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
                   animation: 'coachFadeIn 0.25s ease'
                 }}
               >
-                <div style={{
-                  maxWidth: '85%',
-                  padding: '12px 16px',
-                  borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: msg.role === 'user'
-                    ? 'var(--brand-teal)'
-                    : 'rgba(30, 41, 59, 0.7)',
-                  border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                  color: msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
-                  fontSize: '0.9rem',
-                  lineHeight: '1.55',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: msg.role === 'user' ? '600' : '400'
-                }}>
+                <div
+                  style={{
+                    maxWidth: '85%',
+                    padding: '12px 16px',
+                    borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    background: msg.role === 'user' ? 'var(--brand-teal)' : 'rgba(30, 41, 59, 0.7)',
+                    border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                    color: msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
+                    fontSize: '0.9rem',
+                    lineHeight: '1.55',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: msg.role === 'user' ? '600' : '400'
+                  }}
+                >
                   {msg.content}
                 </div>
               </div>
@@ -265,39 +278,46 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <div style={{
-                  padding: '12px 18px',
-                  borderRadius: '18px 18px 18px 4px',
-                  background: 'rgba(30, 41, 59, 0.7)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  display: 'flex',
-                  gap: '6px',
-                  alignItems: 'center'
-                }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: 'var(--brand-teal)',
-                      opacity: 0.4,
-                      animation: `coachPulse 1.2s ease ${i * 0.2}s infinite`
-                    }} />
+                <div
+                  style={{
+                    padding: '12px 18px',
+                    borderRadius: '18px 18px 18px 4px',
+                    background: 'rgba(30, 41, 59, 0.7)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex',
+                    gap: '6px',
+                    alignItems: 'center'
+                  }}
+                >
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: 'var(--brand-teal)',
+                        opacity: 0.4,
+                        animation: `coachPulse 1.2s ease ${i * 0.2}s infinite`
+                      }}
+                    />
                   ))}
                 </div>
               </div>
             )}
 
             {error && (
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: '10px',
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                color: '#f87171',
-                fontSize: '0.8rem',
-                textAlign: 'center'
-              }}>
+              <div
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  color: '#f87171',
+                  fontSize: '0.8rem',
+                  textAlign: 'center'
+                }}
+              >
                 {error}
               </div>
             )}
@@ -305,12 +325,13 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
-          <div style={{
-            padding: '16px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            background: 'rgba(15, 23, 42, 0.6)'
-          }}>
+          <div
+            style={{
+              padding: '16px',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              background: 'rgba(15, 23, 42, 0.6)'
+            }}
+          >
             <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
               <textarea
                 ref={inputRef}
@@ -336,8 +357,12 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
                   transition: 'border-color 0.2s',
                   borderColor: input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'
                 }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)'}
-                onBlur={(e) => e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)';
+                }}
               />
               <button
                 onClick={sendMessage}
@@ -364,13 +389,15 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
                 </svg>
               </button>
             </div>
-            <div style={{
-              marginTop: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.7rem',
-              textAlign: 'center',
-              opacity: 0.6
-            }}>
+            <div
+              style={{
+                marginTop: '8px',
+                color: 'var(--text-muted)',
+                fontSize: '0.7rem',
+                textAlign: 'center',
+                opacity: 0.6
+              }}
+            >
               Press Enter to send
             </div>
           </div>
