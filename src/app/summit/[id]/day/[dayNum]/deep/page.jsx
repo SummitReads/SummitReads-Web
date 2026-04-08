@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/app/supabaseClient';
+import SummitCoach from '@/components/SummitCoach';
 
 export default function DeepDivePage({ params }) {
   const unwrappedParams = React.use(params);
@@ -13,6 +14,7 @@ export default function DeepDivePage({ params }) {
 
   const [book,    setBook]    = useState(null);
   const [dayData, setDayData] = useState(null);
+  const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
   const [open,    setOpen]    = useState({ reading: true, examples: false, reflections: false, challenges: false });
@@ -20,6 +22,9 @@ export default function DeepDivePage({ params }) {
   useEffect(() => {
     async function fetchData() {
       try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+
         const { data: bookData, error: bookErr } = await supabase
           .from('books').select('title, sprint_title, category').eq('id', id).single();
         const { data: dayRaw, error: dayErr } = await supabase
@@ -41,7 +46,6 @@ export default function DeepDivePage({ params }) {
     setOpen(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
-  // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
       <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -60,16 +64,15 @@ export default function DeepDivePage({ params }) {
   );
 
   const bonus = dayData.bonus_content || {};
-  const extReading   = bonus.extended_reading   || null;
-  const realExamples = bonus.real_examples       || [];
-  const reflections  = bonus.reflection_prompts  || [];
-  const challenges   = bonus.action_challenges   || [];
+  const extReading   = bonus.extended_reading  || null;
+  const realExamples = bonus.real_examples      || [];
+  const reflections  = bonus.reflection_prompts || [];
+  const challenges   = bonus.action_challenges  || [];
 
   const sections = [
     {
       key: 'reading',
       label: 'Worth Knowing',
-      icon: '📖',
       available: !!extReading,
       content: extReading ? (
         <p style={{ fontSize: '1.05rem', lineHeight: 1.85, color: 'var(--text-main)', margin: 0 }}>
@@ -80,7 +83,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'examples',
       label: 'In Practice',
-      icon: '💼',
       available: realExamples.length > 0,
       content: realExamples.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -101,7 +103,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'reflections',
       label: 'Think About This',
-      icon: '🪞',
       available: reflections.length > 0,
       content: reflections.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -116,7 +117,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'challenges',
       label: 'Try This',
-      icon: '⚡',
       available: challenges.length > 0,
       content: challenges.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -134,7 +134,6 @@ export default function DeepDivePage({ params }) {
     <>
       <div className="ambient-glow" />
 
-      {/* Nav */}
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/" className="logo">
@@ -149,7 +148,6 @@ export default function DeepDivePage({ params }) {
 
       <main className="container" style={{ maxWidth: 720, paddingTop: 40, paddingBottom: 100 }}>
 
-        {/* Back link */}
         <div style={{ marginBottom: 32 }}>
           <Link
             href={`/summit/${id}/day/${dayNum}`}
@@ -169,7 +167,6 @@ export default function DeepDivePage({ params }) {
           </Link>
         </div>
 
-        {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ marginBottom: 10 }}>
             <span style={{
@@ -180,7 +177,7 @@ export default function DeepDivePage({ params }) {
               letterSpacing: '0.1em',
               fontWeight: 700,
             }}>
-              Stage {dayNum} · Go Deeper
+              Stage {dayNum} · Explore Further
             </span>
           </div>
           <h1 style={{
@@ -203,7 +200,6 @@ export default function DeepDivePage({ params }) {
           </p>
         </div>
 
-        {/* Intro note */}
         <div style={{
           background: 'rgba(25,190,227,0.05)',
           border: '1px solid rgba(25,190,227,0.15)',
@@ -217,7 +213,6 @@ export default function DeepDivePage({ params }) {
           This is optional. Finish the stage mission first — then come back here when you want more context, a real example, or something to think about.
         </div>
 
-        {/* Accordion sections */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {sections.map(section => (
             <div
@@ -225,7 +220,6 @@ export default function DeepDivePage({ params }) {
               className="glass-panel"
               style={{ padding: 0, overflow: 'hidden' }}
             >
-              {/* Header row */}
               <button
                 onClick={() => toggle(section.key)}
                 style={{
@@ -240,20 +234,17 @@ export default function DeepDivePage({ params }) {
                   gap: 12,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '1.1rem' }}>{section.icon}</span>
-                  <span style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.78rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    color: open[section.key] ? 'var(--brand-teal)' : 'rgba(255,255,255,0.55)',
-                    transition: 'color 0.2s ease',
-                  }}>
-                    {section.label}
-                  </span>
-                </div>
+                <span style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  color: open[section.key] ? 'var(--brand-teal)' : 'rgba(255,255,255,0.55)',
+                  transition: 'color 0.2s ease',
+                }}>
+                  {section.label}
+                </span>
                 <span style={{
                   fontFamily: "'DM Mono', monospace",
                   fontSize: '0.9rem',
@@ -266,7 +257,6 @@ export default function DeepDivePage({ params }) {
                 </span>
               </button>
 
-              {/* Content */}
               {open[section.key] && (
                 <div style={{
                   padding: '0 24px 24px 24px',
@@ -280,7 +270,6 @@ export default function DeepDivePage({ params }) {
           ))}
         </div>
 
-        {/* Bottom nav */}
         <div style={{ marginTop: 48, display: 'flex', gap: 12 }}>
           <Link
             href={`/summit/${id}/day/${dayNum}`}
@@ -301,6 +290,9 @@ export default function DeepDivePage({ params }) {
         </div>
 
       </main>
+
+      {/* Summit Coach — mounted only once user is resolved to avoid null errors */}
+      {user && <SummitCoach bookId={id} dayNum={dayNum} userId={user.id} />}
     </>
   );
 }
