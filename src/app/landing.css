@@ -80,6 +80,31 @@
 }
 .nav-cta:hover { opacity: 0.88; }
 
+/* ─── LOGO ─── */
+.landing-page .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.landing-page .logo span {
+  color: var(--teal);
+}
+
+.landing-page .logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+
+
 /* ─── SHARED ─── */
 .landing-page .wrap { max-width: var(--max); margin: 0 auto; padding: 0 48px; }
 .landing-page .label {
