@@ -1,152 +1,396 @@
-import { createClient } from '@supabase/supabase-js';
-import OpenAI from 'openai';
-import { NextResponse } from 'next/server';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+"use client";
+import React, { useState, useRef, useEffect } from 'react';
 
 const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
 
-function shortText(value, max = 220) {
-  if (!value) return '';
-  return value.length > max ? `${value.slice(0, max).trim()}…` : value;
-}
+export default function SummitCoach({ bookId, dayNum, userId }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-function buildSystemPrompt({ book, currentDay, recentCompleted, userReflection, userMission }) {
-  const stageNum = currentDay.day_number;
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
-  const stagePhaseGuidance = stageNum <= 2
-    ? 'Orientation mode. Stay curious. Help them notice where today\'s idea shows up in real life. Push awareness before action.'
-    : stageNum <= 4
-      ? 'Application mode. Get concrete about real situations, friction, and what happened this week.'
-      : stageNum <= 6
-        ? 'Reinforcement mode. Help them see what is starting to shift and go one level deeper.'
-        : 'Integration mode. Help them name what changed and how they will carry it forward.';
-
-  const completedSummary = recentCompleted.length
-    ? recentCompleted.map(d => `Stage ${d.day_number}: ${d.title}`).join(' | ')
-    : 'None yet.';
-
-  return `You are the Summit Coach for SummitSkills: warm, sharp, direct, and grounded. You are a coach, not a consultant. Help them think clearly instead of dumping advice.
-
-Book: "${book.title}" by ${book.author}
-Category: ${book.category || 'Personal Development'}
-
-Today is Stage ${stageNum} of 7.
-Stage title: "${currentDay.title}"
-Core insight: ${shortText(currentDay.ascent_content, 700)}
-Reflection question: ${currentDay.basecamp_question || 'No reflection question for today.'}
-Mission: ${currentDay.summit_mission || 'No mission assigned today.'}
-User reflection: ${userReflection || 'No written reflection yet.'}
-Mission completed: ${userMission ? 'Yes' : 'No'}
-Completed stages: ${completedSummary}
-
-Posture for today: ${stagePhaseGuidance}
-
-Rules:
-- Default to 1 to 3 sentences. 4 max.
-- End every response with exactly one question.
-- Stay rooted in this book and this stage.
-- Do not give a multi-step plan.
-- Do not give multiple options unless they ask.
-- If they have not done the mission, get curious about the friction instead of lecturing.
-- If they have given enough raw material and are struggling to phrase it, draft the sentence for them and ask one confirmation question.
-- Do not use fake enthusiasm or long explanations.
-- Keep aiming at one real behavior change by the end of the sprint.`;
-}
-
-export async function POST(request) {
-  try {
-    const { bookId, dayNum, userId, userMessage, conversationHistory } = await request.json();
-
-    if (!bookId || !dayNum || !userMessage) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
+  }, [isOpen]);
 
-    const [bookRes, allDaysRes, progressRes] = await Promise.all([
-      supabase
-        .from('books')
-        .select('id, title, author, category')
-        .eq('id', bookId)
-        .single(),
-      supabase
-        .from('summit_days')
-        .select('day_number, title, ascent_content, basecamp_question, summit_mission')
-        .eq('book_id', bookId)
-        .order('day_number'),
-      userId
-        ? supabase
-            .from('user_progress')
-            .select('day_number, completed, reflection_text, mission_completed')
-            .eq('user_id', userId)
-            .eq('book_id', bookId)
-        : Promise.resolve({ data: [] })
-    ]);
-
-    if (bookRes.error) throw bookRes.error;
-    if (allDaysRes.error) throw allDaysRes.error;
-    if (progressRes?.error) throw progressRes.error;
-
-    const book = bookRes.data;
-    const allDays = allDaysRes.data || [];
-    const currentDay = allDays.find(d => Number(d.day_number) === Number(dayNum));
-
-    if (!book || !currentDay) {
-      return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
+  // Initial greeting when chat first opens
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: INITIAL_GREETING
+      }]);
     }
+  }, [isOpen, messages.length]);
 
-    const progressMap = Object.fromEntries(
-      (progressRes.data || []).map(p => [Number(p.day_number), p])
-    );
+  async function sendMessage() {
+    const trimmedInput = input.trim();
+    if (!trimmedInput || loading) return;
 
-    const recentCompleted = allDays
-      .filter(d => Number(d.day_number) < Number(dayNum) && progressMap[Number(d.day_number)]?.completed)
-      .slice(-2);
+    const userMsg = { role: 'user', content: trimmedInput };
+    const updatedHistory = [...messages, userMsg];
+    setMessages(updatedHistory);
+    setInput('');
+    setLoading(true);
+    setError(null);
 
-    const currentProgress = progressMap[Number(dayNum)];
+    try {
+      const recentHistory = messages
+        .filter(msg => msg?.content && msg.content !== INITIAL_GREETING)
+        .slice(-6);
 
-    const systemPrompt = buildSystemPrompt({
-      book,
-      currentDay,
-      recentCompleted,
-      userReflection: currentProgress?.reflection_text || null,
-      userMission: currentProgress?.mission_completed || false
-    });
+      const res = await fetch('/api/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookId,
+          dayNum,
+          userId,
+          userMessage: trimmedInput,
+          conversationHistory: recentHistory
+        })
+      });
 
-    const trimmedHistory = (conversationHistory || [])
-      .filter(msg => msg?.content && msg.content !== INITIAL_GREETING)
-      .slice(-6)
-      .map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
+      if (!res.ok) {
+        let errData = null;
+        try {
+          errData = await res.json();
+        } catch {
+          errData = null;
+        }
+        throw new Error(errData?.error || 'Failed to reach coach');
+      }
 
-    const response = await openai.chat.completions.create({
-      model: 'gpt-5-mini-2025-08-07',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...trimmedHistory,
-        { role: 'user', content: userMessage.trim() }
-      ],
-      max_completion_tokens: 220
-    });
-
-    const raw = response.choices?.[0]?.message;
-    const assistantMessage = typeof raw?.content === 'string'
-      ? raw.content
-      : Array.isArray(raw?.content)
-        ? raw.content.map(block => block?.text || '').join('')
-        : '';
-
-    return NextResponse.json({
-      message: assistantMessage || 'What feels most true for you about today\'s stage?'
-    });
-  } catch (error) {
-    console.error('Coach API error:', error);
-    return NextResponse.json({ error: 'Something went wrong. Try again.' }, { status: 500 });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+    } catch (err) {
+      setError('Something went wrong. Try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  return (
+    <>
+      {/* Floating Trigger Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '32px',
+          right: '32px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: 'var(--brand-teal)',
+          border: 'none',
+          color: '#0F172A',
+          cursor: 'pointer',
+          display: isOpen ? 'none' : 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 24px rgba(25, 190, 227, 0.4)',
+          transition: 'all 0.3s ease',
+          zIndex: 1000,
+          backdropFilter: 'blur(12px)'
+        }}
+        aria-label="Open Summit Coach"
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
+
+      {/* Coach Label — shows on hover when closed */}
+      {!isOpen && (
+        <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '24px',
+          background: 'rgba(15, 23, 42, 0.9)',
+          border: '1px solid rgba(25, 190, 227, 0.3)',
+          borderRadius: '8px',
+          padding: '6px 12px',
+          color: 'var(--text-muted)',
+          fontSize: '0.75rem',
+          fontWeight: '600',
+          letterSpacing: '0.5px',
+          zIndex: 999,
+          backdropFilter: 'blur(8px)',
+          pointerEvents: 'none',
+          opacity: 0.8
+        }}>
+          Summit Coach
+        </div>
+      )}
+
+      {/* Chat Panel */}
+      {isOpen && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          width: '380px',
+          maxWidth: 'calc(100vw - 48px)',
+          height: '520px',
+          maxHeight: '70vh',
+          borderRadius: '20px',
+          background: 'rgba(15, 23, 42, 0.95)',
+          border: '1px solid rgba(25, 190, 227, 0.25)',
+          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
+          backdropFilter: 'blur(20px)',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 999,
+          overflow: 'hidden',
+          animation: 'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}>
+          {/* Header */}
+          <div style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            background: 'rgba(30, 41, 59, 0.4)'
+          }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(25, 190, 227, 0.15)',
+              border: '1px solid rgba(25, 190, 227, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Day {dayNum} of 7</div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.4)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
+              }}
+              aria-label="Close coach"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(25, 190, 227, 0.3) transparent'
+          }}>
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  animation: 'coachFadeIn 0.25s ease'
+                }}
+              >
+                <div style={{
+                  maxWidth: '85%',
+                  padding: '12px 16px',
+                  borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  background: msg.role === 'user'
+                    ? 'var(--brand-teal)'
+                    : 'rgba(30, 41, 59, 0.7)',
+                  border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  color: msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.55',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: msg.role === 'user' ? '600' : '400'
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{
+                  padding: '12px 18px',
+                  borderRadius: '18px 18px 18px 4px',
+                  background: 'rgba(30, 41, 59, 0.7)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex',
+                  gap: '6px',
+                  alignItems: 'center'
+                }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: 'var(--brand-teal)',
+                      opacity: 0.4,
+                      animation: `coachPulse 1.2s ease ${i * 0.2}s infinite`
+                    }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '10px',
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#f87171',
+                fontSize: '0.8rem',
+                textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div style={{
+            padding: '16px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(15, 23, 42, 0.6)'
+          }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask your coach..."
+                rows={1}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  background: 'rgba(30, 41, 59, 0.8)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '12px',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontFamily: 'var(--font-sans)',
+                  outline: 'none',
+                  resize: 'none',
+                  minHeight: '44px',
+                  maxHeight: '100px',
+                  lineHeight: '1.5',
+                  transition: 'border-color 0.2s',
+                  borderColor: input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'
+                }}
+                onFocus={(e) => e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)'}
+                onBlur={(e) => e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'}
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || loading}
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: input.trim() && !loading ? 'var(--brand-teal)' : 'rgba(25, 190, 227, 0.2)',
+                  border: 'none',
+                  color: input.trim() && !loading ? '#0F172A' : 'rgba(25, 190, 227, 0.5)',
+                  cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  flexShrink: 0
+                }}
+                aria-label="Send message"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+            <div style={{
+              marginTop: '8px',
+              color: 'var(--text-muted)',
+              fontSize: '0.7rem',
+              textAlign: 'center',
+              opacity: 0.6
+            }}>
+              Press Enter to send
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes coachSlideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes coachFadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes coachPulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+      `}</style>
+    </>
+  );
 }
