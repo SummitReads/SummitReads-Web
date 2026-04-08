@@ -295,7 +295,7 @@ export default function SummitDayPage({ params }) {
                 borderRadius: 20,
                 padding: '4px 14px',
               }}>
-                Skill: {dayData.skill_focus}
+                {dayData.skill_focus}
               </div>
             )}
           </div>
