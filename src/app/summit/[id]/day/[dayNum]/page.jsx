@@ -368,7 +368,7 @@ export default function SummitDayPage({ params }) {
           )}
         </DayGuard>
 
-        {/* Go Deeper link — only shown once stage is complete */}
+        {/* Explore Further link — only shown once stage is complete */}
         {missionComplete && (
           <div style={{ textAlign: 'center', marginTop: 24 }}>
             <Link
@@ -376,16 +376,30 @@ export default function SummitDayPage({ params }) {
               style={{
                 fontFamily: "'DM Mono', monospace",
                 fontSize: '0.75rem',
-                color: 'rgba(25,190,227,0.55)',
+                color: 'rgba(25,190,227,0.45)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 textDecoration: 'none',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
+                gap: 8,
+                padding: '8px 16px',
+                borderRadius: 20,
+                border: '1px solid rgba(25,190,227,0.15)',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = 'var(--brand-teal)';
+                e.currentTarget.style.borderColor = 'rgba(25,190,227,0.35)';
+                e.currentTarget.style.background = 'rgba(25,190,227,0.05)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = 'rgba(25,190,227,0.45)';
+                e.currentTarget.style.borderColor = 'rgba(25,190,227,0.15)';
+                e.currentTarget.style.background = 'transparent';
               }}
             >
-              Want to go deeper? →
+              Explore Further →
             </Link>
           </div>
         )}
