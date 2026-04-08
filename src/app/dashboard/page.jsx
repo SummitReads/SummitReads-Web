@@ -136,8 +136,8 @@ export default function DashboardPage() {
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/library" className="logo">
-            <img src="/SummitReads-Logo.png" alt="SummitReads" className="logo-img" />
-            Summit<span>Reads</span>
+            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
+            Summit<span>Skills</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button className="btn-primary small" onClick={() => router.push('/settings')}>Settings</button>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
           </p>
           {loading
             ? <SkeletonBlock width="260px" height="36px" />
-            : <h1 style={{ fontSize: '2rem', margin: 0 }}>Welcome back, {firstName} 👋</h1>
+            : <h1 style={{ fontSize: '2rem', margin: 0 }}>Welcome back, {firstName}</h1>
           }
         </div>
 
@@ -167,7 +167,7 @@ export default function DashboardPage() {
             <>
               <StatCard
                 label="Current Streak"
-                value={`${streak?.current_streak ?? 0} 🔥`}
+                value={`${streak?.current_streak ?? 0}`}
                 sub={`Best: ${streak?.longest_streak ?? 0} days`}
                 color="#f97316"
               />
@@ -311,7 +311,7 @@ export default function DashboardPage() {
         {/* ── Empty state ── */}
         {!loading && sprintsStarted === 0 && (
           <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🏔️</div>
+            
             <h2 style={{ marginBottom: '12px' }}>Your journey starts here</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '28px' }}>
               Pick your first sprint from the library and start building skills today.
