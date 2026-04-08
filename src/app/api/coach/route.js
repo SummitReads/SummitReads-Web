@@ -8,6 +8,7 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Build the coaching system prompt from live context
 function buildSystemPrompt({ book, currentDay, allDays, userReflection, userMission }) {
   const completedStages = allDays.filter(d => d.day_number < currentDay.day_number && d.completed);
   const completedSummary = completedStages.length > 0
@@ -183,7 +184,6 @@ export async function POST(request) {
       book,
       currentDay,
       allDays: daysWithProgress,
-      // Fixed: was reflection_text, correct field is reflection_data
       userReflection: currentProgress?.reflection_data || null,
       userMission:    currentProgress?.completed || false
     });
@@ -197,15 +197,13 @@ export async function POST(request) {
       { role: 'user', content: userMessage }
     ];
 
-    // Stream the response
     const stream = await openai.chat.completions.create({
       model:                 'gpt-5-mini-2025-08-07',
       messages,
-      max_completion_tokens: 300,  // Reduced from 1024 — coach responses are 1-3 sentences
+      max_completion_tokens: 300,
       stream:                true,
     });
 
-    // Return a ReadableStream to the client
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
@@ -213,11 +211,9 @@ export async function POST(request) {
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content || '';
             if (text) {
-              // Send each chunk as a Server-Sent Event
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
           }
-          // Signal stream complete
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (err) {
