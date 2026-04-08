@@ -5,7 +5,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/app/supabaseClient';
-import SummitCoach from '@/components/SummitCoach';
 
 export default function DeepDivePage({ params }) {
   const unwrappedParams = React.use(params);
@@ -14,7 +13,6 @@ export default function DeepDivePage({ params }) {
 
   const [book,    setBook]    = useState(null);
   const [dayData, setDayData] = useState(null);
-  const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
   const [open,    setOpen]    = useState({ reading: true, examples: false, reflections: false, challenges: false });
@@ -22,9 +20,6 @@ export default function DeepDivePage({ params }) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        setUser(currentUser);
-
         const { data: bookData, error: bookErr } = await supabase
           .from('books').select('title, sprint_title, category').eq('id', id).single();
         const { data: dayRaw, error: dayErr } = await supabase
@@ -73,7 +68,8 @@ export default function DeepDivePage({ params }) {
   const sections = [
     {
       key: 'reading',
-      label: 'Extended Reading',
+      label: 'Worth Knowing',
+      icon: '📖',
       available: !!extReading,
       content: extReading ? (
         <p style={{ fontSize: '1.05rem', lineHeight: 1.85, color: 'var(--text-main)', margin: 0 }}>
@@ -83,7 +79,8 @@ export default function DeepDivePage({ params }) {
     },
     {
       key: 'examples',
-      label: 'Real Examples',
+      label: 'In Practice',
+      icon: '💼',
       available: realExamples.length > 0,
       content: realExamples.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -103,7 +100,8 @@ export default function DeepDivePage({ params }) {
     },
     {
       key: 'reflections',
-      label: 'Reflection Prompts',
+      label: 'Think About This',
+      icon: '🪞',
       available: reflections.length > 0,
       content: reflections.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -117,7 +115,8 @@ export default function DeepDivePage({ params }) {
     },
     {
       key: 'challenges',
-      label: 'Action Challenges',
+      label: 'Try This',
+      icon: '⚡',
       available: challenges.length > 0,
       content: challenges.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -215,7 +214,7 @@ export default function DeepDivePage({ params }) {
           color: 'rgba(255,255,255,0.6)',
           lineHeight: 1.6,
         }}>
-          This material is optional. Complete the stage mission first — then come back here when you want more context, real examples, or something to reflect on.
+          This is optional. Finish the stage mission first — then come back here when you want more context, a real example, or something to think about.
         </div>
 
         {/* Accordion sections */}
@@ -242,6 +241,7 @@ export default function DeepDivePage({ params }) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: '1.1rem' }}>{section.icon}</span>
                   <span style={{
                     fontFamily: "'DM Mono', monospace",
                     fontSize: '0.78rem',
@@ -301,9 +301,6 @@ export default function DeepDivePage({ params }) {
         </div>
 
       </main>
-
-      {/* Summit Coach — only mounted once user is resolved */}
-      {user && <SummitCoach bookId={id} dayNum={dayNum} userId={user.id} />}
     </>
   );
 }
