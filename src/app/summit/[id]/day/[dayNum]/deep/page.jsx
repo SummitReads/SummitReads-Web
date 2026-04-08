@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/app/supabaseClient';
+import SummitCoach from '@/components/SummitCoach';
 
 export default function DeepDivePage({ params }) {
   const unwrappedParams = React.use(params);
@@ -301,6 +302,8 @@ export default function DeepDivePage({ params }) {
         </div>
 
       </main>
+
+      <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
     </>
   );
 }
