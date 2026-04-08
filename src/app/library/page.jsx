@@ -112,30 +112,19 @@ function SkillPassport({ userSkills }) {
                   e.currentTarget.style.background   = 'rgba(15, 23, 42, 0.6)';
                 }}
               >
-                {/* Skill name + book title */}
-                <div style={{ flex: '0 0 200px', minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '0.9rem',
-                    fontWeight: 600,
-                    color: 'var(--text-main)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {skill.sprintSkill}
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '0.72rem',
-                    color: 'rgba(255,255,255,0.35)',
-                    marginTop: '2px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
-                    {skill.bookTitle}
-                  </div>
+                {/* Skill name */}
+                <div style={{
+                  flex: '1 1 auto',
+                  minWidth: 0,
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: 'var(--text-main)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}>
+                  {skill.sprintSkill}
                 </div>
 
                 {/* Progress bar */}
