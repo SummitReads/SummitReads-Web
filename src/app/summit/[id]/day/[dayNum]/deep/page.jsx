@@ -14,6 +14,7 @@ export default function DeepDivePage({ params }) {
 
   const [book,    setBook]    = useState(null);
   const [dayData, setDayData] = useState(null);
+  const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
   const [open,    setOpen]    = useState({ reading: true, examples: false, reflections: false, challenges: false });
@@ -21,6 +22,9 @@ export default function DeepDivePage({ params }) {
   useEffect(() => {
     async function fetchData() {
       try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        setUser(currentUser);
+
         const { data: bookData, error: bookErr } = await supabase
           .from('books').select('title, sprint_title, category').eq('id', id).single();
         const { data: dayRaw, error: dayErr } = await supabase
@@ -70,7 +74,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'reading',
       label: 'Extended Reading',
-      icon: '📖',
       available: !!extReading,
       content: extReading ? (
         <p style={{ fontSize: '1.05rem', lineHeight: 1.85, color: 'var(--text-main)', margin: 0 }}>
@@ -81,7 +84,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'examples',
       label: 'Real Examples',
-      icon: '💼',
       available: realExamples.length > 0,
       content: realExamples.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -102,7 +104,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'reflections',
       label: 'Reflection Prompts',
-      icon: '🪞',
       available: reflections.length > 0,
       content: reflections.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -117,7 +118,6 @@ export default function DeepDivePage({ params }) {
     {
       key: 'challenges',
       label: 'Action Challenges',
-      icon: '⚡',
       available: challenges.length > 0,
       content: challenges.length > 0 ? (
         <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -242,7 +242,6 @@ export default function DeepDivePage({ params }) {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '1.1rem' }}>{section.icon}</span>
                   <span style={{
                     fontFamily: "'DM Mono', monospace",
                     fontSize: '0.78rem',
@@ -303,7 +302,8 @@ export default function DeepDivePage({ params }) {
 
       </main>
 
-      <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
+      {/* Summit Coach — only mounted once user is resolved */}
+      {user && <SummitCoach bookId={id} dayNum={dayNum} userId={user.id} />}
     </>
   );
 }
