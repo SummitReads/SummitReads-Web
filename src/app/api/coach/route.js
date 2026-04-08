@@ -1,8 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,240 +9,144 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Build the coaching system prompt from live context
-function buildSystemPrompt({ book, currentDay, allDays, userReflection, userMission }) {
-  const completedStages = allDays.filter(d => d.day_number < currentDay.day_number && d.completed);
-  const completedSummary = completedStages.length > 0
-    ? completedStages.map(d => `- Stage ${d.day_number} "${d.title}"`).join('\n')
-    : 'None yet — this is their first stage.';
+const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
 
+function shortText(value, max = 220) {
+  if (!value) return '';
+  return value.length > max ? `${value.slice(0, max).trim()}…` : value;
+}
+
+function buildSystemPrompt({ book, currentDay, recentCompleted, userReflection, userMission }) {
   const stageNum = currentDay.day_number;
+
   const stagePhaseGuidance = stageNum <= 2
-    ? `You are in ORIENTATION mode (Stages 1–2). Be curious and exploratory. Help them see where today's insight shows up in their current reality. Don't push for action yet — push for awareness.`
+    ? 'Orientation mode. Stay curious. Help them notice where today\'s idea shows up in real life. Push awareness before action.'
     : stageNum <= 4
-    ? `You are in APPLICATION mode (Stages 3–4). They're trying things. Some is working, some isn't. Get specific. Ask about real situations, real friction, real moments from their week.`
-    : stageNum <= 6
-    ? `You are in REINFORCEMENT mode (Stages 5–6). They're building a small habit. Help them see what's actually shifting. Challenge them to go one level deeper than they've gone before.`
-    : `You are in INTEGRATION mode (Stage 7). Help them name what's genuinely changed and how they carry it forward past this sprint. Plant a seed for lasting behavior change.`;
+      ? 'Application mode. Get concrete about real situations, friction, and what happened this week.'
+      : stageNum <= 6
+        ? 'Reinforcement mode. Help them see what is starting to shift and go one level deeper.'
+        : 'Integration mode. Help them name what changed and how they will carry it forward.';
 
-  return `You are the Summit Coach for SummitSkills — a seasoned executive coach with 20+ years working with Fortune 500 leaders, founders, and high-performing teams. Your time is worth $500/hr and your clients know it. You are warm, direct, and hold people accountable without being harsh. You do not flatter. You do not over-explain. You get to the point.
+  const completedSummary = recentCompleted.length
+    ? recentCompleted.map(d => `Stage ${d.day_number}: ${d.title}`).join(' | ')
+    : 'None yet.';
 
-You are a coach, not a consultant. Your job is to help them figure it out — not tell them what to do.
+  return `You are the Summit Coach for SummitSkills: warm, sharp, direct, and grounded. You are a coach, not a consultant. Help them think clearly instead of dumping advice.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LIVE SESSION CONTEXT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Book: "${book.title}" by ${book.author}
+Category: ${book.category || 'Personal Development'}
 
-BOOK: "${book.title}" by ${book.author}
-CATEGORY: ${book.category || 'Personal Development'}
+Today is Stage ${stageNum} of 7.
+Stage title: "${currentDay.title}"
+Core insight: ${shortText(currentDay.ascent_content, 700)}
+Reflection question: ${currentDay.basecamp_question || 'No reflection question for today.'}
+Mission: ${currentDay.summit_mission || 'No mission assigned today.'}
+User reflection: ${userReflection || 'No written reflection yet.'}
+Mission completed: ${userMission ? 'Yes' : 'No'}
+Completed stages: ${completedSummary}
 
-TODAY — Stage ${stageNum} of 7
-Title: "${currentDay.title}"
-Today's Core Insight: ${currentDay.ascent_content}
-Reflection Question: ${currentDay.basecamp_question || 'No reflection question for today.'}
-Today's Mission: ${currentDay.summit_mission || 'No mission assigned today.'}
+Posture for today: ${stagePhaseGuidance}
 
-USER'S WRITTEN REFLECTION:
-${userReflection || "(They haven't written a reflection yet — ask what stood out to them from today's reading.)"}
-
-MISSION STATUS: ${userMission ? '✓ Completed' : 'Not yet completed'}
-
-STAGES COMPLETED SO FAR:
-${completedSummary}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR COACHING POSTURE TODAY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-${stagePhaseGuidance}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NON-NEGOTIABLE COACHING RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-RESPONSE LENGTH (CRITICAL):
-- Default: 1–3 sentences maximum.
-- Deep conversation: 4 sentences absolute maximum.
-- Every word must earn its place. If you can cut it, cut it.
-
-ONE QUESTION PER RESPONSE. ALWAYS.:
-- Every single response must end with exactly one question. Not two. Not a list of options. One.
-- The question must be sharp, specific, and designed to move them forward or deepen self-awareness.
-- This is your most important rule. A response without a closing question is a failed response.
-
-ONE TASK PER STAGE. FULL STOP.:
-- If they've already received today's mission, do not assign more tasks.
-- Coach around the one task — reinforce it, troubleshoot it, refine it. More tasks = zero execution.
-
-FRAMEWORK FIDELITY:
-- Every insight, reframe, and challenge must be rooted in the book context above.
-- Do not reference outside frameworks, other books, or generic productivity advice.
-- If they take the conversation off-topic, redirect: "That's outside my lane — I'm here for your ${book.title} journey. What's on your mind about today?"
-
-TEXT MESSAGE ENERGY:
-- Write like a brilliant coach who texts their clients.
-- Short paragraphs. Conversational. No bullet point monologues. No numbered lists unless they ask.
-- This is a dialogue, not a memo.
-
-NO EMPTY AFFIRMATIONS:
-- Never open with "Great question!" or "That's really interesting."
-- Never perform enthusiasm. If they say something insightful, acknowledge it in one sentence and build on it — then ask your question.
-
-ACCOUNTABILITY WITHOUT SHAME:
-- If they haven't done the mission, don't lecture. Get curious about what got in the way.
-- Help them find a smaller wedge to start, not a reason to feel guilty.
-
-MATCH THEIR ENERGY, ELEVATE IT SLIGHTLY:
-- If they're struggling, be warmer. If they're energized, be sharper.
-- Never be robotic. You are a person, not a chatbot.
-
-KNOW WHEN TO DRAFT FOR THEM:
-- If the user has provided enough raw material (task, time, place, goal) but is clearly struggling to form it into a concrete sentence, stop asking and draft it for them.
-- Offer the sentence, then ask one confirmation question: "Does that capture it, or would you change anything?"
-- Never ask for the same piece of information more than twice. If they still have not provided it, draft your best version with what you have and let them refine it.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT YOU NEVER DO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-- Do NOT give multi-step instructions or action plans
-- Do NOT list multiple options for them to choose from
-- Do NOT front-load advice before asking your question
-- Do NOT explain the "why" behind something at length
-- Do NOT use phrases like "here's what you can do," "try this," or "I suggest"
-- Do NOT invent book details, chapters, or quotes — you only know what's in this context
-- Do NOT mention that you are an AI or that you have limitations
-- Do NOT recommend other books, tools, or platforms
-- Do NOT let a response end without a question — ever
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-QUESTION CRAFT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Ask visceral, specific questions — not generic ones.
-- ✓ "What did you notice in your body when you read that?"
-- ✗ "How does that make you feel?"
-- ✓ "Where did you catch yourself defaulting to the old pattern this week?"
-- ✗ "Have you been applying this?"
-- ✓ "What would have to be true for you to actually do this tomorrow?"
-- ✗ "Do you think you can commit to that?"
-
-Use "Notice what happens when..." to invite reflection.
-Never use "think about" or "consider" — too passive.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SAFETY BOUNDARIES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-- If they mention serious mental health struggles, acknowledge with care and gently suggest professional support. Do not coach through a crisis.
-- Stay grounded in THIS book and THIS journey at all times.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-YOUR NORTH STAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-At the end of 7 stages, this person should be able to point to one concrete behavioral shift. Not 12 new ideas. One real change. Keep every response aimed at that.`;
+Rules:
+- Default to 1 to 3 sentences. 4 max.
+- End every response with exactly one question.
+- Stay rooted in this book and this stage.
+- Do not give a multi-step plan.
+- Do not give multiple options unless they ask.
+- If they have not done the mission, get curious about the friction instead of lecturing.
+- If they have given enough raw material and are struggling to phrase it, draft the sentence for them and ask one confirmation question.
+- Do not use fake enthusiasm or long explanations.
+- Keep aiming at one real behavior change by the end of the sprint.`;
 }
 
 export async function POST(request) {
   try {
     const { bookId, dayNum, userId, userMessage, conversationHistory } = await request.json();
-    console.log('[coach] request received', { bookId, dayNum, userId, messageLength: userMessage?.length });
 
     if (!bookId || !dayNum || !userMessage) {
-      console.log('[coach] missing required fields');
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const [bookRes, currentDayRes, allDaysRes, progressRes] = await Promise.all([
-      supabase.from('books').select('*').eq('id', bookId).single(),
-      supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
-      supabase.from('summit_days').select('day_number, title').eq('book_id', bookId).order('day_number'),
+    const [bookRes, allDaysRes, progressRes] = await Promise.all([
+      supabase
+        .from('books')
+        .select('id, title, author, category')
+        .eq('id', bookId)
+        .single(),
+      supabase
+        .from('summit_days')
+        .select('day_number, title, ascent_content, basecamp_question, summit_mission')
+        .eq('book_id', bookId)
+        .order('day_number'),
       userId
-        ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
-        : { data: [] }
+        ? supabase
+            .from('user_progress')
+            .select('day_number, completed, reflection_text, mission_completed')
+            .eq('user_id', userId)
+            .eq('book_id', bookId)
+        : Promise.resolve({ data: [] })
     ]);
 
-    const book       = bookRes.data;
-    const currentDay = currentDayRes.data;
-    const allDays    = allDaysRes.data || [];
+    if (bookRes.error) throw bookRes.error;
+    if (allDaysRes.error) throw allDaysRes.error;
+    if (progressRes?.error) throw progressRes.error;
+
+    const book = bookRes.data;
+    const allDays = allDaysRes.data || [];
+    const currentDay = allDays.find(d => Number(d.day_number) === Number(dayNum));
 
     if (!book || !currentDay) {
-      console.log('[coach] book or day not found', { book: !!book, currentDay: !!currentDay });
-      return new Response(JSON.stringify({ error: 'Book or stage not found' }), { status: 404 });
+      return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
     }
 
-    console.log('[coach] context loaded, building prompt');
+    const progressMap = Object.fromEntries(
+      (progressRes.data || []).map(p => [Number(p.day_number), p])
+    );
 
-    const progressMap = {};
-    (progressRes.data || []).forEach(p => {
-      progressMap[p.day_number] = p;
-    });
+    const recentCompleted = allDays
+      .filter(d => Number(d.day_number) < Number(dayNum) && progressMap[Number(d.day_number)]?.completed)
+      .slice(-2);
 
-    const daysWithProgress = allDays.map(d => ({
-      ...d,
-      completed: progressMap[d.day_number]?.completed || false
-    }));
-
-    const currentProgress = progressMap[dayNum];
+    const currentProgress = progressMap[Number(dayNum)];
 
     const systemPrompt = buildSystemPrompt({
       book,
       currentDay,
-      allDays: daysWithProgress,
-      userReflection: currentProgress?.reflection_data || null,
-      userMission:    currentProgress?.completed || false
+      recentCompleted,
+      userReflection: currentProgress?.reflection_text || null,
+      userMission: currentProgress?.mission_completed || false
     });
 
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...(conversationHistory || []).map(msg => ({
-        role:    msg.role,
+    const trimmedHistory = (conversationHistory || [])
+      .filter(msg => msg?.content && msg.content !== INITIAL_GREETING)
+      .slice(-6)
+      .map(msg => ({
+        role: msg.role,
         content: msg.content
-      })),
-      { role: 'user', content: userMessage }
-    ];
+      }));
 
-    console.log('[coach] starting OpenAI stream');
-    const stream = await openai.chat.completions.create({
-      model:                 'gpt-5-mini-2025-08-07',
-      messages,
-      max_completion_tokens: 300,
-      stream:                true,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5-mini-2025-08-07',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...trimmedHistory,
+        { role: 'user', content: userMessage.trim() }
+      ],
+      max_completion_tokens: 220
     });
 
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          let chunkCount = 0;
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content || '';
-            if (text) {
-              chunkCount++;
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
-            }
-          }
-          console.log('[coach] stream complete, chunks sent:', chunkCount);
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        } catch (err) {
-          console.error('[coach] stream error:', err);
-          controller.error(err);
-        }
-      }
-    });
+    const raw = response.choices?.[0]?.message;
+    const assistantMessage = typeof raw?.content === 'string'
+      ? raw.content
+      : Array.isArray(raw?.content)
+        ? raw.content.map(block => block?.text || '').join('')
+        : '';
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type':  'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection':    'keep-alive',
-      }
+    return NextResponse.json({
+      message: assistantMessage || 'What feels most true for you about today\'s stage?'
     });
-
   } catch (error) {
-    console.error('[coach] top-level error:', error?.message, error?.stack);
-    return new Response(JSON.stringify({ error: 'Something went wrong. Try again.' }), { status: 500 });
+    console.error('Coach API error:', error);
+    return NextResponse.json({ error: 'Something went wrong. Try again.' }, { status: 500 });
   }
 }
