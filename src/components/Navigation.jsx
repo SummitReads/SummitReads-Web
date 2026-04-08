@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import StreakCounter from './StreakCounter';
 
 export default function Navigation() {
   return (
@@ -11,7 +10,6 @@ export default function Navigation() {
         </Link>
         
         <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <StreakCounter />
           <Link href="/library" className="btn-outline small">Library</Link>
           <button 
             className="btn-primary small"

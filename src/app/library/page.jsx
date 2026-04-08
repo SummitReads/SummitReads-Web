@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient'; 
 import BookRow from '@/components/BookRow'; 
 import StatsHoverBanner from '@/components/StatsHoverBanner';
-import StreakCounter from '@/components/StreakCounter';
 
 // ── Loading skeleton for featured card + rows ─────────────────────────────────
 function LoadingSkeleton() {
@@ -219,14 +218,12 @@ export default function Library() {
             .eq('user_id', user.id);
 
           if (progressData && progressData.length > 0) {
-            // Count completed days per book
             const daysByBook = progressData.reduce((acc, row) => {
               if (!acc[row.book_id]) acc[row.book_id] = 0;
               if (row.completed) acc[row.book_id] += 1;
               return acc;
             }, {});
 
-            // Build skill passport rows — only books with sprint_skill set
             const skills = Object.entries(daysByBook)
               .map(([bookId, daysCompleted]) => {
                 const book = booksData.find(b => b.id === bookId);
@@ -239,7 +236,6 @@ export default function Library() {
                 };
               })
               .filter(Boolean)
-              // In-progress first, then completed; within each group most recent first
               .sort((a, b) => {
                 const aComplete = a.daysCompleted >= 7;
                 const bComplete = b.daysCompleted >= 7;
@@ -369,7 +365,6 @@ export default function Library() {
             Summit<span>Skills</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <StreakCounter />
             <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>
               Dashboard
             </button>
