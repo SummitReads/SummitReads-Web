@@ -39,7 +39,8 @@ export default function SummitDayPage({ params }) {
         }
 
         const { data: bookData,       error: bookError } = await supabase.from('books').select('*').eq('id', id).single();
-        const { data: daysData }                          = await supabase.from('summit_days').select('day_number, title').eq('book_id', id).order('day_number', { ascending: true });
+        // ── skill_focus added so progress dots can show the skill label on hover ──
+        const { data: daysData }                          = await supabase.from('summit_days').select('day_number, title, skill_focus').eq('book_id', id).order('day_number', { ascending: true });
         const { data: currentDayData, error: dayError  } = await supabase.from('summit_days').select('*').eq('book_id', id).eq('day_number', dayNum).maybeSingle();
 
         if (dayNum < 7) {
@@ -232,19 +233,31 @@ export default function SummitDayPage({ params }) {
           {/* Progress bar */}
           <div className="progress-bar-container">
             <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-              {[1,2,3,4,5,6,7].map(stage => (
-                <div key={stage} style={{
-                  flex: 1,
-                  height: 5,
-                  borderRadius: 3,
-                  background: stage < dayNum
-                    ? 'var(--brand-teal)'
-                    : stage === dayNum
-                    ? 'rgba(25,190,227,0.5)'
-                    : 'rgba(255,255,255,0.08)',
-                  transition: 'background 0.3s ease',
-                }} />
-              ))}
+              {[1,2,3,4,5,6,7].map(stage => {
+                const stageData  = allDays.find(d => d.day_number === stage);
+                const isComplete = stage < dayNum;
+                const isCurrent  = stage === dayNum;
+                const skill      = stageData?.skill_focus;
+
+                return (
+                  <div
+                    key={stage}
+                    title={skill ? `Stage ${stage}: ${skill}${isComplete ? ' ✓' : ''}` : undefined}
+                    style={{
+                      flex: 1,
+                      height: 5,
+                      borderRadius: 3,
+                      background: isComplete
+                        ? 'var(--brand-teal)'
+                        : isCurrent
+                        ? 'rgba(25,190,227,0.5)'
+                        : 'rgba(255,255,255,0.08)',
+                      transition: 'background 0.3s ease',
+                      cursor: skill ? 'default' : undefined,
+                    }}
+                  />
+                );
+              })}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               <span>Your journey</span>
@@ -267,6 +280,24 @@ export default function SummitDayPage({ params }) {
             <h2 className="text-gradient" style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
               {dayData.title}
             </h2>
+            {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
+            {dayData.skill_focus && (
+              <div style={{
+                display: 'inline-block',
+                marginTop: 12,
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
+                color: 'rgba(25,190,227,0.55)',
+                border: '1px solid rgba(25,190,227,0.2)',
+                borderRadius: 20,
+                padding: '4px 14px',
+              }}>
+                Skill: {dayData.skill_focus}
+              </div>
+            )}
           </div>
 
           {/* Today's insight */}
