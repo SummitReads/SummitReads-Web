@@ -53,7 +53,7 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
           bookId,
           dayNum,
           userId,
-          userMessage: input.trim(),
+          userMessage:         input.trim(),
           conversationHistory: historyToSend
         })
       });
@@ -63,11 +63,8 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         throw new Error(errData.error || 'Failed to reach coach');
       }
 
-      // Switch from loading dots to streaming
       setLoading(false);
       setStreaming(true);
-
-      // Add empty assistant message to fill as chunks arrive
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
       const reader  = res.body.getReader();
@@ -113,14 +110,14 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
     }
   }
 
+  const isBusy = loading || streaming;
+
   function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   }
-
-  const isBusy = loading || streaming;
 
   return (
     <>
@@ -301,7 +298,6 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
                       marginLeft: '2px',
                       verticalAlign: 'text-bottom',
                       animation: 'coachCursor 0.8s step-end infinite',
-                      opacity: 0.8,
                     }} />
                   )}
                 </div>
