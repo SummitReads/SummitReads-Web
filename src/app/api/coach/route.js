@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -146,8 +149,10 @@ At the end of 7 stages, this person should be able to point to one concrete beha
 export async function POST(request) {
   try {
     const { bookId, dayNum, userId, userMessage, conversationHistory } = await request.json();
+    console.log('[coach] request received', { bookId, dayNum, userId, messageLength: userMessage?.length });
 
     if (!bookId || !dayNum || !userMessage) {
+      console.log('[coach] missing required fields');
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
@@ -165,8 +170,11 @@ export async function POST(request) {
     const allDays    = allDaysRes.data || [];
 
     if (!book || !currentDay) {
+      console.log('[coach] book or day not found', { book: !!book, currentDay: !!currentDay });
       return new Response(JSON.stringify({ error: 'Book or stage not found' }), { status: 404 });
     }
+
+    console.log('[coach] context loaded, building prompt');
 
     const progressMap = {};
     (progressRes.data || []).forEach(p => {
@@ -197,6 +205,7 @@ export async function POST(request) {
       { role: 'user', content: userMessage }
     ];
 
+    console.log('[coach] starting OpenAI stream');
     const stream = await openai.chat.completions.create({
       model:                 'gpt-5-mini-2025-08-07',
       messages,
@@ -208,15 +217,19 @@ export async function POST(request) {
     const readable = new ReadableStream({
       async start(controller) {
         try {
+          let chunkCount = 0;
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content || '';
             if (text) {
+              chunkCount++;
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
             }
           }
+          console.log('[coach] stream complete, chunks sent:', chunkCount);
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (err) {
+          console.error('[coach] stream error:', err);
           controller.error(err);
         }
       }
@@ -231,7 +244,7 @@ export async function POST(request) {
     });
 
   } catch (error) {
-    console.error('Coach API error:', error);
+    console.error('[coach] top-level error:', error?.message, error?.stack);
     return new Response(JSON.stringify({ error: 'Something went wrong. Try again.' }), { status: 500 });
   }
 }
