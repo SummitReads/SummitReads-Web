@@ -43,40 +43,231 @@ function LoadingSkeleton() {
   );
 }
 
+// ── Skill Passport ────────────────────────────────────────────────────────────
+function SkillPassport({ userSkills }) {
+  if (!userSkills || userSkills.length === 0) return null;
+
+  return (
+    <section style={{ marginBottom: '48px' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        marginBottom: '16px',
+      }}>
+        <p style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          color: 'var(--brand-teal)',
+          margin: 0,
+        }}>
+          Skills You're Building
+        </p>
+        <div style={{
+          flex: 1,
+          height: '1px',
+          background: 'rgba(255,255,255,0.06)',
+        }} />
+      </div>
+
+      {/* Skill rows */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}>
+        {userSkills.map((skill) => {
+          const isComplete  = skill.daysCompleted >= 7;
+          const progressPct = Math.round((skill.daysCompleted / 7) * 100);
+          const resumeDay   = Math.min(skill.daysCompleted + 1, 7);
+
+          return (
+            <Link
+              key={skill.bookId}
+              href={`/summit/${skill.bookId}/day/${isComplete ? 7 : resumeDay}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  padding: '14px 18px',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '12px',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'rgba(25,190,227,0.25)';
+                  e.currentTarget.style.background   = 'rgba(25,190,227,0.04)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                  e.currentTarget.style.background   = 'rgba(15, 23, 42, 0.6)';
+                }}
+              >
+                {/* Skill name + book title */}
+                <div style={{ flex: '0 0 200px', minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: 'var(--text-main)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {skill.sprintSkill}
+                  </div>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.72rem',
+                    color: 'rgba(255,255,255,0.35)',
+                    marginTop: '2px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {skill.bookTitle}
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    height: '4px',
+                    borderRadius: '2px',
+                    background: 'rgba(255,255,255,0.08)',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${progressPct}%`,
+                      borderRadius: '2px',
+                      background: isComplete
+                        ? 'var(--brand-teal)'
+                        : 'linear-gradient(90deg, var(--brand-teal), rgba(25,190,227,0.6))',
+                      transition: 'width 0.4s ease',
+                    }} />
+                  </div>
+                </div>
+
+                {/* Status label */}
+                <div style={{
+                  flex: '0 0 110px',
+                  textAlign: 'right',
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.72rem',
+                  fontWeight: 600,
+                  color: isComplete ? 'var(--brand-teal)' : 'rgba(255,255,255,0.4)',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {isComplete ? 'Completed ✓' : `Day ${skill.daysCompleted} of 7`}
+                </div>
+
+                {/* Arrow */}
+                <div style={{
+                  color: 'rgba(25,190,227,0.4)',
+                  fontSize: '0.85rem',
+                  flexShrink: 0,
+                }}>
+                  →
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Main library page ─────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
-  const [books, setBooks] = useState([]); 
-  const [booksByCategory, setBooksByCategory] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [books,            setBooks]            = useState([]); 
+  const [booksByCategory,  setBooksByCategory]  = useState({});
+  const [loading,          setLoading]          = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery,      setSearchQuery]      = useState('');
+  const [userSkills,       setUserSkills]       = useState([]);
   
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       if (event === 'SIGNED_OUT') router.push('/auth/login');
     });
 
-    async function fetchBooks() {
-      const { data, error } = await supabase
+    async function fetchData() {
+      // ── Books ──────────────────────────────────────────────────────────────
+      const { data: booksData, error: booksError } = await supabase
         .from('books')
         .select('*')
         .eq('review_status', 'approved')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setBooks(data);
-        const grouped = data.reduce((acc, book) => {
+      if (!booksError && booksData) {
+        setBooks(booksData);
+        const grouped = booksData.reduce((acc, book) => {
           const category = book.category || 'Uncategorized';
           if (!acc[category]) acc[category] = [];
           acc[category].push(book);
           return acc;
         }, {});
         setBooksByCategory(grouped);
+
+        // ── User skill passport ────────────────────────────────────────────
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: progressData } = await supabase
+            .from('user_progress')
+            .select('book_id, day_number, completed')
+            .eq('user_id', user.id);
+
+          if (progressData && progressData.length > 0) {
+            // Count completed days per book
+            const daysByBook = progressData.reduce((acc, row) => {
+              if (!acc[row.book_id]) acc[row.book_id] = 0;
+              if (row.completed) acc[row.book_id] += 1;
+              return acc;
+            }, {});
+
+            // Build skill passport rows — only books with sprint_skill set
+            const skills = Object.entries(daysByBook)
+              .map(([bookId, daysCompleted]) => {
+                const book = booksData.find(b => b.id === bookId);
+                if (!book || !book.sprint_skill) return null;
+                return {
+                  bookId,
+                  bookTitle:   book.title,
+                  sprintSkill: book.sprint_skill,
+                  daysCompleted,
+                };
+              })
+              .filter(Boolean)
+              // In-progress first, then completed; within each group most recent first
+              .sort((a, b) => {
+                const aComplete = a.daysCompleted >= 7;
+                const bComplete = b.daysCompleted >= 7;
+                if (aComplete && !bComplete) return 1;
+                if (!aComplete && bComplete) return -1;
+                return b.daysCompleted - a.daysCompleted;
+              });
+
+            setUserSkills(skills);
+          }
+        }
       }
+
       setLoading(false);
     }
-    fetchBooks();
 
+    fetchData();
     return () => subscription.unsubscribe();
   }, []);
 
@@ -306,6 +497,9 @@ export default function Library() {
         {/* Normal (non-search) view */}
         {!loading && !isSearching && (
           <>
+            {/* Skill passport — only renders when user has started at least one sprint */}
+            <SkillPassport userSkills={userSkills} />
+
             <section className="featured-section">
               {featuredBook ? (
                 <div className="featured-card glass-panel" style={{
