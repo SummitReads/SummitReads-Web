@@ -86,11 +86,11 @@
   align-items: center;
   gap: 0;
   font-family: var(--sans);
-  font-weight: 800;
-  font-size: 1.25rem;
+  font-weight: 700;
+  font-size: 1.15rem;
   color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
 }
 
 .landing-page .logo span {
@@ -98,10 +98,10 @@
 }
 
 .landing-page .logo-img {
-  height: 36px;
+  height: 44px;
   width: auto;
   display: block;
-  margin-right: 6px;
+  margin-right: 10px;
 }
 
 
