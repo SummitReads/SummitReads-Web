@@ -1,6 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
-import { NextResponse } from 'next/server';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,11 +8,10 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Build the coaching system prompt from live context
 function buildSystemPrompt({ book, currentDay, allDays, userReflection, userMission }) {
   const completedStages = allDays.filter(d => d.day_number < currentDay.day_number && d.completed);
   const completedSummary = completedStages.length > 0
-    ? completedStages.map(d => `- Stage ${d.day_number} "${d.title}": ${d.ascent_content?.substring(0, 120)}...`).join('\n')
+    ? completedStages.map(d => `- Stage ${d.day_number} "${d.title}"`).join('\n')
     : 'None yet — this is their first stage.';
 
   const stageNum = currentDay.day_number;
@@ -149,13 +147,13 @@ export async function POST(request) {
     const { bookId, dayNum, userId, userMessage, conversationHistory } = await request.json();
 
     if (!bookId || !dayNum || !userMessage) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
     const [bookRes, currentDayRes, allDaysRes, progressRes] = await Promise.all([
       supabase.from('books').select('*').eq('id', bookId).single(),
       supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
-      supabase.from('summit_days').select('day_number, title, ascent_content').eq('book_id', bookId).order('day_number'),
+      supabase.from('summit_days').select('day_number, title').eq('book_id', bookId).order('day_number'),
       userId
         ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
         : { data: [] }
@@ -166,7 +164,7 @@ export async function POST(request) {
     const allDays    = allDaysRes.data || [];
 
     if (!book || !currentDay) {
-      return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
+      return new Response(JSON.stringify({ error: 'Book or stage not found' }), { status: 404 });
     }
 
     const progressMap = {};
@@ -185,8 +183,9 @@ export async function POST(request) {
       book,
       currentDay,
       allDays: daysWithProgress,
-      userReflection: currentProgress?.reflection_text || null,
-      userMission:    currentProgress?.mission_completed || false
+      // Fixed: was reflection_text, correct field is reflection_data
+      userReflection: currentProgress?.reflection_data || null,
+      userMission:    currentProgress?.completed || false
     });
 
     const messages = [
@@ -198,21 +197,45 @@ export async function POST(request) {
       { role: 'user', content: userMessage }
     ];
 
-    const response = await openai.chat.completions.create({
-      model:                  'gpt-5-mini-2025-08-07',
+    // Stream the response
+    const stream = await openai.chat.completions.create({
+      model:                 'gpt-5-mini-2025-08-07',
       messages,
-      max_completion_tokens:  1024
+      max_completion_tokens: 300,  // Reduced from 1024 — coach responses are 1-3 sentences
+      stream:                true,
     });
 
-    const raw              = response.choices[0].message;
-    const assistantMessage = typeof raw.content === "string"
-      ? raw.content
-      : (Array.isArray(raw.content) ? raw.content.map(b => b.text || "").join("") : "");
+    // Return a ReadableStream to the client
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content || '';
+            if (text) {
+              // Send each chunk as a Server-Sent Event
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+            }
+          }
+          // Signal stream complete
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      }
+    });
 
-    return NextResponse.json({ message: assistantMessage });
+    return new Response(readable, {
+      headers: {
+        'Content-Type':  'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection':    'keep-alive',
+      }
+    });
 
   } catch (error) {
     console.error('Coach API error:', error);
-    return NextResponse.json({ error: 'Something went wrong. Try again.' }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'Something went wrong. Try again.' }), { status: 500 });
   }
 }

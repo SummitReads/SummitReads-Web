@@ -2,41 +2,41 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function SummitCoach({ bookId, dayNum, userId }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [isOpen,    setIsOpen]    = useState(false);
+  const [messages,  setMessages]  = useState([]);
+  const [input,     setInput]     = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const [error,     setError]     = useState(null);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const inputRef       = useRef(null);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Focus input when chat opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen]);
 
-  // Initial greeting when chat first opens
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([{
-        role: 'assistant',
+        role:    'assistant',
         content: `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`
       }]);
     }
   }, [isOpen]);
 
   async function sendMessage() {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || streaming) return;
 
-    const userMsg = { role: 'user', content: input.trim() };
+    const userMsg        = { role: 'user', content: input.trim() };
+    const historyToSend  = [...messages];
     const updatedHistory = [...messages, userMsg];
+
     setMessages(updatedHistory);
     setInput('');
     setLoading(true);
@@ -44,29 +44,69 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
     try {
       const res = await fetch('/api/coach', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bookId,
           dayNum,
           userId,
-          userMessage: input.trim(),
-          conversationHistory: messages // send history without the current message (API adds it)
+          userMessage:         input.trim(),
+          conversationHistory: historyToSend
         })
       });
 
       if (!res.ok) {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || 'Failed to reach coach');
       }
 
-      const data = await res.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
+      // Switch from loading dots to streaming mode
+      setLoading(false);
+      setStreaming(true);
+
+      // Add an empty assistant message we'll fill in as chunks arrive
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') break;
+
+          try {
+            const { text } = JSON.parse(data);
+            if (text) {
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  role:    'assistant',
+                  content: updated[updated.length - 1].content + text
+                };
+                return updated;
+              });
+            }
+          } catch {
+            // Malformed chunk — skip it
+          }
+        }
+      }
     } catch (err) {
       setError('Something went wrong. Try again.');
       console.error(err);
-    } finally {
       setLoading(false);
+    } finally {
+      setStreaming(false);
     }
   }
 
@@ -77,29 +117,31 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
     }
   }
 
+  const isBusy = loading || streaming;
+
   return (
     <>
       {/* Floating Trigger Button */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
-          position: 'fixed',
-          bottom: '32px',
-          right: '32px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '50%',
-          background: 'var(--brand-teal)',
-          border: 'none',
-          color: '#0F172A',
-          cursor: 'pointer',
-          display: isOpen ? 'none' : 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 24px rgba(25, 190, 227, 0.4)',
-          transition: 'all 0.3s ease',
-          zIndex: 1000,
-          backdropFilter: 'blur(12px)'
+          position:        'fixed',
+          bottom:          '32px',
+          right:           '32px',
+          width:           '60px',
+          height:          '60px',
+          borderRadius:    '50%',
+          background:      'var(--brand-teal)',
+          border:          'none',
+          color:           '#0F172A',
+          cursor:          'pointer',
+          display:         isOpen ? 'none' : 'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          boxShadow:       '0 4px 24px rgba(25, 190, 227, 0.4)',
+          transition:      'all 0.3s ease',
+          zIndex:          1000,
+          backdropFilter:  'blur(12px)'
         }}
         aria-label="Open Summit Coach"
       >
@@ -108,24 +150,24 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         </svg>
       </button>
 
-      {/* Coach Label — shows on hover when closed */}
+      {/* Coach Label */}
       {!isOpen && (
         <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '24px',
-          background: 'rgba(15, 23, 42, 0.9)',
-          border: '1px solid rgba(25, 190, 227, 0.3)',
-          borderRadius: '8px',
-          padding: '6px 12px',
-          color: 'var(--text-muted)',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          letterSpacing: '0.5px',
-          zIndex: 999,
+          position:       'fixed',
+          bottom:         '100px',
+          right:          '24px',
+          background:     'rgba(15, 23, 42, 0.9)',
+          border:         '1px solid rgba(25, 190, 227, 0.3)',
+          borderRadius:   '8px',
+          padding:        '6px 12px',
+          color:          'var(--text-muted)',
+          fontSize:       '0.75rem',
+          fontWeight:     '600',
+          letterSpacing:  '0.5px',
+          zIndex:         999,
           backdropFilter: 'blur(8px)',
-          pointerEvents: 'none',
-          opacity: 0.8
+          pointerEvents:  'none',
+          opacity:        0.8
         }}>
           Summit Coach
         </div>
@@ -134,42 +176,42 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
       {/* Chat Panel */}
       {isOpen && (
         <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '380px',
-          maxWidth: 'calc(100vw - 48px)',
-          height: '520px',
-          maxHeight: '70vh',
-          borderRadius: '20px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          border: '1px solid rgba(25, 190, 227, 0.25)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 999,
-          overflow: 'hidden',
-          animation: 'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          position:        'fixed',
+          bottom:          '24px',
+          right:           '24px',
+          width:           '380px',
+          maxWidth:        'calc(100vw - 48px)',
+          height:          '520px',
+          maxHeight:       '70vh',
+          borderRadius:    '20px',
+          background:      'rgba(15, 23, 42, 0.95)',
+          border:          '1px solid rgba(25, 190, 227, 0.25)',
+          boxShadow:       '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
+          backdropFilter:  'blur(20px)',
+          display:         'flex',
+          flexDirection:   'column',
+          zIndex:          999,
+          overflow:        'hidden',
+          animation:       'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}>
           {/* Header */}
           <div style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            background: 'rgba(30, 41, 59, 0.4)'
+            padding:       '20px 24px',
+            borderBottom:  '1px solid rgba(255,255,255,0.06)',
+            display:       'flex',
+            alignItems:    'center',
+            gap:           '12px',
+            background:    'rgba(30, 41, 59, 0.4)'
           }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(25, 190, 227, 0.15)',
-              border: '1px solid rgba(25, 190, 227, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              width:           '36px',
+              height:          '36px',
+              borderRadius:    '50%',
+              background:      'rgba(25, 190, 227, 0.15)',
+              border:          '1px solid rgba(25, 190, 227, 0.3)',
+              display:         'flex',
+              alignItems:      'center',
+              justifyContent:  'center'
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -177,32 +219,26 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Day {dayNum} of 7</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Stage {dayNum} of 7</div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.4)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
-                flexShrink: 0
+                width:           '32px',
+                height:          '32px',
+                borderRadius:    '50%',
+                background:      'rgba(255,255,255,0.05)',
+                border:          '1px solid rgba(255,255,255,0.08)',
+                color:           'rgba(255,255,255,0.4)',
+                cursor:          'pointer',
+                display:         'flex',
+                alignItems:      'center',
+                justifyContent:  'center',
+                transition:      'all 0.2s',
+                flexShrink:      0
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.8)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
-              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
               aria-label="Close coach"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -214,12 +250,12 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
           {/* Messages */}
           <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
+            flex:           1,
+            overflowY:      'auto',
+            padding:        '20px',
+            display:        'flex',
+            flexDirection:  'column',
+            gap:            '12px',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(25, 190, 227, 0.3) transparent'
           }}>
@@ -227,66 +263,76 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
               <div
                 key={i}
                 style={{
-                  display: 'flex',
+                  display:        'flex',
                   justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  animation: 'coachFadeIn 0.25s ease'
+                  animation:      'coachFadeIn 0.25s ease'
                 }}
               >
                 <div style={{
-                  maxWidth: '85%',
-                  padding: '12px 16px',
+                  maxWidth:     '85%',
+                  padding:      '12px 16px',
                   borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: msg.role === 'user'
-                    ? 'var(--brand-teal)'
-                    : 'rgba(30, 41, 59, 0.7)',
-                  border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                  color: msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
-                  fontSize: '0.9rem',
-                  lineHeight: '1.55',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: msg.role === 'user' ? '600' : '400'
+                  background:   msg.role === 'user' ? 'var(--brand-teal)' : 'rgba(30, 41, 59, 0.7)',
+                  border:       msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                  color:        msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
+                  fontSize:     '0.9rem',
+                  lineHeight:   '1.55',
+                  fontFamily:   'var(--font-sans)',
+                  fontWeight:   msg.role === 'user' ? '600' : '400'
                 }}>
                   {msg.content}
+                  {/* Blinking cursor while streaming this message */}
+                  {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
+                    <span style={{
+                      display:          'inline-block',
+                      width:            '2px',
+                      height:           '1em',
+                      background:       'var(--brand-teal)',
+                      marginLeft:       '2px',
+                      verticalAlign:    'text-bottom',
+                      animation:        'coachCursor 0.8s step-end infinite',
+                      opacity:          0.8,
+                    }} />
+                  )}
                 </div>
               </div>
             ))}
 
-            {/* Loading indicator */}
+            {/* Loading dots — only shown before streaming starts */}
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                 <div style={{
-                  padding: '12px 18px',
+                  padding:      '12px 18px',
                   borderRadius: '18px 18px 18px 4px',
-                  background: 'rgba(30, 41, 59, 0.7)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  display: 'flex',
-                  gap: '6px',
-                  alignItems: 'center'
+                  background:   'rgba(30, 41, 59, 0.7)',
+                  border:       '1px solid rgba(255,255,255,0.06)',
+                  display:      'flex',
+                  gap:          '6px',
+                  alignItems:   'center'
                 }}>
                   {[0, 1, 2].map(i => (
                     <div key={i} style={{
-                      width: '8px',
-                      height: '8px',
+                      width:       '8px',
+                      height:      '8px',
                       borderRadius: '50%',
-                      background: 'var(--brand-teal)',
-                      opacity: 0.4,
-                      animation: `coachPulse 1.2s ease ${i * 0.2}s infinite`
+                      background:  'var(--brand-teal)',
+                      opacity:     0.4,
+                      animation:   `coachPulse 1.2s ease ${i * 0.2}s infinite`
                     }} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Error */}
             {error && (
               <div style={{
-                padding: '10px 14px',
+                padding:     '10px 14px',
                 borderRadius: '10px',
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                color: '#f87171',
-                fontSize: '0.8rem',
-                textAlign: 'center'
+                background:  'rgba(239, 68, 68, 0.12)',
+                border:      '1px solid rgba(239, 68, 68, 0.25)',
+                color:       '#f87171',
+                fontSize:    '0.8rem',
+                textAlign:   'center'
               }}>
                 {error}
               </div>
@@ -297,54 +343,56 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
           {/* Input */}
           <div style={{
-            padding: '16px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            padding:    '16px',
+            borderTop:  '1px solid rgba(255,255,255,0.06)',
             background: 'rgba(15, 23, 42, 0.6)'
           }}>
             <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask your coach..."
                 rows={1}
+                disabled={isBusy}
                 style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  background: 'rgba(30, 41, 59, 0.8)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  flex:        1,
+                  padding:     '12px 16px',
+                  background:  'rgba(30, 41, 59, 0.8)',
+                  border:      '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '12px',
-                  color: 'white',
-                  fontSize: '0.9rem',
-                  fontFamily: 'var(--font-sans)',
-                  outline: 'none',
-                  resize: 'none',
-                  minHeight: '44px',
-                  maxHeight: '100px',
-                  lineHeight: '1.5',
-                  transition: 'border-color 0.2s',
-                  borderColor: input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'
+                  color:       'white',
+                  fontSize:    '0.9rem',
+                  fontFamily:  'var(--font-sans)',
+                  outline:     'none',
+                  resize:      'none',
+                  minHeight:   '44px',
+                  maxHeight:   '100px',
+                  lineHeight:  '1.5',
+                  transition:  'border-color 0.2s',
+                  borderColor: input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)',
+                  opacity:     isBusy ? 0.6 : 1,
                 }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)'}
-                onBlur={(e) => e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)'}
+                onBlur={e  => e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'}
               />
               <button
                 onClick={sendMessage}
-                disabled={!input.trim() || loading}
+                disabled={!input.trim() || isBusy}
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: input.trim() && !loading ? 'var(--brand-teal)' : 'rgba(25, 190, 227, 0.2)',
-                  border: 'none',
-                  color: input.trim() && !loading ? '#0F172A' : 'rgba(25, 190, 227, 0.5)',
-                  cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
-                  flexShrink: 0
+                  width:           '44px',
+                  height:          '44px',
+                  borderRadius:    '12px',
+                  background:      input.trim() && !isBusy ? 'var(--brand-teal)' : 'rgba(25, 190, 227, 0.2)',
+                  border:          'none',
+                  color:           input.trim() && !isBusy ? '#0F172A' : 'rgba(25, 190, 227, 0.5)',
+                  cursor:          input.trim() && !isBusy ? 'pointer' : 'not-allowed',
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'center',
+                  transition:      'all 0.2s',
+                  flexShrink:      0
                 }}
                 aria-label="Send message"
               >
@@ -356,10 +404,10 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
             </div>
             <div style={{
               marginTop: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.7rem',
+              color:     'var(--text-muted)',
+              fontSize:  '0.7rem',
               textAlign: 'center',
-              opacity: 0.6
+              opacity:   0.6
             }}>
               Press Enter to send
             </div>
@@ -367,19 +415,22 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         </div>
       )}
 
-      {/* Keyframe animations injected via style tag */}
       <style>{`
         @keyframes coachSlideUp {
           from { opacity: 0; transform: translateY(20px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes coachFadeIn {
           from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes coachPulse {
           0%, 100% { opacity: 0.4; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.2); }
+          50%      { opacity: 1;   transform: scale(1.2); }
+        }
+        @keyframes coachCursor {
+          0%, 100% { opacity: 0.8; }
+          50%      { opacity: 0; }
         }
       `}</style>
     </>
