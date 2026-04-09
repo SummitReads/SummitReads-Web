@@ -112,7 +112,7 @@ export async function POST(request) {
     let openAiStream;
     try {
       openAiStream = await openai.chat.completions.create({
-        model:      'gpt-4o-mini',
+        model:      'gpt-4.1-mini',
         messages,
         max_tokens: 300,
         stream:     true
