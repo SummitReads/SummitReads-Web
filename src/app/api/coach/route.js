@@ -115,36 +115,18 @@ export async function POST(request) {
       { role: 'user', content: userMessage }
     ];
 
-    const stream = await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
       model:                  'gpt-5-mini-2025-08-07',
       messages,
-      max_completion_tokens:  300,
-      stream:                 true
+      max_completion_tokens:  300
     });
 
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content || '';
-            if (text) {
-              controller.enqueue(encoder.encode(text));
-            }
-          }
-        } finally {
-          controller.close();
-        }
-      }
-    });
+    const raw              = response.choices[0].message;
+    const assistantMessage = typeof raw.content === "string"
+      ? raw.content
+      : (Array.isArray(raw.content) ? raw.content.map(b => b.text || "").join("") : "");
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
-        'Cache-Control': 'no-cache',
-      }
-    });
+    return NextResponse.json({ message: assistantMessage });
 
   } catch (error) {
     console.error('Coach API error:', error);
