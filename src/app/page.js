@@ -450,12 +450,7 @@ export default function Home() {
       `}</style>
       <nav>
         <a href="#" className="logo">
-          <img
-            src="/SummitSkills-Logo.png"
-            alt="SummitSkills"
-            className="logo-img"
-            onError={e => { e.target.style.display = 'none' }}
-          />Summit<span>Skills</span>
+          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" onError={e => { e.target.style.display = 'none' }} />Summit<span>Skills</span>
         </a>
         <div className="nav-links">
           <a href="#how" className="nav-link">How it works</a>
@@ -471,7 +466,7 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill">
-              <strong>15</strong> min / day <span aria-hidden="true">·</span> <strong>{sprintCountLabel}</strong> sprints
+              <strong>15</strong> min / day <span aria-hidden="true">·</span> <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
             </div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
