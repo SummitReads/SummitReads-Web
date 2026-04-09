@@ -130,6 +130,6 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Coach API error:', error);
-    return NextResponse.json({ error: 'Something went wrong. Try again.' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
   }
 }
