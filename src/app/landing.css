@@ -84,7 +84,7 @@
 .landing-page .logo {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0;
   height: 52px;
   font-family: var(--sans);
   font-weight: 700;
@@ -110,12 +110,12 @@
 }
 
 .landing-page .logo-img {
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   display: block;
   flex-shrink: 0;
-  margin-right: 0;
+  margin-right: 8px;
 }
 
 
@@ -946,8 +946,8 @@
 
   /* Nav — logo + Log in + Get Started only */
   .landing-page nav { padding: 0 16px; height: 60px; }
-  .landing-page .logo { height: 44px; gap: 4px; font-size: 1rem; }
-  .landing-page .logo-img { width: 44px; height: 44px; }
+  .landing-page .logo { height: 44px; gap: 0; font-size: 1rem; }
+  .landing-page .logo-img { width: 34px; height: 34px; margin-right: 6px; }
   .landing-page .nav-link { display: none; }
   .landing-page .nav-link-teams { display: none; }
   .landing-page .nav-links { gap: 2px; }

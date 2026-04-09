@@ -455,8 +455,7 @@ export default function Home() {
             alt="SummitSkills"
             className="logo-img"
             onError={e => { e.target.style.display = 'none' }}
-          />
-          <span className="logo-wordmark">Summit<span>Skills</span></span>
+          />Summit<span>Skills</span>
         </a>
         <div className="nav-links">
           <a href="#how" className="nav-link">How it works</a>
