@@ -9,12 +9,7 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function buildSystemPrompt({ book, currentDay, allDays, userReflection, userMission }) {
-  const completedStages = allDays.filter(d => d.day_number < currentDay.day_number && d.completed);
-  const completedSummary = completedStages.length > 0
-    ? completedStages.map(d => `- Stage ${d.day_number} "${d.title}": ${d.ascent_content?.substring(0, 120)}...`).join('\n')
-    : 'None yet — this is their first stage.';
-
+function buildSystemPrompt({ book, currentDay, userReflection, userMission }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
     ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s insight shows up in their current reality. Push awareness before action.'
@@ -34,7 +29,6 @@ Reflection Question: ${currentDay.milepost || 'None.'}
 Mission: ${currentDay.summit_mission || 'None.'}
 User Reflection: ${userReflection || 'Not written yet — ask what stood out.'}
 Mission Status: ${userMission ? '✓ Done' : 'Not done'}
-Prior Stages: ${completedSummary}
 
 Posture: ${stagePhaseGuidance}
 
@@ -68,10 +62,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const [bookRes, currentDayRes, allDaysRes, progressRes] = await Promise.all([
+    const [bookRes, currentDayRes, progressRes] = await Promise.all([
       supabase.from('books').select('*').eq('id', bookId).single(),
       supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
-      supabase.from('summit_days').select('day_number, title, ascent_content').eq('book_id', bookId).order('day_number'),
       userId
         ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
         : { data: [], error: null }
@@ -85,14 +78,9 @@ export async function POST(request) {
       console.error('Current day query failed:', currentDayRes.error.message);
       return NextResponse.json({ error: `Stage query failed: ${currentDayRes.error.message}` }, { status: 500 });
     }
-    if (allDaysRes.error) {
-      console.error('All days query failed:', allDaysRes.error.message);
-      return NextResponse.json({ error: `All days query failed: ${allDaysRes.error.message}` }, { status: 500 });
-    }
 
     const book       = bookRes.data;
     const currentDay = currentDayRes.data;
-    const allDays    = allDaysRes.data || [];
 
     if (!book || !currentDay) {
       return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
@@ -103,17 +91,11 @@ export async function POST(request) {
       progressMap[p.day_number] = p;
     });
 
-    const daysWithProgress = allDays.map(d => ({
-      ...d,
-      completed: progressMap[d.day_number]?.completed || false
-    }));
-
     const currentProgress = progressMap[dayNum];
 
     const systemPrompt = buildSystemPrompt({
       book,
       currentDay,
-      allDays: daysWithProgress,
       userReflection: currentProgress?.reflection_text || null,
       userMission:    currentProgress?.mission_completed || false
     });
