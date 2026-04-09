@@ -286,27 +286,33 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
       if (!res.ok) {
         let errData = null;
-        try {
-          errData = await res.json();
-        } catch (parseError) {
-          errData = null;
-        }
+        try { errData = await res.json(); } catch (e) { errData = null; }
         throw new Error(errData?.error || 'Failed to reach coach');
       }
 
-      const data = await res.json();
+      // Add empty assistant message and start streaming into it
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+      setLoading(false);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: data?.message || "What feels most true for you about today's stage?",
-        },
-      ]);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: 'assistant',
+            content: updated[updated.length - 1].content + chunk
+          };
+          return updated;
+        });
+      }
     } catch (err) {
       console.error(err);
       setError('Something went wrong. Try again.');
-    } finally {
       setLoading(false);
     }
   }
