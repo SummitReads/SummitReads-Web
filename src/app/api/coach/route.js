@@ -132,7 +132,7 @@ export async function POST(request) {
       openAiResponse = await openai.chat.completions.create({
         model:                 'gpt-5-mini-2025-08-07',
         messages,
-        max_completion_tokens: 300
+        max_completion_tokens: 1024
       });
     } catch (openAiError) {
       console.error('OpenAI API error:', openAiError);
