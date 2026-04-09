@@ -112,10 +112,10 @@ export async function POST(request) {
     let openAiStream;
     try {
       openAiStream = await openai.chat.completions.create({
-        model:                 'gpt-5-mini-2025-08-07',
+        model:      'gpt-4o-mini',
         messages,
-        max_completion_tokens: 1024,
-        stream:                true
+        max_tokens: 300,
+        stream:     true
       });
     } catch (openAiError) {
       console.error('OpenAI API error:', openAiError);
