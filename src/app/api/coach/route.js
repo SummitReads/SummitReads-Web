@@ -75,8 +75,22 @@ export async function POST(request) {
       supabase.from('summit_days').select('day_number, title, ascent_content').eq('book_id', bookId).order('day_number'),
       userId
         ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
-        : { data: [] }
+        : { data: [], error: null }
     ]);
+
+    // Fix 4: Log and handle Supabase errors explicitly
+    if (bookRes.error) {
+      console.error('Books query failed:', bookRes.error.message);
+      return NextResponse.json({ error: `Books query failed: ${bookRes.error.message}` }, { status: 500 });
+    }
+    if (currentDayRes.error) {
+      console.error('Current day query failed:', currentDayRes.error.message);
+      return NextResponse.json({ error: `Stage query failed: ${currentDayRes.error.message}` }, { status: 500 });
+    }
+    if (allDaysRes.error) {
+      console.error('All days query failed:', allDaysRes.error.message);
+      return NextResponse.json({ error: `All days query failed: ${allDaysRes.error.message}` }, { status: 500 });
+    }
 
     const book       = bookRes.data;
     const currentDay = currentDayRes.data;
@@ -87,7 +101,8 @@ export async function POST(request) {
     }
 
     const progressMap = {};
-    (progressRes.data || []).forEach(p => {
+    // Fix 3: Guard against null progressRes.data
+    ((progressRes.data) || []).forEach(p => {
       progressMap[p.day_number] = p;
     });
 
@@ -115,21 +130,39 @@ export async function POST(request) {
       { role: 'user', content: userMessage }
     ];
 
-    const response = await openai.chat.completions.create({
-      model:                  'gpt-5-mini-2025-08-07',
-      messages,
-      max_tokens:             300
-    });
+    let openAiResponse;
+    try {
+      openAiResponse = await openai.chat.completions.create({
+        model:      'gpt-5-mini-2025-08-07',
+        messages,
+        max_tokens: 300
+      });
+    } catch (openAiError) {
+      console.error('OpenAI API error:', openAiError);
+      return NextResponse.json({ error: `OpenAI error: ${openAiError.message}` }, { status: 500 });
+    }
 
-    const raw              = response.choices[0].message;
-    const assistantMessage = typeof raw.content === "string"
+    // Fix 2: Guard against empty choices array
+    const choice = openAiResponse?.choices?.[0];
+    if (!choice) {
+      console.error('OpenAI returned no choices:', JSON.stringify(openAiResponse));
+      return NextResponse.json({ error: 'No response from coach — please try again.' }, { status: 500 });
+    }
+
+    const raw = choice.message;
+    const assistantMessage = typeof raw?.content === 'string'
       ? raw.content
-      : (Array.isArray(raw.content) ? raw.content.map(b => b.text || "").join("") : "");
+      : (Array.isArray(raw?.content) ? raw.content.map(b => b.text || '').join('') : '');
+
+    if (!assistantMessage) {
+      console.error('OpenAI returned empty content:', JSON.stringify(choice));
+      return NextResponse.json({ error: 'Coach returned empty response — please try again.' }, { status: 500 });
+    }
 
     return NextResponse.json({ message: assistantMessage });
 
   } catch (error) {
     console.error('Coach API error:', error);
-    return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Something went wrong. Try again.' }, { status: 500 });
   }
 }
