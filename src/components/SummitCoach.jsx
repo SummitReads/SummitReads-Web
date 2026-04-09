@@ -1,255 +1,277 @@
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
+
+function getQuickChips(dayNum) {
+  const day = Number(dayNum) || 1;
+  const chips = [
+    { label: 'Help me get started',  prompt: "I just opened today's stage. Help me understand what I should be focusing on." },
+    { label: 'Help with milepost',   prompt: "I'm not sure what to write for the milepost. Can you help me figure it out?" },
+    { label: 'Help with mission',    prompt: "Help me make today's mission feel more concrete and doable." },
+    { label: "I'm stuck",            prompt: "I'm stuck on today's stage. Help me figure out what's getting in the way." },
+  ];
+  if (day >= 3) chips.push({ label: 'I tried it',       prompt: "I tried today's mission. Here's what happened..." });
+  if (day >= 5) chips.push({ label: 'What changed?',    prompt: "Help me name what's actually shifted for me across this sprint so far." });
+  if (day === 7) chips.push({ label: 'Carry it forward', prompt: "Help me figure out how to carry what I've learned beyond this sprint." });
+  return chips;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function SummitCoach({ bookId, dayNum, userId }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const [isOpen,    setIsOpen]    = useState(false);
+  const [messages,  setMessages]  = useState([]);
+  const [input,     setInput]     = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [streaming, setStreaming] = useState(false);
+  const [error,     setError]     = useState(null);
+  const [showChips, setShowChips] = useState(true);
 
-  // Auto-scroll to bottom when messages change
+  const messagesEndRef = useRef(null);
+  const inputRef       = useRef(null);
+  const abortRef       = useRef(null);
+
+  const chips = getQuickChips(dayNum);
+  const hasUserMessages = messages.some(m => m.role === 'user');
+
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, streaming]);
 
-  // Focus input when chat opens
+  // Focus input on open
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 150);
-    }
+    if (isOpen && inputRef.current) setTimeout(() => inputRef.current?.focus(), 150);
   }, [isOpen]);
 
-  // Initial greeting when chat first opens
+  // Initial greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{
-        role: 'assistant',
-        content: `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`
-      }]);
+      setMessages([{ role: 'assistant', content: INITIAL_GREETING }]);
+      setShowChips(true);
     }
   }, [isOpen]);
 
-  async function sendMessage() {
-    if (!input.trim() || loading) return;
+  // Cleanup
+  useEffect(() => () => abortRef.current?.abort(), []);
 
-    const userMsg = { role: 'user', content: input.trim() };
-    const updatedHistory = [...messages, userMsg];
-    setMessages(updatedHistory);
+  const sendPrompt = useCallback(async (promptText) => {
+    const text = promptText.trim();
+    if (!text || loading || streaming) return;
+
+    setShowChips(false);
+    setError(null);
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
     setInput('');
     setLoading(true);
-    setError(null);
+
+    const recentHistory = messages
+      .filter(m => m?.content && m.content !== INITIAL_GREETING)
+      .slice(-6);
+
+    abortRef.current = new AbortController();
 
     try {
       const res = await fetch('/api/coach', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bookId,
-          dayNum,
-          userId,
-          userMessage: input.trim(),
-          conversationHistory: messages // send history without the current message (API adds it)
-        })
+        signal:  abortRef.current.signal,
+        body: JSON.stringify({ bookId, dayNum, userId, userMessage: text, conversationHistory: recentHistory }),
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to reach coach');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || 'Failed to reach coach');
       }
 
-      const data = await res.json();
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
-    } catch (err) {
-      setError('Something went wrong. Try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
+      const contentType = res.headers.get('content-type') || '';
 
-  function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+      if (contentType.includes('text/plain')) {
+        // Streaming
+        setLoading(false);
+        setStreaming(true);
+        setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = { role: 'assistant', content: updated[updated.length - 1].content + chunk };
+            return updated;
+          });
+        }
+        setStreaming(false);
+      } else {
+        // JSON
+        const data = await res.json();
+        setLoading(false);
+        setMessages(prev => [...prev, { role: 'assistant', content: data?.message || "What feels most true for you about today's stage?" }]);
+      }
+
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('Coach error:', err);
+      setError(err.message || 'Something went wrong. Try again.');
+      setLoading(false);
+      setStreaming(false);
     }
-  }
+  }, [messages, loading, streaming, bookId, dayNum, userId]);
+
+  const handleSend    = () => sendPrompt(input);
+  const handleChip    = (chip) => sendPrompt(chip.prompt);
+  const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
+  const handleReset   = () => { setMessages([{ role: 'assistant', content: INITIAL_GREETING }]); setShowChips(true); setError(null); };
 
   return (
     <>
-      {/* Floating Trigger Button */}
+      {/* Floating button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(o => !o)}
+        aria-label={isOpen ? 'Close Summit Coach' : 'Open Summit Coach'}
         style={{
-          position: 'fixed',
-          bottom: '32px',
-          right: '32px',
-          width: '60px',
-          height: '60px',
-          borderRadius: '50%',
-          background: isOpen ? 'rgba(15, 23, 42, 0.95)' : 'var(--brand-teal)',
-          border: isOpen ? '1px solid rgba(25, 190, 227, 0.4)' : 'none',
+          position: 'fixed', bottom: '28px', right: '28px',
+          width: '56px', height: '56px', borderRadius: '50%',
+          background: isOpen ? 'rgba(15,23,42,0.95)' : 'var(--brand-teal)',
+          border: isOpen ? '1px solid rgba(25,190,227,0.4)' : 'none',
           color: isOpen ? 'var(--brand-teal)' : '#0F172A',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: isOpen
-            ? '0 0 24px rgba(25, 190, 227, 0.3)'
-            : '0 4px 24px rgba(25, 190, 227, 0.4)',
-          transition: 'all 0.3s ease',
-          zIndex: 1000,
-          backdropFilter: 'blur(12px)'
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: isOpen ? '0 0 20px rgba(25,190,227,0.25)' : '0 4px 20px rgba(25,190,227,0.45)',
+          transition: 'all 0.25s ease', zIndex: 1000,
         }}
-        aria-label={isOpen ? 'Close coach' : 'Open Summit Coach'}
       >
         {isOpen ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         ) : (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
         )}
       </button>
 
-      {/* Coach Label — shows on hover when closed */}
+      {/* Label */}
       {!isOpen && (
         <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '24px',
-          background: 'rgba(15, 23, 42, 0.9)',
-          border: '1px solid rgba(25, 190, 227, 0.3)',
-          borderRadius: '8px',
-          padding: '6px 12px',
-          color: 'var(--text-muted)',
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          letterSpacing: '0.5px',
-          zIndex: 999,
-          backdropFilter: 'blur(8px)',
-          pointerEvents: 'none',
-          opacity: 0.8
+          position: 'fixed', bottom: '92px', right: '20px',
+          background: 'rgba(15,23,42,0.9)', border: '1px solid rgba(25,190,227,0.25)',
+          borderRadius: '8px', padding: '5px 11px',
+          color: 'rgba(148,163,184,0.9)', fontSize: '0.72rem', fontWeight: '600',
+          letterSpacing: '0.4px', zIndex: 999, pointerEvents: 'none', backdropFilter: 'blur(8px)',
         }}>
           Summit Coach
         </div>
       )}
 
-      {/* Chat Panel */}
+      {/* Chat panel */}
       {isOpen && (
         <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          width: '380px',
-          maxWidth: 'calc(100vw - 48px)',
-          height: '520px',
-          maxHeight: '70vh',
-          borderRadius: '20px',
-          background: 'rgba(15, 23, 42, 0.95)',
-          border: '1px solid rgba(25, 190, 227, 0.25)',
-          boxShadow: '0 24px 48px rgba(0, 0, 0, 0.5), 0 0 40px rgba(25, 190, 227, 0.1)',
-          backdropFilter: 'blur(20px)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 999,
-          overflow: 'hidden',
-          animation: 'coachSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          position: 'fixed', bottom: '96px', right: '28px',
+          width: '360px', maxWidth: 'calc(100vw - 40px)',
+          height: '540px', maxHeight: 'calc(100vh - 120px)',
+          borderRadius: '18px', background: 'rgba(13,21,32,0.97)',
+          border: '1px solid rgba(25,190,227,0.2)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column',
+          zIndex: 999, overflow: 'hidden',
+          animation: 'coachSlideUp 0.28s cubic-bezier(0.34,1.56,0.64,1)',
         }}>
+
           {/* Header */}
           <div style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            background: 'rgba(30, 41, 59, 0.4)'
+            padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            background: 'rgba(25,190,227,0.04)', flexShrink: 0,
           }}>
             <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(25, 190, 227, 0.15)',
-              border: '1px solid rgba(25, 190, 227, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+              width: '34px', height: '34px', borderRadius: '50%',
+              background: 'rgba(25,190,227,0.12)', border: '1px solid rgba(25,190,227,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </div>
-            <div>
-              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.95rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Day {dayNum} of 7</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: 'white', fontWeight: '700', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>Stage {dayNum} of 7</div>
             </div>
+            {hasUserMessages && (
+              <button onClick={handleReset} style={{
+                background: 'transparent', border: 'none',
+                color: 'rgba(148,163,184,0.45)', cursor: 'pointer',
+                fontSize: '0.68rem', fontFamily: 'var(--font-sans)', padding: '4px',
+              }}>
+                Reset
+              </button>
+            )}
           </div>
 
           {/* Messages */}
           <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(25, 190, 227, 0.3) transparent'
+            flex: 1, overflowY: 'auto', padding: '16px',
+            display: 'flex', flexDirection: 'column', gap: '10px',
+            scrollbarWidth: 'thin', scrollbarColor: 'rgba(25,190,227,0.2) transparent',
           }}>
             {messages.map((msg, i) => (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  animation: 'coachFadeIn 0.25s ease'
-                }}
-              >
+              <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', animation: 'coachFadeIn 0.2s ease' }}>
                 <div style={{
-                  maxWidth: '85%',
-                  padding: '12px 16px',
-                  borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: msg.role === 'user'
-                    ? 'var(--brand-teal)'
-                    : 'rgba(30, 41, 59, 0.7)',
+                  maxWidth: '88%', padding: '10px 14px',
+                  borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  background: msg.role === 'user' ? 'var(--brand-teal)' : 'rgba(30,41,59,0.8)',
                   border: msg.role === 'assistant' ? '1px solid rgba(255,255,255,0.06)' : 'none',
                   color: msg.role === 'user' ? '#0F172A' : 'var(--text-main)',
-                  fontSize: '0.9rem',
-                  lineHeight: '1.55',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: msg.role === 'user' ? '600' : '400'
+                  fontSize: '0.875rem', lineHeight: '1.6',
+                  fontFamily: 'var(--font-sans)', fontWeight: msg.role === 'user' ? '600' : '400',
+                  whiteSpace: 'pre-wrap',
                 }}>
                   {msg.content}
+                  {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
+                    <span style={{ display: 'inline-block', width: '2px', height: '13px', background: 'var(--brand-teal)', marginLeft: '2px', verticalAlign: 'middle', animation: 'coachBlink 0.8s ease infinite' }} />
+                  )}
                 </div>
               </div>
             ))}
 
-            {/* Loading indicator */}
+            {/* Quick chips */}
+            {showChips && !hasUserMessages && messages.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.63rem', color: 'rgba(148,163,184,0.45)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  Quick starts
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {chips.map(chip => (
+                    <button key={chip.label} onClick={() => handleChip(chip)}
+                      style={{
+                        padding: '6px 11px', borderRadius: '999px',
+                        border: '1px solid rgba(25,190,227,0.22)',
+                        background: 'rgba(25,190,227,0.05)',
+                        color: 'rgba(148,163,184,0.85)', cursor: 'pointer',
+                        fontSize: '0.76rem', fontFamily: 'var(--font-sans)',
+                        fontWeight: '500', lineHeight: 1.2, transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(25,190,227,0.5)'; e.currentTarget.style.background = 'rgba(25,190,227,0.12)'; e.currentTarget.style.color = 'white'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(25,190,227,0.22)'; e.currentTarget.style.background = 'rgba(25,190,227,0.05)'; e.currentTarget.style.color = 'rgba(148,163,184,0.85)'; }}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Loading dots */}
             {loading && (
               <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <div style={{
-                  padding: '12px 18px',
-                  borderRadius: '18px 18px 18px 4px',
-                  background: 'rgba(30, 41, 59, 0.7)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  display: 'flex',
-                  gap: '6px',
-                  alignItems: 'center'
-                }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: 'var(--brand-teal)',
-                      opacity: 0.4,
-                      animation: `coachPulse 1.2s ease ${i * 0.2}s infinite`
-                    }} />
+                <div style={{ padding: '10px 16px', borderRadius: '16px 16px 16px 4px', background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: '5px', alignItems: 'center' }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand-teal)', opacity: 0.4, animation: `coachPulse 1.2s ease ${i * 0.18}s infinite` }} />
                   ))}
                 </div>
               </div>
@@ -257,15 +279,7 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
 
             {/* Error */}
             {error && (
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: '10px',
-                background: 'rgba(239, 68, 68, 0.12)',
-                border: '1px solid rgba(239, 68, 68, 0.25)',
-                color: '#f87171',
-                fontSize: '0.8rem',
-                textAlign: 'center'
-              }}>
+              <div style={{ padding: '9px 13px', borderRadius: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: '0.78rem', textAlign: 'center' }}>
                 {error}
               </div>
             )}
@@ -274,90 +288,68 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
           </div>
 
           {/* Input */}
-          <div style={{
-            padding: '16px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            background: 'rgba(15, 23, 42, 0.6)'
-          }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+          <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(15,23,42,0.6)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask your coach..."
                 rows={1}
                 style={{
-                  flex: 1,
-                  padding: '12px 16px',
-                  background: 'rgba(30, 41, 59, 0.8)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  color: 'white',
-                  fontSize: '0.9rem',
-                  fontFamily: 'var(--font-sans)',
-                  outline: 'none',
-                  resize: 'none',
-                  minHeight: '44px',
-                  maxHeight: '100px',
-                  lineHeight: '1.5',
-                  transition: 'border-color 0.2s',
-                  borderColor: input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'
+                  flex: 1, padding: '10px 14px',
+                  background: 'rgba(30,41,59,0.8)', border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '12px', color: 'white', fontSize: '0.875rem',
+                  fontFamily: 'var(--font-sans)', outline: 'none', resize: 'none',
+                  minHeight: '40px', maxHeight: '96px', lineHeight: '1.5', transition: 'border-color 0.15s',
                 }}
-                onFocus={(e) => e.target.style.borderColor = 'rgba(25, 190, 227, 0.5)'}
-                onBlur={(e) => e.target.style.borderColor = input ? 'rgba(25, 190, 227, 0.3)' : 'rgba(255,255,255,0.1)'}
+                onFocus={e => e.target.style.borderColor = 'rgba(25,190,227,0.4)'}
+                onBlur={e  => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
               />
               <button
-                onClick={sendMessage}
-                disabled={!input.trim() || loading}
+                onClick={handleSend}
+                disabled={!input.trim() || loading || streaming}
+                aria-label="Send"
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: input.trim() && !loading ? 'var(--brand-teal)' : 'rgba(25, 190, 227, 0.2)',
+                  width: '40px', height: '40px', borderRadius: '10px',
+                  background: input.trim() && !loading && !streaming ? 'var(--brand-teal)' : 'rgba(25,190,227,0.15)',
                   border: 'none',
-                  color: input.trim() && !loading ? '#0F172A' : 'rgba(25, 190, 227, 0.5)',
-                  cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.2s',
-                  flexShrink: 0
+                  color: input.trim() && !loading && !streaming ? '#0F172A' : 'rgba(25,190,227,0.4)',
+                  cursor: input.trim() && !loading && !streaming ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.15s', flexShrink: 0,
                 }}
-                aria-label="Send message"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                 </svg>
               </button>
             </div>
-            <div style={{
-              marginTop: '8px',
-              color: 'var(--text-muted)',
-              fontSize: '0.7rem',
-              textAlign: 'center',
-              opacity: 0.6
-            }}>
-              Press Enter to send
+            <div style={{ marginTop: '6px', textAlign: 'center', fontSize: '0.63rem', color: 'rgba(148,163,184,0.3)', fontFamily: 'var(--font-sans)' }}>
+              Enter to send · Shift+Enter for new line
             </div>
           </div>
         </div>
       )}
 
-      {/* Keyframe animations injected via style tag */}
       <style>{`
         @keyframes coachSlideUp {
-          from { opacity: 0; transform: translateY(20px) scale(0.97); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(16px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes coachFadeIn {
           from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes coachPulse {
           0%, 100% { opacity: 0.4; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.2); }
+          50%      { opacity: 1;   transform: scale(1.25); }
+        }
+        @keyframes coachBlink {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0; }
         }
       `}</style>
     </>
