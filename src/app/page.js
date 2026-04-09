@@ -84,9 +84,8 @@ export default function Home() {
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
 
-  // FIX #2: Seed with last-known count so the pill never shows "..." on load.
-  // The Supabase fetch below still runs and updates this to the live value.
-  const [sprintCount, setSprintCount] = useState(18)
+  // Seed with null so the pill shows "..." until Supabase returns the live count.
+  const [sprintCount, setSprintCount] = useState(null)
 
   // Auth redirect — logged-in users go to /library
   // NOTE: For a flash-free experience, also handle this in middleware.js so
@@ -252,7 +251,7 @@ export default function Home() {
   const sprintCountLabel =
     typeof sprintCount === 'number'
       ? sprintCount.toLocaleString('en-US')
-      : '...'
+      : ''
 
   const faqItems = getFaqItems(sprintCountLabel)
 
@@ -457,7 +456,7 @@ export default function Home() {
             className="logo-img"
             onError={e => { e.target.style.display = 'none' }}
           />
-          Summit<span>Skills</span>
+          <span className="logo-wordmark">Summit<span>Skills</span></span>
         </a>
         <div className="nav-links">
           <a href="#how" className="nav-link">How it works</a>
