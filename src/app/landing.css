@@ -84,14 +84,14 @@
 .landing-page .logo {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 50px;
+  gap: 4px;
+  height: 52px;
   font-family: var(--sans);
   font-weight: 700;
   font-size: 1.18rem;
   color: var(--text);
   text-decoration: none;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
@@ -101,9 +101,17 @@
   color: var(--teal);
 }
 
+.landing-page .logo-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .landing-page .logo-img {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   object-fit: contain;
   display: block;
   flex-shrink: 0;
@@ -938,7 +946,7 @@
 
   /* Nav — logo + Log in + Get Started only */
   .landing-page nav { padding: 0 16px; height: 60px; }
-  .landing-page .logo { height: 44px; gap: 5px; font-size: 1.02rem; }
+  .landing-page .logo { height: 44px; gap: 4px; font-size: 1rem; }
   .landing-page .logo-img { width: 44px; height: 44px; }
   .landing-page .nav-link { display: none; }
   .landing-page .nav-link-teams { display: none; }
