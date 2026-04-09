@@ -118,7 +118,7 @@ export async function POST(request) {
     const response = await openai.chat.completions.create({
       model:                  'gpt-5-mini-2025-08-07',
       messages,
-      max_completion_tokens:  300
+      max_tokens:             300
     });
 
     const raw              = response.choices[0].message;
