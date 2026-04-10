@@ -271,6 +271,17 @@ export default function Library() {
   const [userSkills, setUserSkills] = useState([]);
   const [sprintCount, setSprintCount] = useState(null);
 
+  const hasBooks = books.length > 0;
+  const showInitialSkeleton = loading && !hasBooks;
+  const showContentShell = hasBooks || !loading;
+  const disableCategoryControls = loading && !hasBooks;
+
+  const handleCategorySelect = (category) => {
+    if (disableCategoryControls) return;
+    setSearchQuery('');
+    setSelectedCategory(category);
+  };
+
   // Lightweight dedicated query for the pill
   useEffect(() => {
     let isMounted = true;
@@ -296,7 +307,6 @@ export default function Library() {
       try {
         setErrorMessage('');
 
-        // Confirm session first so protected content does not briefly flash for signed-out users
         const {
           data: { session },
           error: sessionError,
@@ -309,7 +319,6 @@ export default function Library() {
           return;
         }
 
-        // Restore cached library after mount + auth confirmation
         const cachedState = getCachedLibraryState();
         if (cachedState && isMounted) {
           setBooks(cachedState.books);
@@ -341,7 +350,6 @@ export default function Library() {
           // Non-blocking cache write failure
         }
 
-        // User progress is nice to have, but should not blank the library if it fails
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
           .select('book_id, day_number, completed')
@@ -518,11 +526,34 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        {sprintCount !== null && <StatsHoverBanner totalSummaries={sprintCount} />}
-        <div className="hero-badge">
-          <span className="pulse-dot"></span>
-          <span>{sprintCount !== null ? `${sprintCount} Skill Sprints • Ready to Start Today` : ''}</span>
+        <div
+          style={{
+            minHeight: '52px',
+            display: 'flex',
+            alignItems: 'stretch',
+            marginBottom: '12px',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              opacity: sprintCount !== null ? 1 : 0,
+              transition: 'opacity 180ms ease',
+            }}
+          >
+            {sprintCount !== null ? <StatsHoverBanner totalSummaries={sprintCount} /> : <div aria-hidden style={{ height: '52px' }} />}
+          </div>
         </div>
+
+        <div className="hero-badge" style={{ minHeight: '24px' }}>
+          <span className="pulse-dot"></span>
+          <span>
+            {sprintCount !== null
+              ? `${sprintCount} Skill Sprints • Ready to Start Today`
+              : 'Loading skill sprints...'}
+          </span>
+        </div>
+
         <h1>
           What do you want to <span className="text-gradient">work on?</span>
         </h1>
@@ -565,58 +596,49 @@ export default function Library() {
         </div>
       </header>
 
-      {!isSearching && (
-        <div className="category-scroll">
-          <button
-            className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-            onClick={() => !loading && setSelectedCategory('All')}
-            style={loading ? { opacity: 0.4, pointerEvents: 'none' } : {}}
-          >
-            All
-          </button>
-          {categoryOrder.map((category) => {
-            const isActive = selectedCategory === category;
-            const pillColor = getCategoryPillColor(category);
+      <div
+        className="category-scroll"
+        style={{
+          opacity: isSearching ? 0.6 : 1,
+          transition: 'opacity 180ms ease',
+        }}
+      >
+        <button
+          className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
+          onClick={() => handleCategorySelect('All')}
+          style={disableCategoryControls ? { opacity: 0.4, pointerEvents: 'none' } : {}}
+        >
+          All
+        </button>
+        {categoryOrder.map((category) => {
+          const isActive = selectedCategory === category && !isSearching;
+          const pillColor = getCategoryPillColor(category);
 
-            return (
-              <button
-                key={category}
-                className="pill"
-                onClick={() => !loading && setSelectedCategory(category)}
-                style={{
-                  ...(loading ? { opacity: 0.4, pointerEvents: 'none' } : {}),
-                  ...(isActive && !loading
-                    ? {
-                        background: pillColor,
-                        borderColor: pillColor,
-                        color: '#0F172A',
-                        fontWeight: '700',
-                        boxShadow: `0 0 12px ${pillColor}55`,
-                      }
-                    : {}),
-                }}
-              >
-                {getCategoryShortName(category)}
-              </button>
-            );
-          })}
-        </div>
-      )}
+          return (
+            <button
+              key={category}
+              className="pill"
+              onClick={() => handleCategorySelect(category)}
+              style={{
+                ...(disableCategoryControls ? { opacity: 0.4, pointerEvents: 'none' } : {}),
+                ...(isActive
+                  ? {
+                      background: pillColor,
+                      borderColor: pillColor,
+                      color: '#0F172A',
+                      fontWeight: '700',
+                      boxShadow: `0 0 12px ${pillColor}55`,
+                    }
+                  : {}),
+              }}
+            >
+              {getCategoryShortName(category)}
+            </button>
+          );
+        })}
+      </div>
 
       <main className="container">
-        {refreshing && books.length > 0 && !loading && !errorMessage && (
-          <div
-            style={{
-              marginBottom: '16px',
-              color: 'rgba(255,255,255,0.35)',
-              fontSize: '0.8rem',
-              letterSpacing: '0.2px',
-            }}
-          >
-            Refreshing library…
-          </div>
-        )}
-
         {errorMessage && (
           <div
             className="glass-panel"
@@ -634,17 +656,17 @@ export default function Library() {
           </div>
         )}
 
-        {loading && <LoadingSkeleton />}
+        {showInitialSkeleton && <LoadingSkeleton />}
 
-        {!loading && isSearching && (
+        {showContentShell && isSearching && (
           <>
-            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', minHeight: '20px' }}>
               {filteredBooks.length > 0
                 ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
                 : `No sprints found for "${searchQuery}"`}
             </div>
 
-            {filteredBooks.length === 0 && (
+            {filteredBooks.length === 0 && !loading && (
               <div
                 className="glass-panel"
                 style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
@@ -665,7 +687,7 @@ export default function Library() {
           </>
         )}
 
-        {!loading && !isSearching && (
+        {showContentShell && !isSearching && (
           <>
             <SkillPassport userSkills={userSkills} />
 
@@ -766,6 +788,19 @@ export default function Library() {
                 </div>
               )}
             </section>
+
+            {refreshing && hasBooks && (
+              <div
+                style={{
+                  marginTop: '-8px',
+                  marginBottom: '24px',
+                  color: 'rgba(255,255,255,0.28)',
+                  fontSize: '0.78rem',
+                }}
+              >
+                Refreshing library...
+              </div>
+            )}
 
             {categoriesToShow.map(({ category, books: catBooks }) => (
               <BookRow
