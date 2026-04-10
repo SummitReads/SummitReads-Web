@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import BookRow from '@/components/BookRow';
-import StatsHoverBanner from '@/components/StatsHoverBanner';
 
 const BOOKS_CACHE_KEY = 'ss_books';
 const BOOKS_BY_CATEGORY_CACHE_KEY = 'ss_booksByCategory';
@@ -271,17 +270,6 @@ export default function Library() {
   const [userSkills, setUserSkills] = useState([]);
   const [sprintCount, setSprintCount] = useState(null);
 
-  const hasBooks = books.length > 0;
-  const showInitialSkeleton = loading && !hasBooks;
-  const showContentShell = hasBooks || !loading;
-  const disableCategoryControls = loading && !hasBooks;
-
-  const handleCategorySelect = (category) => {
-    if (disableCategoryControls) return;
-    setSearchQuery('');
-    setSelectedCategory(category);
-  };
-
   // Lightweight dedicated query for the pill
   useEffect(() => {
     let isMounted = true;
@@ -307,6 +295,7 @@ export default function Library() {
       try {
         setErrorMessage('');
 
+        // Confirm session first so protected content does not briefly flash for signed-out users
         const {
           data: { session },
           error: sessionError,
@@ -319,6 +308,7 @@ export default function Library() {
           return;
         }
 
+        // Restore cached library after mount + auth confirmation
         const cachedState = getCachedLibraryState();
         if (cachedState && isMounted) {
           setBooks(cachedState.books);
@@ -350,6 +340,7 @@ export default function Library() {
           // Non-blocking cache write failure
         }
 
+        // User progress is nice to have, but should not blank the library if it fails
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
           .select('book_id, day_number, completed')
@@ -495,6 +486,12 @@ export default function Library() {
     return cats.map((cat) => ({ category: cat, books: booksByCategory[cat] || [] }));
   }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory]);
 
+
+  const sprintCountLabel =
+    typeof sprintCount === 'number'
+      ? sprintCount.toLocaleString('en-US')
+      : '...';
+
   const featuredBook = useMemo(() => {
     if (!books.length) return null;
     const explicit = books.find((b) => b.featured);
@@ -526,32 +523,73 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <div
-          style={{
-            minHeight: '52px',
-            display: 'flex',
-            alignItems: 'stretch',
-            marginBottom: '12px',
-          }}
-        >
-          <div
-            style={{
-              width: '100%',
-              opacity: sprintCount !== null ? 1 : 0,
-              transition: 'opacity 180ms ease',
-            }}
-          >
-            {sprintCount !== null ? <StatsHoverBanner totalSummaries={sprintCount} /> : <div aria-hidden style={{ height: '52px' }} />}
-          </div>
-        </div>
+        <style>{`
+          .library-hero-stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 18px;
+            min-height: 42px;
+          }
+          .library-hero-stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 42px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.72);
+            font-family: var(--font-sans);
+            font-size: 0.82rem;
+            line-height: 1;
+            white-space: nowrap;
+            transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+          }
+          .library-hero-stat-pill strong {
+            color: #EEF2F7;
+            font-weight: 700;
+          }
+          .library-hero-stat-pill.is-active {
+            border-color: rgba(25,190,227,0.24);
+            background: rgba(25,190,227,0.08);
+            color: rgba(255,255,255,0.84);
+          }
+          @media (max-width: 768px) {
+            .library-hero-stats-row {
+              gap: 10px;
+              margin-bottom: 16px;
+            }
+            .library-hero-stat-pill {
+              font-size: 0.78rem;
+              min-height: 38px;
+              padding: 9px 12px;
+            }
+          }
+        `}</style>
 
-        <div className="hero-badge" style={{ minHeight: '24px' }}>
-          <span className="pulse-dot"></span>
-          <span>
-            {sprintCount !== null
-              ? `${sprintCount} Skill Sprints • Ready to Start Today`
-              : 'Loading skill sprints...'}
-          </span>
+        <div className="library-hero-stats-row">
+          <div className="library-hero-stat-pill">
+            <strong>15</strong> min / day
+            <span aria-hidden="true">·</span>
+            <strong>
+              <span style={{ display: 'inline-block', minWidth: '2ch', textAlign: 'right' }}>
+                {sprintCountLabel}
+              </span>
+            </strong>
+            sprints
+          </div>
+
+          <div className="library-hero-stat-pill">
+            Search by <strong>skill</strong>, topic, or author
+          </div>
+
+          <div className="library-hero-stat-pill is-active">
+            <strong>{selectedCategory === 'All' ? 'All categories' : getCategoryShortName(selectedCategory)}</strong>
+            selected
+          </div>
         </div>
 
         <h1>
@@ -599,29 +637,37 @@ export default function Library() {
       <div
         className="category-scroll"
         style={{
-          opacity: isSearching ? 0.6 : 1,
+          opacity: loading ? 0.45 : 1,
           transition: 'opacity 180ms ease',
         }}
       >
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-          onClick={() => handleCategorySelect('All')}
-          style={disableCategoryControls ? { opacity: 0.4, pointerEvents: 'none' } : {}}
+          onClick={() => {
+            if (loading) return;
+            setSearchQuery('');
+            setSelectedCategory('All');
+          }}
+          style={loading ? { pointerEvents: 'none' } : {}}
         >
           All
         </button>
         {categoryOrder.map((category) => {
-          const isActive = selectedCategory === category && !isSearching;
+          const isActive = selectedCategory === category;
           const pillColor = getCategoryPillColor(category);
 
           return (
             <button
               key={category}
               className="pill"
-              onClick={() => handleCategorySelect(category)}
+              onClick={() => {
+                if (loading) return;
+                setSearchQuery('');
+                setSelectedCategory(category);
+              }}
               style={{
-                ...(disableCategoryControls ? { opacity: 0.4, pointerEvents: 'none' } : {}),
-                ...(isActive
+                ...(loading ? { pointerEvents: 'none' } : {}),
+                ...(isActive && !loading
                   ? {
                       background: pillColor,
                       borderColor: pillColor,
@@ -639,6 +685,19 @@ export default function Library() {
       </div>
 
       <main className="container">
+        {refreshing && books.length > 0 && !loading && !errorMessage && (
+          <div
+            style={{
+              marginBottom: '16px',
+              color: 'rgba(255,255,255,0.35)',
+              fontSize: '0.8rem',
+              letterSpacing: '0.2px',
+            }}
+          >
+            Refreshing library…
+          </div>
+        )}
+
         {errorMessage && (
           <div
             className="glass-panel"
@@ -656,17 +715,17 @@ export default function Library() {
           </div>
         )}
 
-        {showInitialSkeleton && <LoadingSkeleton />}
+        {loading && <LoadingSkeleton />}
 
-        {showContentShell && isSearching && (
+        {!loading && isSearching && (
           <>
-            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', minHeight: '20px' }}>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
               {filteredBooks.length > 0
                 ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
                 : `No sprints found for "${searchQuery}"`}
             </div>
 
-            {filteredBooks.length === 0 && !loading && (
+            {filteredBooks.length === 0 && (
               <div
                 className="glass-panel"
                 style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
@@ -687,7 +746,7 @@ export default function Library() {
           </>
         )}
 
-        {showContentShell && !isSearching && (
+        {!loading && !isSearching && (
           <>
             <SkillPassport userSkills={userSkills} />
 
@@ -788,19 +847,6 @@ export default function Library() {
                 </div>
               )}
             </section>
-
-            {refreshing && hasBooks && (
-              <div
-                style={{
-                  marginTop: '-8px',
-                  marginBottom: '24px',
-                  color: 'rgba(255,255,255,0.28)',
-                  fontSize: '0.78rem',
-                }}
-              >
-                Refreshing library...
-              </div>
-            )}
 
             {categoriesToShow.map(({ category, books: catBooks }) => (
               <BookRow
