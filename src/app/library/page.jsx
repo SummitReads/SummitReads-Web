@@ -662,10 +662,15 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
-  const sprintCountText =
+  const sprintCountNumber =
     typeof sprintCount === 'number'
-      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'}`
+      ? sprintCount.toLocaleString('en-US')
       : '';
+
+  const sprintCountLabel =
+    typeof sprintCount === 'number'
+      ? `Skill Sprint${sprintCount === 1 ? '' : 's'}`
+      : 'Skill Sprints';
 
   const showInitialSkeleton = !hasHydratedCache && isColdLoading && books.length === 0;
   const showFeaturedPlaceholder = hasHydratedCache && !featuredBook && !isSearching;
@@ -696,13 +701,27 @@ export default function Library() {
       <header className="hero">
         <div
           className="hero-badge"
+          aria-live="polite"
           style={{
             minHeight: '24px',
-            visibility: sprintCountText ? 'visible' : 'hidden',
+            visibility: 'visible',
           }}
         >
           <span className="pulse-dot"></span>
-          <span>{sprintCountText}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                minWidth: '2ch',
+                textAlign: 'right',
+                opacity: sprintCountNumber ? 1 : 0,
+                transition: 'opacity 120ms ease',
+              }}
+            >
+              {sprintCountNumber || '0'}
+            </span>
+            <span>{sprintCountLabel}</span>
+          </span>
         </div>
 
         <h1>
