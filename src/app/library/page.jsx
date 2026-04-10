@@ -400,7 +400,7 @@ export default function Library() {
         {!loading && <StatsHoverBanner totalSummaries={sprintCount ?? books.length} />}
         <div className="hero-badge">
           <span className="pulse-dot"></span>
-          <span>{sprintCount === null ? '…' : `${sprintCount} Skill Sprints • Ready to Start Today`}</span>
+          <span>{sprintCount !== null ? `${sprintCount} Skill Sprints • Ready to Start Today` : ''}</span>
         </div>
         <h1>What do you want to <span className="text-gradient">work on?</span></h1>
         <p className="hero-sub">Find your next sprint below, or search by skill, topic, or goal.</p>
