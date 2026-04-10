@@ -455,7 +455,7 @@ export default function SummitDayPage({ params }) {
         isOpen={showCelebration}
         onClose={handleCloseCelebration}
         dayNum={dayNum}
-        bookTitle={book.title}
+        bookTitle={book.sprint_title || book.title}
         nextDayTitle={nextDayData?.title || `Stage ${dayNum + 1}`}
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
