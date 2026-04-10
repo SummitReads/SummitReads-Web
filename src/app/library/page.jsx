@@ -9,6 +9,7 @@ const BOOKS_CACHE_KEY = 'ss_books';
 const BOOKS_BY_CATEGORY_CACHE_KEY = 'ss_booksByCategory';
 const USER_SKILLS_CACHE_KEY = 'ss_userSkills';
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
 function groupBooksByCategory(booksData) {
   return booksData.reduce((acc, book) => {
     const category = book.category || 'Uncategorized';
@@ -49,47 +50,143 @@ function buildUserSkills(progressData, booksData) {
     });
 }
 
-function getCachedLibraryState() {
+function readLibraryCache() {
   try {
     const cachedBooksRaw = sessionStorage.getItem(BOOKS_CACHE_KEY);
     const cachedByCategoryRaw = sessionStorage.getItem(BOOKS_BY_CATEGORY_CACHE_KEY);
     const cachedUserSkillsRaw = sessionStorage.getItem(USER_SKILLS_CACHE_KEY);
 
-    if (!cachedBooksRaw || !cachedByCategoryRaw) return null;
-
-    const cachedBooks = JSON.parse(cachedBooksRaw);
-    const cachedByCategory = JSON.parse(cachedByCategoryRaw);
-
-    if (!Array.isArray(cachedBooks) || !cachedByCategory || typeof cachedByCategory !== 'object') {
-      return null;
-    }
-
-    let cachedUserSkills = null;
-    if (cachedUserSkillsRaw !== null) {
-      const parsedSkills = JSON.parse(cachedUserSkillsRaw);
-      if (Array.isArray(parsedSkills)) cachedUserSkills = parsedSkills;
-    }
+    const cachedBooks = cachedBooksRaw ? JSON.parse(cachedBooksRaw) : null;
+    const cachedByCategory = cachedByCategoryRaw ? JSON.parse(cachedByCategoryRaw) : null;
+    const cachedUserSkills = cachedUserSkillsRaw ? JSON.parse(cachedUserSkillsRaw) : null;
 
     return {
-      books: cachedBooks,
-      booksByCategory: cachedByCategory,
-      userSkills: cachedUserSkills,
+      books: Array.isArray(cachedBooks) ? cachedBooks : [],
+      booksByCategory:
+        cachedByCategory && typeof cachedByCategory === 'object' ? cachedByCategory : {},
+      userSkills: Array.isArray(cachedUserSkills) ? cachedUserSkills : [],
+      hasBooks: Array.isArray(cachedBooks) && cachedBooks.length > 0,
+      hasUserSkills: Array.isArray(cachedUserSkills),
     };
   } catch {
-    return null;
+    return {
+      books: [],
+      booksByCategory: {},
+      userSkills: [],
+      hasBooks: false,
+      hasUserSkills: false,
+    };
   }
 }
 
-function PlaceholderBar({ width = '100%', height = 12, radius = '999px' }) {
+// ── Placeholders ─────────────────────────────────────────────────────────────
+function FeaturedPlaceholder() {
   return (
-    <div
-      style={{
-        width,
-        height,
-        borderRadius: radius,
-        background: 'rgba(255,255,255,0.07)',
-      }}
-    />
+    <section className="featured-section">
+      <div
+        className="featured-card glass-panel"
+        style={{
+          display: 'block',
+          background: 'linear-gradient(135deg, rgba(25,190,227,0.05) 0%, transparent 60%)',
+        }}
+      >
+        <div
+          style={{
+            width: '110px',
+            height: '24px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.06)',
+            marginBottom: '18px',
+          }}
+        />
+        <div
+          style={{
+            width: '56%',
+            height: '34px',
+            borderRadius: '10px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '12px',
+          }}
+        />
+        <div
+          style={{
+            width: '92%',
+            height: '14px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.06)',
+            marginBottom: '10px',
+          }}
+        />
+        <div
+          style={{
+            width: '74%',
+            height: '14px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.06)',
+            marginBottom: '28px',
+          }}
+        />
+        <div
+          style={{
+            width: '148px',
+            height: '44px',
+            borderRadius: '10px',
+            background: 'rgba(25,190,227,0.15)',
+            marginBottom: '16px',
+          }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {[1, 2].map((i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {i > 1 && <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>}
+              <div
+                style={{
+                  width: i === 1 ? '112px' : '88px',
+                  height: '12px',
+                  borderRadius: '999px',
+                  background: 'rgba(255,255,255,0.06)',
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function RowsPlaceholder() {
+  return (
+    <div>
+      {[1, 2, 3].map((i) => (
+        <section key={i} style={{ marginBottom: '48px' }}>
+          <div
+            style={{
+              width: '180px',
+              height: '24px',
+              borderRadius: '10px',
+              background: 'rgba(255,255,255,0.06)',
+              marginBottom: '18px',
+            }}
+          />
+          <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
+            {[1, 2, 3, 4].map((j) => (
+              <div
+                key={j}
+                style={{
+                  width: '200px',
+                  height: '260px',
+                  flexShrink: 0,
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -138,84 +235,36 @@ function SkillPassportPlaceholder() {
           borderRadius: '12px',
         }}
       >
-        <PlaceholderBar width="34%" />
-        <div style={{ flex: 1 }}>
-          <PlaceholderBar width="100%" height={4} />
-        </div>
-        <PlaceholderBar width="88px" />
+        <div
+          style={{
+            width: '35%',
+            height: '12px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
+        <div
+          style={{
+            flex: 1,
+            height: '4px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
+        <div
+          style={{
+            width: '92px',
+            height: '12px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
       </div>
     </section>
   );
 }
 
-function FeaturedSprintPlaceholder() {
-  return (
-    <section className="featured-section">
-      <div
-        className="featured-card glass-panel"
-        style={{
-          display: 'block',
-          minHeight: '330px',
-          background: 'linear-gradient(135deg, rgba(25,190,227,0.06) 0%, transparent 60%)',
-        }}
-      >
-        <div style={{ marginBottom: '20px' }}>
-          <PlaceholderBar width="118px" height={24} radius="999px" />
-        </div>
-        <div style={{ marginBottom: '14px' }}>
-          <PlaceholderBar width="62%" height={32} radius="8px" />
-        </div>
-        <div style={{ display: 'grid', gap: '8px', marginBottom: '26px' }}>
-          <PlaceholderBar width="88%" height={14} radius="8px" />
-          <PlaceholderBar width="74%" height={14} radius="8px" />
-          <PlaceholderBar width="64%" height={14} radius="8px" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
-          <PlaceholderBar width="74px" height={12} radius="8px" />
-          <PlaceholderBar width="140px" height={12} radius="8px" />
-          <PlaceholderBar width="60px" height={12} radius="8px" />
-        </div>
-        <div style={{ marginBottom: '18px' }}>
-          <PlaceholderBar width="148px" height={44} radius="10px" />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <PlaceholderBar width="92px" height={12} radius="8px" />
-          <PlaceholderBar width="72px" height={12} radius="8px" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BookRowsPlaceholder() {
-  return (
-    <div style={{ display: 'grid', gap: '48px' }}>
-      {[1, 2].map((row) => (
-        <section key={row}>
-          <div style={{ marginBottom: '16px' }}>
-            <PlaceholderBar width="180px" height={18} radius="8px" />
-          </div>
-          <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
-            {[1, 2, 3, 4].map((card) => (
-              <div
-                key={card}
-                style={{
-                  width: '200px',
-                  height: '260px',
-                  flexShrink: 0,
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  );
-}
-
+// ── Skill Passport ───────────────────────────────────────────────────────────
 function SkillPassport({ userSkills }) {
   if (!userSkills || userSkills.length === 0) return null;
 
@@ -361,37 +410,36 @@ function SkillPassport({ userSkills }) {
   );
 }
 
+// ── Main library page ────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
 
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [userSkills, setUserSkills] = useState([]);
+  const [cacheHydrated, setCacheHydrated] = useState(false);
+  const [booksLoaded, setBooksLoaded] = useState(false);
+  const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userSkills, setUserSkills] = useState([]);
-  const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
   const [sprintCount, setSprintCount] = useState(null);
-  const [cacheHydrated, setCacheHydrated] = useState(false);
 
+  // Hydrate cached content before the browser paints so the page shell stays in place.
   useLayoutEffect(() => {
-    const cachedState = getCachedLibraryState();
-
-    if (cachedState) {
-      setBooks(cachedState.books);
-      setBooksByCategory(cachedState.booksByCategory);
-      setLoading(false);
-
-      if (cachedState.userSkills !== null) {
-        setUserSkills(cachedState.userSkills);
-        setUserSkillsLoaded(true);
-      }
+    const cached = readLibraryCache();
+    if (cached.hasBooks) {
+      setBooks(cached.books);
+      setBooksByCategory(cached.booksByCategory);
     }
-
+    if (cached.hasUserSkills) {
+      setUserSkills(cached.userSkills);
+      setUserSkillsLoaded(true);
+    }
     setCacheHydrated(true);
   }, []);
 
+  // Keep the counter live from Supabase, but let the number be blank until it arrives.
   useEffect(() => {
     let isMounted = true;
 
@@ -445,13 +493,14 @@ export default function Library() {
 
         setBooks(safeBooks);
         setBooksByCategory(grouped);
+        setBooksLoaded(true);
 
         try {
           sessionStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(safeBooks));
           sessionStorage.setItem(BOOKS_BY_CATEGORY_CACHE_KEY, JSON.stringify(grouped));
-        } catch {}
-
-        setLoading(false);
+        } catch {
+          // Non-blocking cache write failure
+        }
 
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
@@ -463,22 +512,25 @@ export default function Library() {
         if (progressError) {
           console.error('Error loading user progress:', progressError);
           setUserSkillsLoaded(true);
-        } else {
-          const safeProgress = Array.isArray(progressData) ? progressData : [];
-          const builtSkills = buildUserSkills(safeProgress, safeBooks);
-          setUserSkills(builtSkills);
-          setUserSkillsLoaded(true);
+          return;
+        }
 
-          try {
-            sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
-          } catch {}
+        const safeProgress = Array.isArray(progressData) ? progressData : [];
+        const builtSkills = buildUserSkills(safeProgress, safeBooks);
+        setUserSkills(builtSkills);
+        setUserSkillsLoaded(true);
+
+        try {
+          sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
+        } catch {
+          // Non-blocking cache write failure
         }
       } catch (err) {
         if (!isMounted) return;
 
         console.error('Error loading library:', err);
         setErrorMessage(err?.message || 'Unable to load your library right now.');
-        setLoading(false);
+        setBooksLoaded(true);
         setUserSkillsLoaded(true);
       }
     }
@@ -609,12 +661,10 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
-  const sprintCountText =
-    typeof sprintCount === 'number'
-      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
-      : '';
-
-  const showColdPlaceholders = !cacheHydrated || (loading && books.length === 0);
+  const showColdShell = cacheHydrated && books.length === 0 && !booksLoaded;
+  const showSkillPassportPlaceholder = !userSkillsLoaded && !isSearching;
+  const sprintCountLabel = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : '';
+  const sprintCountSpacer = sprintCountLabel ? `${sprintCountLabel} ` : '';
 
   return (
     <>
@@ -639,15 +689,12 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <div
-          className="hero-badge"
-          style={{
-            minHeight: '24px',
-            visibility: 'visible',
-          }}
-        >
+        <div className="hero-badge" style={{ minHeight: '24px' }}>
           <span className="pulse-dot"></span>
-          <span>{sprintCountText}</span>
+          <span>
+            <span style={{ display: 'inline-block', minWidth: '3ch', textAlign: 'right' }}>{sprintCountSpacer}</span>
+            Skill Sprints • Ready to Start Today
+          </span>
         </div>
 
         <h1>
@@ -693,21 +740,13 @@ export default function Library() {
         </div>
       </header>
 
-      <div
-        className="category-scroll"
-        style={{
-          opacity: showColdPlaceholders ? 0.45 : 1,
-          transition: 'opacity 180ms ease',
-        }}
-      >
+      <div className="category-scroll">
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
           onClick={() => {
-            if (showColdPlaceholders) return;
             setSearchQuery('');
             setSelectedCategory('All');
           }}
-          style={showColdPlaceholders ? { pointerEvents: 'none' } : {}}
         >
           All
         </button>
@@ -721,13 +760,11 @@ export default function Library() {
               key={category}
               className="pill"
               onClick={() => {
-                if (showColdPlaceholders) return;
                 setSearchQuery('');
                 setSelectedCategory(category);
               }}
-              style={{
-                ...(showColdPlaceholders ? { pointerEvents: 'none' } : {}),
-                ...(isActive && !showColdPlaceholders
+              style={
+                isActive
                   ? {
                       background: pillColor,
                       borderColor: pillColor,
@@ -735,8 +772,8 @@ export default function Library() {
                       fontWeight: '700',
                       boxShadow: `0 0 12px ${pillColor}55`,
                     }
-                  : {}),
-              }}
+                  : undefined
+              }
             >
               {getCategoryShortName(category)}
             </button>
@@ -762,9 +799,50 @@ export default function Library() {
           </div>
         )}
 
-        {!isSearching && (
+        {showColdShell && (
           <>
-            {!userSkillsLoaded ? <SkillPassportPlaceholder /> : <SkillPassport userSkills={userSkills} />}
+            <SkillPassportPlaceholder />
+            <FeaturedPlaceholder />
+            <RowsPlaceholder />
+          </>
+        )}
+
+        {!showColdShell && isSearching && (
+          <>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+              {filteredBooks.length > 0
+                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                : `No sprints found for "${searchQuery}"`}
+            </div>
+
+            {filteredBooks.length === 0 && (
+              <div
+                className="glass-panel"
+                style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
+                <p>Try a different keyword — like a skill, topic, or author name.</p>
+              </div>
+            )}
+
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
+                books={catBooks}
+              />
+            ))}
+          </>
+        )}
+
+        {!showColdShell && !isSearching && (
+          <>
+            {showSkillPassportPlaceholder ? (
+              <SkillPassportPlaceholder />
+            ) : (
+              <SkillPassport userSkills={userSkills} />
+            )}
 
             {featuredBook ? (
               <section className="featured-section">
@@ -856,7 +934,7 @@ export default function Library() {
                 </div>
               </section>
             ) : (
-              <FeaturedSprintPlaceholder />
+              <FeaturedPlaceholder />
             )}
 
             {categoriesToShow.length > 0 ? (
@@ -869,37 +947,8 @@ export default function Library() {
                 />
               ))
             ) : (
-              <BookRowsPlaceholder />
+              <RowsPlaceholder />
             )}
-          </>
-        )}
-
-        {isSearching && (
-          <>
-            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
-              {filteredBooks.length > 0
-                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
-                : `No sprints found for "${searchQuery}"`}
-            </div>
-
-            {filteredBooks.length === 0 && (
-              <div
-                className="glass-panel"
-                style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
-                <p>Try a different keyword — like a skill, topic, or author name.</p>
-              </div>
-            )}
-
-            {categoriesToShow.map(({ category, books: catBooks }) => (
-              <BookRow
-                key={category}
-                title={category}
-                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
-                books={catBooks}
-              />
-            ))}
           </>
         )}
       </main>
