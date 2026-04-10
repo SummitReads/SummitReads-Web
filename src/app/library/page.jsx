@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
@@ -9,7 +9,6 @@ const BOOKS_CACHE_KEY = 'ss_books';
 const BOOKS_BY_CATEGORY_CACHE_KEY = 'ss_booksByCategory';
 const USER_SKILLS_CACHE_KEY = 'ss_userSkills';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 function groupBooksByCategory(booksData) {
   return booksData.reduce((acc, book) => {
     const category = book.category || 'Uncategorized';
@@ -68,9 +67,7 @@ function getCachedLibraryState() {
     let cachedUserSkills = null;
     if (cachedUserSkillsRaw !== null) {
       const parsedSkills = JSON.parse(cachedUserSkillsRaw);
-      if (Array.isArray(parsedSkills)) {
-        cachedUserSkills = parsedSkills;
-      }
+      if (Array.isArray(parsedSkills)) cachedUserSkills = parsedSkills;
     }
 
     return {
@@ -83,7 +80,6 @@ function getCachedLibraryState() {
   }
 }
 
-// ── Loading skeleton for featured card + rows ────────────────────────────────
 function LoadingSkeleton() {
   return (
     <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
@@ -121,7 +117,6 @@ function LoadingSkeleton() {
   );
 }
 
-// ── Skill Passport Placeholder ───────────────────────────────────────────────
 function SkillPassportPlaceholder() {
   return (
     <section style={{ marginBottom: '48px' }}>
@@ -196,7 +191,6 @@ function SkillPassportPlaceholder() {
   );
 }
 
-// ── Skill Passport ───────────────────────────────────────────────────────────
 function SkillPassport({ userSkills }) {
   if (!userSkills || userSkills.length === 0) return null;
 
@@ -342,13 +336,13 @@ function SkillPassport({ userSkills }) {
   );
 }
 
-// ── Main library page ────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
 
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
   const [loading, setLoading] = useState(true);
+  const [hasCachedLibrary, setHasCachedLibrary] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -356,7 +350,21 @@ export default function Library() {
   const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
   const [sprintCount, setSprintCount] = useState(null);
 
-  // Keep the counter coming from Supabase
+  useLayoutEffect(() => {
+    const cachedState = getCachedLibraryState();
+    if (!cachedState) return;
+
+    setHasCachedLibrary(true);
+    setBooks(cachedState.books);
+    setBooksByCategory(cachedState.booksByCategory);
+    setLoading(false);
+
+    if (cachedState.userSkills !== null) {
+      setUserSkills(cachedState.userSkills);
+      setUserSkillsLoaded(true);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -393,18 +401,6 @@ export default function Library() {
           return;
         }
 
-        const cachedState = getCachedLibraryState();
-        if (cachedState && isMounted) {
-          setBooks(cachedState.books);
-          setBooksByCategory(cachedState.booksByCategory);
-          setLoading(false);
-
-          if (cachedState.userSkills !== null) {
-            setUserSkills(cachedState.userSkills);
-            setUserSkillsLoaded(true);
-          }
-        }
-
         const { data: booksData, error: booksError } = await supabase
           .from('books')
           .select('*')
@@ -425,7 +421,7 @@ export default function Library() {
           sessionStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(safeBooks));
           sessionStorage.setItem(BOOKS_BY_CATEGORY_CACHE_KEY, JSON.stringify(grouped));
         } catch {
-          // Non-blocking cache write failure
+          // non-blocking cache write failure
         }
 
         const { data: progressData, error: progressError } = await supabase
@@ -437,6 +433,7 @@ export default function Library() {
 
         if (progressError) {
           console.error('Error loading user progress:', progressError);
+          setUserSkills([]);
           setUserSkillsLoaded(true);
         } else {
           const safeProgress = Array.isArray(progressData) ? progressData : [];
@@ -447,7 +444,7 @@ export default function Library() {
           try {
             sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
           } catch {
-            // Non-blocking cache write failure
+            // non-blocking cache write failure
           }
         }
 
@@ -588,11 +585,9 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
-  const showInitialSkeleton = loading && books.length === 0;
-  const sprintCountText =
-    typeof sprintCount === 'number'
-      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
-      : '';
+  const showInitialSkeleton = loading && !hasCachedLibrary;
+  const countLabel = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : '';
+  const countSuffix = typeof sprintCount === 'number' && sprintCount === 1 ? 'Skill Sprint • Ready to Start Today' : 'Skill Sprints • Ready to Start Today';
 
   return (
     <>
@@ -617,15 +612,12 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <div
-          className="hero-badge"
-          style={{
-            minHeight: '24px',
-            visibility: sprintCountText ? 'visible' : 'hidden',
-          }}
-        >
+        <div className="hero-badge" style={{ minHeight: '24px' }}>
           <span className="pulse-dot"></span>
-          <span>{sprintCountText}</span>
+          <span>
+            <span style={{ display: 'inline-block', minWidth: '3ch', textAlign: 'right' }}>{countLabel}</span>
+            <span>{countLabel ? ' ' : ''}{countSuffix}</span>
+          </span>
         </div>
 
         <h1>
@@ -674,18 +666,18 @@ export default function Library() {
       <div
         className="category-scroll"
         style={{
-          opacity: loading ? 0.45 : 1,
+          opacity: showInitialSkeleton ? 0.45 : 1,
           transition: 'opacity 180ms ease',
         }}
       >
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
           onClick={() => {
-            if (loading) return;
+            if (showInitialSkeleton) return;
             setSearchQuery('');
             setSelectedCategory('All');
           }}
-          style={loading ? { pointerEvents: 'none' } : {}}
+          style={showInitialSkeleton ? { pointerEvents: 'none' } : {}}
         >
           All
         </button>
@@ -699,13 +691,13 @@ export default function Library() {
               key={category}
               className="pill"
               onClick={() => {
-                if (loading) return;
+                if (showInitialSkeleton) return;
                 setSearchQuery('');
                 setSelectedCategory(category);
               }}
               style={{
-                ...(loading ? { pointerEvents: 'none' } : {}),
-                ...(isActive && !loading
+                ...(showInitialSkeleton ? { pointerEvents: 'none' } : {}),
+                ...(isActive && !showInitialSkeleton
                   ? {
                       background: pillColor,
                       borderColor: pillColor,
