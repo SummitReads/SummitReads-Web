@@ -664,7 +664,10 @@ export default function Library() {
   const showColdShell = cacheHydrated && books.length === 0 && !booksLoaded;
   const showSkillPassportPlaceholder = !userSkillsLoaded && !isSearching;
   const sprintCountLabel = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : '';
-  const sprintCountSpacer = sprintCountLabel ? `${sprintCountLabel} ` : '';
+  const sprintCountText =
+    typeof sprintCount === 'number'
+      ? `${sprintCountLabel} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
+      : 'Skill Sprints • Ready to Start Today';
 
   return (
     <>
@@ -689,11 +692,30 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <div className="hero-badge" style={{ minHeight: '24px' }}>
+        <div
+          className="hero-badge"
+          style={{
+            minHeight: '40px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '0 16px',
+            borderRadius: '999px',
+            border: '1px solid rgba(25,190,227,0.22)',
+            background: 'rgba(25,190,227,0.06)',
+            boxShadow: '0 0 0 1px rgba(255,255,255,0.02) inset',
+          }}
+        >
           <span className="pulse-dot"></span>
-          <span>
-            <span style={{ display: 'inline-block', minWidth: '3ch', textAlign: 'right' }}>{sprintCountSpacer}</span>
-            Skill Sprints • Ready to Start Today
+          <span
+            style={{
+              color: 'var(--brand-teal)',
+              fontWeight: 700,
+              letterSpacing: '0.01em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {sprintCountText}
           </span>
         </div>
 
