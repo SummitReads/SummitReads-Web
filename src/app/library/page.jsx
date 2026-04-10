@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
@@ -80,40 +80,16 @@ function getCachedLibraryState() {
   }
 }
 
-function LoadingSkeleton() {
+function PlaceholderBar({ width = '100%', height = 12, radius = '999px' }) {
   return (
-    <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
-        .skel { background: rgba(255,255,255,0.07); border-radius: 8px; }
-      `}</style>
-
-      <div className="glass-panel" style={{ marginBottom: '48px', padding: '40px' }}>
-        <div className="skel" style={{ width: '120px', height: '20px', marginBottom: '20px' }} />
-        <div className="skel" style={{ width: '65%', height: '32px', marginBottom: '12px' }} />
-        <div className="skel" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
-        <div className="skel" style={{ width: '75%', height: '16px', marginBottom: '28px' }} />
-        <div className="skel" style={{ width: '140px', height: '44px', borderRadius: '10px' }} />
-      </div>
-
-      {[1, 2, 3].map((i) => (
-        <div key={i} style={{ marginBottom: '48px' }}>
-          <div className="skel" style={{ width: '180px', height: '22px', marginBottom: '16px' }} />
-          <div style={{ display: 'flex', gap: '16px' }}>
-            {[1, 2, 3, 4].map((j) => (
-              <div
-                key={j}
-                className="skel"
-                style={{ width: '200px', height: '260px', flexShrink: 0, borderRadius: '12px' }}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
+    <div
+      style={{
+        width,
+        height,
+        borderRadius: radius,
+        background: 'rgba(255,255,255,0.07)',
+      }}
+    />
   );
 }
 
@@ -162,32 +138,81 @@ function SkillPassportPlaceholder() {
           borderRadius: '12px',
         }}
       >
-        <div
-          style={{
-            width: '34%',
-            height: '12px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.07)',
-          }}
-        />
-        <div
-          style={{
-            flex: 1,
-            height: '4px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.07)',
-          }}
-        />
-        <div
-          style={{
-            width: '88px',
-            height: '12px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.07)',
-          }}
-        />
+        <PlaceholderBar width="34%" />
+        <div style={{ flex: 1 }}>
+          <PlaceholderBar width="100%" height={4} />
+        </div>
+        <PlaceholderBar width="88px" />
       </div>
     </section>
+  );
+}
+
+function FeaturedSprintPlaceholder() {
+  return (
+    <section className="featured-section">
+      <div
+        className="featured-card glass-panel"
+        style={{
+          display: 'block',
+          minHeight: '330px',
+          background: 'linear-gradient(135deg, rgba(25,190,227,0.06) 0%, transparent 60%)',
+        }}
+      >
+        <div style={{ marginBottom: '20px' }}>
+          <PlaceholderBar width="118px" height={24} radius="999px" />
+        </div>
+        <div style={{ marginBottom: '14px' }}>
+          <PlaceholderBar width="62%" height={32} radius="8px" />
+        </div>
+        <div style={{ display: 'grid', gap: '8px', marginBottom: '26px' }}>
+          <PlaceholderBar width="88%" height={14} radius="8px" />
+          <PlaceholderBar width="74%" height={14} radius="8px" />
+          <PlaceholderBar width="64%" height={14} radius="8px" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
+          <PlaceholderBar width="74px" height={12} radius="8px" />
+          <PlaceholderBar width="140px" height={12} radius="8px" />
+          <PlaceholderBar width="60px" height={12} radius="8px" />
+        </div>
+        <div style={{ marginBottom: '18px' }}>
+          <PlaceholderBar width="148px" height={44} radius="10px" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <PlaceholderBar width="92px" height={12} radius="8px" />
+          <PlaceholderBar width="72px" height={12} radius="8px" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BookRowsPlaceholder() {
+  return (
+    <div style={{ display: 'grid', gap: '48px' }}>
+      {[1, 2].map((row) => (
+        <section key={row}>
+          <div style={{ marginBottom: '16px' }}>
+            <PlaceholderBar width="180px" height={18} radius="8px" />
+          </div>
+          <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
+            {[1, 2, 3, 4].map((card) => (
+              <div
+                key={card}
+                style={{
+                  width: '200px',
+                  height: '260px',
+                  flexShrink: 0,
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
   );
 }
 
@@ -342,27 +367,29 @@ export default function Library() {
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
   const [loading, setLoading] = useState(true);
-  const [hasCachedLibrary, setHasCachedLibrary] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
   const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
   const [sprintCount, setSprintCount] = useState(null);
+  const [cacheHydrated, setCacheHydrated] = useState(false);
 
   useLayoutEffect(() => {
     const cachedState = getCachedLibraryState();
-    if (!cachedState) return;
 
-    setHasCachedLibrary(true);
-    setBooks(cachedState.books);
-    setBooksByCategory(cachedState.booksByCategory);
-    setLoading(false);
+    if (cachedState) {
+      setBooks(cachedState.books);
+      setBooksByCategory(cachedState.booksByCategory);
+      setLoading(false);
 
-    if (cachedState.userSkills !== null) {
-      setUserSkills(cachedState.userSkills);
-      setUserSkillsLoaded(true);
+      if (cachedState.userSkills !== null) {
+        setUserSkills(cachedState.userSkills);
+        setUserSkillsLoaded(true);
+      }
     }
+
+    setCacheHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -383,6 +410,8 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
+    if (!cacheHydrated) return;
+
     let isMounted = true;
 
     async function initLibrary() {
@@ -420,9 +449,9 @@ export default function Library() {
         try {
           sessionStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(safeBooks));
           sessionStorage.setItem(BOOKS_BY_CATEGORY_CACHE_KEY, JSON.stringify(grouped));
-        } catch {
-          // non-blocking cache write failure
-        }
+        } catch {}
+
+        setLoading(false);
 
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
@@ -433,7 +462,6 @@ export default function Library() {
 
         if (progressError) {
           console.error('Error loading user progress:', progressError);
-          setUserSkills([]);
           setUserSkillsLoaded(true);
         } else {
           const safeProgress = Array.isArray(progressData) ? progressData : [];
@@ -443,12 +471,8 @@ export default function Library() {
 
           try {
             sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
-          } catch {
-            // non-blocking cache write failure
-          }
+          } catch {}
         }
-
-        setLoading(false);
       } catch (err) {
         if (!isMounted) return;
 
@@ -473,7 +497,7 @@ export default function Library() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [cacheHydrated, router]);
 
   async function handleSignOut() {
     try {
@@ -585,9 +609,12 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
-  const showInitialSkeleton = loading && !hasCachedLibrary;
-  const countLabel = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : '';
-  const countSuffix = typeof sprintCount === 'number' && sprintCount === 1 ? 'Skill Sprint • Ready to Start Today' : 'Skill Sprints • Ready to Start Today';
+  const sprintCountText =
+    typeof sprintCount === 'number'
+      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
+      : '';
+
+  const showColdPlaceholders = !cacheHydrated || (loading && books.length === 0);
 
   return (
     <>
@@ -612,12 +639,15 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <div className="hero-badge" style={{ minHeight: '24px' }}>
+        <div
+          className="hero-badge"
+          style={{
+            minHeight: '24px',
+            visibility: 'visible',
+          }}
+        >
           <span className="pulse-dot"></span>
-          <span>
-            <span style={{ display: 'inline-block', minWidth: '3ch', textAlign: 'right' }}>{countLabel}</span>
-            <span>{countLabel ? ' ' : ''}{countSuffix}</span>
-          </span>
+          <span>{sprintCountText}</span>
         </div>
 
         <h1>
@@ -666,18 +696,18 @@ export default function Library() {
       <div
         className="category-scroll"
         style={{
-          opacity: showInitialSkeleton ? 0.45 : 1,
+          opacity: showColdPlaceholders ? 0.45 : 1,
           transition: 'opacity 180ms ease',
         }}
       >
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
           onClick={() => {
-            if (showInitialSkeleton) return;
+            if (showColdPlaceholders) return;
             setSearchQuery('');
             setSelectedCategory('All');
           }}
-          style={showInitialSkeleton ? { pointerEvents: 'none' } : {}}
+          style={showColdPlaceholders ? { pointerEvents: 'none' } : {}}
         >
           All
         </button>
@@ -691,13 +721,13 @@ export default function Library() {
               key={category}
               className="pill"
               onClick={() => {
-                if (showInitialSkeleton) return;
+                if (showColdPlaceholders) return;
                 setSearchQuery('');
                 setSelectedCategory(category);
               }}
               style={{
-                ...(showInitialSkeleton ? { pointerEvents: 'none' } : {}),
-                ...(isActive && !showInitialSkeleton
+                ...(showColdPlaceholders ? { pointerEvents: 'none' } : {}),
+                ...(isActive && !showColdPlaceholders
                   ? {
                       background: pillColor,
                       borderColor: pillColor,
@@ -732,43 +762,12 @@ export default function Library() {
           </div>
         )}
 
-        {showInitialSkeleton && <LoadingSkeleton />}
-
-        {!showInitialSkeleton && isSearching && (
-          <>
-            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
-              {filteredBooks.length > 0
-                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
-                : `No sprints found for "${searchQuery}"`}
-            </div>
-
-            {filteredBooks.length === 0 && (
-              <div
-                className="glass-panel"
-                style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
-                <p>Try a different keyword — like a skill, topic, or author name.</p>
-              </div>
-            )}
-
-            {categoriesToShow.map(({ category, books: catBooks }) => (
-              <BookRow
-                key={category}
-                title={category}
-                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
-                books={catBooks}
-              />
-            ))}
-          </>
-        )}
-
-        {!showInitialSkeleton && !isSearching && (
+        {!isSearching && (
           <>
             {!userSkillsLoaded ? <SkillPassportPlaceholder /> : <SkillPassport userSkills={userSkills} />}
 
-            <section className="featured-section">
-              {featuredBook ? (
+            {featuredBook ? (
+              <section className="featured-section">
                 <div
                   className="featured-card glass-panel"
                   style={{
@@ -855,21 +854,49 @@ export default function Library() {
                     ))}
                   </div>
                 </div>
-              ) : (
-                <div
-                  className="glass-panel"
-                  style={{ padding: '80px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
-                >
-                  No sprints available yet.
-                </div>
-              )}
-            </section>
+              </section>
+            ) : (
+              <FeaturedSprintPlaceholder />
+            )}
+
+            {categoriesToShow.length > 0 ? (
+              categoriesToShow.map(({ category, books: catBooks }) => (
+                <BookRow
+                  key={category}
+                  title={category}
+                  description={`${catBooks.length} skill sprints`}
+                  books={catBooks}
+                />
+              ))
+            ) : (
+              <BookRowsPlaceholder />
+            )}
+          </>
+        )}
+
+        {isSearching && (
+          <>
+            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+              {filteredBooks.length > 0
+                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
+                : `No sprints found for "${searchQuery}"`}
+            </div>
+
+            {filteredBooks.length === 0 && (
+              <div
+                className="glass-panel"
+                style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
+                <p>Try a different keyword — like a skill, topic, or author name.</p>
+              </div>
+            )}
 
             {categoriesToShow.map(({ category, books: catBooks }) => (
               <BookRow
                 key={category}
                 title={category}
-                description={`${catBooks.length} skill sprints`}
+                description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`}
                 books={catBooks}
               />
             ))}
