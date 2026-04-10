@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
@@ -50,146 +50,76 @@ function buildUserSkills(progressData, booksData) {
     });
 }
 
-function readLibraryCache() {
+function getCachedLibraryState() {
   try {
     const cachedBooksRaw = sessionStorage.getItem(BOOKS_CACHE_KEY);
     const cachedByCategoryRaw = sessionStorage.getItem(BOOKS_BY_CATEGORY_CACHE_KEY);
     const cachedUserSkillsRaw = sessionStorage.getItem(USER_SKILLS_CACHE_KEY);
 
-    const cachedBooks = cachedBooksRaw ? JSON.parse(cachedBooksRaw) : null;
-    const cachedByCategory = cachedByCategoryRaw ? JSON.parse(cachedByCategoryRaw) : null;
-    const cachedUserSkills = cachedUserSkillsRaw ? JSON.parse(cachedUserSkillsRaw) : null;
+    if (!cachedBooksRaw || !cachedByCategoryRaw) return null;
+
+    const cachedBooks = JSON.parse(cachedBooksRaw);
+    const cachedByCategory = JSON.parse(cachedByCategoryRaw);
+
+    if (!Array.isArray(cachedBooks) || !cachedByCategory || typeof cachedByCategory !== 'object') {
+      return null;
+    }
+
+    let cachedUserSkills = null;
+    if (cachedUserSkillsRaw !== null) {
+      const parsedSkills = JSON.parse(cachedUserSkillsRaw);
+      if (Array.isArray(parsedSkills)) cachedUserSkills = parsedSkills;
+    }
 
     return {
-      books: Array.isArray(cachedBooks) ? cachedBooks : [],
-      booksByCategory:
-        cachedByCategory && typeof cachedByCategory === 'object' ? cachedByCategory : {},
-      userSkills: Array.isArray(cachedUserSkills) ? cachedUserSkills : [],
-      hasBooks: Array.isArray(cachedBooks) && cachedBooks.length > 0,
-      hasUserSkills: Array.isArray(cachedUserSkills),
+      books: cachedBooks,
+      booksByCategory: cachedByCategory,
+      userSkills: cachedUserSkills,
     };
   } catch {
-    return {
-      books: [],
-      booksByCategory: {},
-      userSkills: [],
-      hasBooks: false,
-      hasUserSkills: false,
-    };
+    return null;
   }
 }
 
-// ── Placeholders ─────────────────────────────────────────────────────────────
-function FeaturedPlaceholder() {
+// ── Loading skeleton for featured card + rows ────────────────────────────────
+function LoadingSkeleton() {
   return (
-    <section className="featured-section">
-      <div
-        className="featured-card glass-panel"
-        style={{
-          display: 'block',
-          background: 'linear-gradient(135deg, rgba(25,190,227,0.05) 0%, transparent 60%)',
-        }}
-      >
-        <div
-          style={{
-            width: '110px',
-            height: '24px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.06)',
-            marginBottom: '18px',
-          }}
-        />
-        <div
-          style={{
-            width: '56%',
-            height: '34px',
-            borderRadius: '10px',
-            background: 'rgba(255,255,255,0.07)',
-            marginBottom: '12px',
-          }}
-        />
-        <div
-          style={{
-            width: '92%',
-            height: '14px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.06)',
-            marginBottom: '10px',
-          }}
-        />
-        <div
-          style={{
-            width: '74%',
-            height: '14px',
-            borderRadius: '999px',
-            background: 'rgba(255,255,255,0.06)',
-            marginBottom: '28px',
-          }}
-        />
-        <div
-          style={{
-            width: '148px',
-            height: '44px',
-            borderRadius: '10px',
-            background: 'rgba(25,190,227,0.15)',
-            marginBottom: '16px',
-          }}
-        />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {[1, 2].map((i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {i > 1 && <span style={{ color: 'rgba(255,255,255,0.15)' }}>·</span>}
-              <div
-                style={{
-                  width: i === 1 ? '112px' : '88px',
-                  height: '12px',
-                  borderRadius: '999px',
-                  background: 'rgba(255,255,255,0.06)',
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
+    <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+        .skel { background: rgba(255,255,255,0.07); border-radius: 8px; }
+      `}</style>
 
-function RowsPlaceholder() {
-  return (
-    <div>
+      <div className="glass-panel" style={{ marginBottom: '48px', padding: '40px' }}>
+        <div className="skel" style={{ width: '120px', height: '20px', marginBottom: '20px' }} />
+        <div className="skel" style={{ width: '65%', height: '32px', marginBottom: '12px' }} />
+        <div className="skel" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
+        <div className="skel" style={{ width: '75%', height: '16px', marginBottom: '28px' }} />
+        <div className="skel" style={{ width: '140px', height: '44px', borderRadius: '10px' }} />
+      </div>
+
       {[1, 2, 3].map((i) => (
-        <section key={i} style={{ marginBottom: '48px' }}>
-          <div
-            style={{
-              width: '180px',
-              height: '24px',
-              borderRadius: '10px',
-              background: 'rgba(255,255,255,0.06)',
-              marginBottom: '18px',
-            }}
-          />
-          <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
+        <div key={i} style={{ marginBottom: '48px' }}>
+          <div className="skel" style={{ width: '180px', height: '22px', marginBottom: '16px' }} />
+          <div style={{ display: 'flex', gap: '16px' }}>
             {[1, 2, 3, 4].map((j) => (
               <div
                 key={j}
-                style={{
-                  width: '200px',
-                  height: '260px',
-                  flexShrink: 0,
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.05)',
-                }}
+                className="skel"
+                style={{ width: '200px', height: '260px', flexShrink: 0, borderRadius: '12px' }}
               />
             ))}
           </div>
-        </section>
+        </div>
       ))}
     </div>
   );
 }
 
+// ── Skill Passport Placeholder ───────────────────────────────────────────────
 function SkillPassportPlaceholder() {
   return (
     <section style={{ marginBottom: '48px' }}>
@@ -237,7 +167,7 @@ function SkillPassportPlaceholder() {
       >
         <div
           style={{
-            width: '35%',
+            width: '34%',
             height: '12px',
             borderRadius: '999px',
             background: 'rgba(255,255,255,0.07)',
@@ -253,7 +183,7 @@ function SkillPassportPlaceholder() {
         />
         <div
           style={{
-            width: '92px',
+            width: '88px',
             height: '12px',
             borderRadius: '999px',
             background: 'rgba(255,255,255,0.07)',
@@ -410,36 +340,107 @@ function SkillPassport({ userSkills }) {
   );
 }
 
+// ── Featured placeholder ─────────────────────────────────────────────────────
+function FeaturedPlaceholder() {
+  return (
+    <section className="featured-section">
+      <div
+        className="featured-card glass-panel"
+        style={{
+          display: 'block',
+          minHeight: '290px',
+          background: 'linear-gradient(135deg, rgba(25,190,227,0.06) 0%, transparent 60%)',
+        }}
+      >
+        <div
+          style={{
+            width: '122px',
+            height: '24px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '18px',
+          }}
+        />
+        <div
+          style={{
+            width: '52%',
+            height: '38px',
+            borderRadius: '10px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '16px',
+          }}
+        />
+        <div
+          style={{
+            width: '94%',
+            height: '16px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '10px',
+          }}
+        />
+        <div
+          style={{
+            width: '82%',
+            height: '16px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '30px',
+          }}
+        />
+        <div
+          style={{
+            width: '142px',
+            height: '42px',
+            borderRadius: '10px',
+            background: 'rgba(255,255,255,0.07)',
+            marginBottom: '18px',
+          }}
+        />
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ width: '74px', height: '13px', borderRadius: '999px', background: 'rgba(255,255,255,0.07)' }} />
+          <div style={{ width: '62px', height: '13px', borderRadius: '999px', background: 'rgba(255,255,255,0.07)' }} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main library page ────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
 
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
-  const [userSkills, setUserSkills] = useState([]);
-  const [cacheHydrated, setCacheHydrated] = useState(false);
-  const [booksLoaded, setBooksLoaded] = useState(false);
-  const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
+  const [hasHydratedCache, setHasHydratedCache] = useState(false);
+  const [isColdLoading, setIsColdLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userSkills, setUserSkills] = useState([]);
+  const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
   const [sprintCount, setSprintCount] = useState(null);
 
-  // Hydrate cached content before the browser paints so the page shell stays in place.
+  // Restore cache before paint so refresh keeps the page shell mounted.
   useLayoutEffect(() => {
-    const cached = readLibraryCache();
-    if (cached.hasBooks) {
-      setBooks(cached.books);
-      setBooksByCategory(cached.booksByCategory);
+    const cachedState = getCachedLibraryState();
+
+    if (cachedState) {
+      setBooks(cachedState.books);
+      setBooksByCategory(cachedState.booksByCategory);
+
+      if (cachedState.userSkills !== null) {
+        setUserSkills(cachedState.userSkills);
+        setUserSkillsLoaded(true);
+      }
+
+      setIsColdLoading(false);
     }
-    if (cached.hasUserSkills) {
-      setUserSkills(cached.userSkills);
-      setUserSkillsLoaded(true);
-    }
-    setCacheHydrated(true);
+
+    setHasHydratedCache(true);
   }, []);
 
-  // Keep the counter live from Supabase, but let the number be blank until it arrives.
+  // Live counter from Supabase — never hardcoded.
   useEffect(() => {
     let isMounted = true;
 
@@ -458,7 +459,7 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
-    if (!cacheHydrated) return;
+    if (!hasHydratedCache) return;
 
     let isMounted = true;
 
@@ -493,7 +494,6 @@ export default function Library() {
 
         setBooks(safeBooks);
         setBooksByCategory(grouped);
-        setBooksLoaded(true);
 
         try {
           sessionStorage.setItem(BOOKS_CACHE_KEY, JSON.stringify(safeBooks));
@@ -512,25 +512,26 @@ export default function Library() {
         if (progressError) {
           console.error('Error loading user progress:', progressError);
           setUserSkillsLoaded(true);
-          return;
+        } else {
+          const safeProgress = Array.isArray(progressData) ? progressData : [];
+          const builtSkills = buildUserSkills(safeProgress, safeBooks);
+          setUserSkills(builtSkills);
+          setUserSkillsLoaded(true);
+
+          try {
+            sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
+          } catch {
+            // Non-blocking cache write failure
+          }
         }
 
-        const safeProgress = Array.isArray(progressData) ? progressData : [];
-        const builtSkills = buildUserSkills(safeProgress, safeBooks);
-        setUserSkills(builtSkills);
-        setUserSkillsLoaded(true);
-
-        try {
-          sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
-        } catch {
-          // Non-blocking cache write failure
-        }
+        setIsColdLoading(false);
       } catch (err) {
         if (!isMounted) return;
 
         console.error('Error loading library:', err);
         setErrorMessage(err?.message || 'Unable to load your library right now.');
-        setBooksLoaded(true);
+        setIsColdLoading(false);
         setUserSkillsLoaded(true);
       }
     }
@@ -549,7 +550,7 @@ export default function Library() {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [cacheHydrated, router]);
+  }, [hasHydratedCache, router]);
 
   async function handleSignOut() {
     try {
@@ -661,13 +662,14 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
-  const showColdShell = cacheHydrated && books.length === 0 && !booksLoaded;
-  const showSkillPassportPlaceholder = !userSkillsLoaded && !isSearching;
-  const sprintCountLabel = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : '';
   const sprintCountText =
     typeof sprintCount === 'number'
-      ? `${sprintCountLabel} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
-      : 'Skill Sprints • Ready to Start Today';
+      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'}`
+      : '';
+
+  const showInitialSkeleton = !hasHydratedCache && isColdLoading && books.length === 0;
+  const showFeaturedPlaceholder = hasHydratedCache && !featuredBook && !isSearching;
+
 
   return (
     <>
@@ -695,28 +697,12 @@ export default function Library() {
         <div
           className="hero-badge"
           style={{
-            minHeight: '40px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '0 16px',
-            borderRadius: '999px',
-            border: '1px solid rgba(25,190,227,0.22)',
-            background: 'rgba(25,190,227,0.06)',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.02) inset',
+            minHeight: '24px',
+            visibility: sprintCountText ? 'visible' : 'hidden',
           }}
         >
           <span className="pulse-dot"></span>
-          <span
-            style={{
-              color: 'var(--brand-teal)',
-              fontWeight: 700,
-              letterSpacing: '0.01em',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {sprintCountText}
-          </span>
+          <span>{sprintCountText}</span>
         </div>
 
         <h1>
@@ -762,13 +748,21 @@ export default function Library() {
         </div>
       </header>
 
-      <div className="category-scroll">
+      <div
+        className="category-scroll"
+        style={{
+          opacity: isColdLoading && books.length === 0 ? 0.45 : 1,
+          transition: 'opacity 180ms ease',
+        }}
+      >
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
           onClick={() => {
+            if (isColdLoading && books.length === 0) return;
             setSearchQuery('');
             setSelectedCategory('All');
           }}
+          style={isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}}
         >
           All
         </button>
@@ -782,11 +776,13 @@ export default function Library() {
               key={category}
               className="pill"
               onClick={() => {
+                if (isColdLoading && books.length === 0) return;
                 setSearchQuery('');
                 setSelectedCategory(category);
               }}
-              style={
-                isActive
+              style={{
+                ...(isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}),
+                ...(isActive && !(isColdLoading && books.length === 0)
                   ? {
                       background: pillColor,
                       borderColor: pillColor,
@@ -794,8 +790,8 @@ export default function Library() {
                       fontWeight: '700',
                       boxShadow: `0 0 12px ${pillColor}55`,
                     }
-                  : undefined
-              }
+                  : {}),
+              }}
             >
               {getCategoryShortName(category)}
             </button>
@@ -821,15 +817,9 @@ export default function Library() {
           </div>
         )}
 
-        {showColdShell && (
-          <>
-            <SkillPassportPlaceholder />
-            <FeaturedPlaceholder />
-            <RowsPlaceholder />
-          </>
-        )}
+        {showInitialSkeleton && <LoadingSkeleton />}
 
-        {!showColdShell && isSearching && (
+        {!showInitialSkeleton && isSearching && (
           <>
             <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
               {filteredBooks.length > 0
@@ -858,119 +848,113 @@ export default function Library() {
           </>
         )}
 
-        {!showColdShell && !isSearching && (
+        {!showInitialSkeleton && !isSearching && (
           <>
-            {showSkillPassportPlaceholder ? (
-              <SkillPassportPlaceholder />
-            ) : (
-              <SkillPassport userSkills={userSkills} />
-            )}
+            {!userSkillsLoaded ? <SkillPassportPlaceholder /> : <SkillPassport userSkills={userSkills} />}
 
-            {featuredBook ? (
-              <section className="featured-section">
-                <div
-                  className="featured-card glass-panel"
-                  style={{
-                    display: 'block',
-                    background: (() => {
-                      const c = featuredBook.category?.toLowerCase() || '';
-                      if (c.includes('financial') || c.includes('money')) return 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 60%)';
-                      if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.08) 0%, transparent 60%)';
-                      if (c.includes('productivity') || c.includes('habit')) return 'linear-gradient(135deg, rgba(6,182,212,0.10) 0%, transparent 60%)';
-                      if (c.includes('sales') || c.includes('negotiation')) return 'linear-gradient(135deg, rgba(251,113,133,0.08) 0%, transparent 60%)';
-                      if (c.includes('strategy') || c.includes('innovation')) return 'linear-gradient(135deg, rgba(14,165,233,0.08) 0%, transparent 60%)';
-                      return 'linear-gradient(135deg, rgba(25,190,227,0.08) 0%, transparent 60%)';
-                    })(),
-                  }}
-                >
-                  <span className="tag-featured">
-                    <span className="pulse-dot" />
-                    Featured Sprint
-                  </span>
-
-                  <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
-
-                  <p className="featured-desc">
-                    {featuredBook.brief_content ||
-                      'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
-                  </p>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
-                    <span
-                      style={{
-                        fontSize: '0.78rem',
-                        color: 'rgba(255,255,255,0.35)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        fontWeight: '700',
-                      }}
-                    >
-                      Inspired by
-                    </span>
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
-                      {featuredBook.title}
-                    </span>
-                    <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
-                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
-                      {featuredBook.author}
-                    </span>
-                  </div>
-
-                  <Link href={`/summit/${featuredBook.id}/day/1`} className="btn-primary">
-                    Begin Sprint →
-                  </Link>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-                    {[
-                      { num: '~15 min', label: 'per day' },
-                      { num: '7 days', label: 'total' },
-                    ].map(({ num, label }, i) => (
-                      <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                          <span
-                            style={{
-                              fontFamily: 'var(--font-mono)',
-                              fontSize: '0.85rem',
-                              fontWeight: '700',
-                              color: 'var(--brand-teal)',
-                            }}
-                          >
-                            {num}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: '0.72rem',
-                              color: 'rgba(255,255,255,0.35)',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.8px',
-                              fontWeight: '600',
-                            }}
-                          >
-                            {label}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            ) : (
+            {showFeaturedPlaceholder ? (
               <FeaturedPlaceholder />
+            ) : (
+              <section className="featured-section">
+                {featuredBook ? (
+                  <div
+                    className="featured-card glass-panel"
+                    style={{
+                      display: 'block',
+                      background: (() => {
+                        const c = featuredBook.category?.toLowerCase() || '';
+                        if (c.includes('financial') || c.includes('money')) return 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 60%)';
+                        if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.08) 0%, transparent 60%)';
+                        if (c.includes('productivity') || c.includes('habit')) return 'linear-gradient(135deg, rgba(6,182,212,0.10) 0%, transparent 60%)';
+                        if (c.includes('sales') || c.includes('negotiation')) return 'linear-gradient(135deg, rgba(251,113,133,0.08) 0%, transparent 60%)';
+                        if (c.includes('strategy') || c.includes('innovation')) return 'linear-gradient(135deg, rgba(14,165,233,0.08) 0%, transparent 60%)';
+                        return 'linear-gradient(135deg, rgba(25,190,227,0.08) 0%, transparent 60%)';
+                      })(),
+                    }}
+                  >
+                    <span className="tag-featured">
+                      <span className="pulse-dot" />
+                      Featured Sprint
+                    </span>
+
+                    <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
+
+                    <p className="featured-desc">
+                      {featuredBook.brief_content ||
+                        'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
+                      <span
+                        style={{
+                          fontSize: '0.78rem',
+                          color: 'rgba(255,255,255,0.35)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          fontWeight: '700',
+                        }}
+                      >
+                        Inspired by
+                      </span>
+                      <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                        {featuredBook.title}
+                      </span>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
+                      <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
+                        {featuredBook.author}
+                      </span>
+                    </div>
+
+                    <Link href={`/summit/${featuredBook.id}/day/1`} className="btn-primary">
+                      Begin Sprint →
+                    </Link>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
+                      {[
+                        { num: '~15 min', label: 'per day' },
+                        { num: '7 days', label: 'total' },
+                      ].map(({ num, label }, i) => (
+                        <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                            <span
+                              style={{
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: '0.85rem',
+                                fontWeight: '700',
+                                color: 'var(--brand-teal)',
+                              }}
+                            >
+                              {num}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: '0.72rem',
+                                color: 'rgba(255,255,255,0.35)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.8px',
+                                fontWeight: '600',
+                              }}
+                            >
+                              {label}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </section>
             )}
 
-            {categoriesToShow.length > 0 ? (
-              categoriesToShow.map(({ category, books: catBooks }) => (
-                <BookRow
-                  key={category}
-                  title={category}
-                  description={`${catBooks.length} skill sprints`}
-                  books={catBooks}
-                />
-              ))
-            ) : (
-              <RowsPlaceholder />
-            )}
+            {categoriesToShow.map(({ category, books: catBooks }) => (
+              <BookRow
+                key={category}
+                title={category}
+                description={`${catBooks.length} skill sprints`}
+                books={catBooks}
+              />
+            ))}
           </>
         )}
       </main>
