@@ -179,9 +179,17 @@ function SkillPassport({ userSkills }) {
 // ── Main library page ─────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
-  const [books,            setBooks]            = useState([]); 
-  const [booksByCategory,  setBooksByCategory]  = useState({});
-  const [loading,          setLoading]          = useState(true);
+  // Restore from sessionStorage cache so back-navigation is instant
+  const cachedBooks = typeof window !== 'undefined'
+    ? (() => { try { const c = sessionStorage.getItem('ss_books'); return c ? JSON.parse(c) : null; } catch { return null; } })()
+    : null;
+  const cachedByCategory = typeof window !== 'undefined'
+    ? (() => { try { const c = sessionStorage.getItem('ss_booksByCategory'); return c ? JSON.parse(c) : null; } catch { return null; } })()
+    : null;
+
+  const [books,            setBooks]            = useState(cachedBooks ?? []); 
+  const [booksByCategory,  setBooksByCategory]  = useState(cachedByCategory ?? {});
+  const [loading,          setLoading]          = useState(!cachedBooks);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery,      setSearchQuery]      = useState('');
   const [userSkills,       setUserSkills]       = useState([]);
@@ -231,6 +239,11 @@ export default function Library() {
             return acc;
           }, {});
           setBooksByCategory(grouped);
+          // Cache for instant back-navigation
+          try {
+            sessionStorage.setItem('ss_books', JSON.stringify(booksData));
+            sessionStorage.setItem('ss_booksByCategory', JSON.stringify(grouped));
+          } catch { /* storage full or unavailable — not critical */ }
 
           // ── User skill passport ──────────────────────────────────────────
           const { data: { user } } = await supabase.auth.getUser();
@@ -403,7 +416,7 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        {!loading && <StatsHoverBanner totalSummaries={sprintCount ?? books.length} />}
+        {sprintCount !== null && <StatsHoverBanner totalSummaries={sprintCount} />}
         <div className="hero-badge">
           <span className="pulse-dot"></span>
           <span>{sprintCount !== null ? `${sprintCount} Skill Sprints • Ready to Start Today` : ''}</span>
@@ -439,30 +452,34 @@ export default function Library() {
         </div>
       </header>
 
-      {/* Hide category pills while searching */}
+      {/* Category pills — always visible; functional once data loads */}
       {!isSearching && (
         <div className="category-scroll">
           <button
             className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-            onClick={() => setSelectedCategory('All')}
+            onClick={() => !loading && setSelectedCategory('All')}
+            style={loading ? { opacity: 0.4, pointerEvents: 'none' } : {}}
           >
             All
           </button>
-          {sortedCategories.map((category) => {
+          {categoryOrder.map((category) => {
             const isActive = selectedCategory === category;
             const pillColor = getCategoryPillColor(category);
             return (
               <button
                 key={category}
                 className="pill"
-                onClick={() => setSelectedCategory(category)}
-                style={isActive ? {
-                  background: pillColor,
-                  borderColor: pillColor,
-                  color: '#0F172A',
-                  fontWeight: '700',
-                  boxShadow: `0 0 12px ${pillColor}55`,
-                } : {}}
+                onClick={() => !loading && setSelectedCategory(category)}
+                style={{
+                  ...(loading ? { opacity: 0.4, pointerEvents: 'none' } : {}),
+                  ...(isActive && !loading ? {
+                    background: pillColor,
+                    borderColor: pillColor,
+                    color: '#0F172A',
+                    fontWeight: '700',
+                    boxShadow: `0 0 12px ${pillColor}55`,
+                  } : {}),
+                }}
               >
                 {getCategoryShortName(category)}
               </button>
