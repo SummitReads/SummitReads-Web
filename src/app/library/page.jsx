@@ -185,7 +185,23 @@ export default function Library() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery,      setSearchQuery]      = useState('');
   const [userSkills,       setUserSkills]       = useState([]);
-  
+  // Seeded null so the pill shows "..." until the dedicated count query resolves
+  const [sprintCount,      setSprintCount]      = useState(null);
+
+  // Lightweight dedicated query for the pill — resolves before the full books fetch
+  useEffect(() => {
+    let isMounted = true;
+    supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('review_status', 'approved')
+      .then(({ count, error }) => {
+        if (!isMounted || error) return;
+        if (typeof count === 'number') setSprintCount(count);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
       if (event === 'SIGNED_OUT') router.push('/auth/login');
@@ -199,57 +215,59 @@ export default function Library() {
         .eq('review_status', 'approved')
         .order('created_at', { ascending: false });
 
-      if (!booksError && booksData) {
-        setBooks(booksData);
-        const grouped = booksData.reduce((acc, book) => {
-          const category = book.category || 'Uncategorized';
-          if (!acc[category]) acc[category] = [];
-          acc[category].push(book);
-          return acc;
-        }, {});
-        setBooksByCategory(grouped);
+      try {
+        if (!booksError && booksData) {
+          setBooks(booksData);
+          const grouped = booksData.reduce((acc, book) => {
+            const category = book.category || 'Uncategorized';
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(book);
+            return acc;
+          }, {});
+          setBooksByCategory(grouped);
 
-        // ── User skill passport ────────────────────────────────────────────
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: progressData } = await supabase
-            .from('user_progress')
-            .select('book_id, day_number, completed')
-            .eq('user_id', user.id);
+          // ── User skill passport ────────────────────────────────────────────
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: progressData } = await supabase
+              .from('user_progress')
+              .select('book_id, day_number, completed')
+              .eq('user_id', user.id);
 
-          if (progressData && progressData.length > 0) {
-            const daysByBook = progressData.reduce((acc, row) => {
-              if (!acc[row.book_id]) acc[row.book_id] = 0;
-              if (row.completed) acc[row.book_id] += 1;
-              return acc;
-            }, {});
+            if (progressData && progressData.length > 0) {
+              const daysByBook = progressData.reduce((acc, row) => {
+                if (!acc[row.book_id]) acc[row.book_id] = 0;
+                if (row.completed) acc[row.book_id] += 1;
+                return acc;
+              }, {});
 
-            const skills = Object.entries(daysByBook)
-              .map(([bookId, daysCompleted]) => {
-                const book = booksData.find(b => b.id === bookId);
-                if (!book || !book.sprint_skill) return null;
-                return {
-                  bookId,
-                  bookTitle:   book.title,
-                  sprintSkill: book.sprint_skill,
-                  daysCompleted,
-                };
-              })
-              .filter(Boolean)
-              .sort((a, b) => {
-                const aComplete = a.daysCompleted >= 7;
-                const bComplete = b.daysCompleted >= 7;
-                if (aComplete && !bComplete) return 1;
-                if (!aComplete && bComplete) return -1;
-                return b.daysCompleted - a.daysCompleted;
-              });
+              const skills = Object.entries(daysByBook)
+                .map(([bookId, daysCompleted]) => {
+                  const book = booksData.find(b => b.id === bookId);
+                  if (!book || !book.sprint_skill) return null;
+                  return {
+                    bookId,
+                    bookTitle:   book.title,
+                    sprintSkill: book.sprint_skill,
+                    daysCompleted,
+                  };
+                })
+                .filter(Boolean)
+                .sort((a, b) => {
+                  const aComplete = a.daysCompleted >= 7;
+                  const bComplete = b.daysCompleted >= 7;
+                  if (aComplete && !bComplete) return 1;
+                  if (!aComplete && bComplete) return -1;
+                  return b.daysCompleted - a.daysCompleted;
+                });
 
-            setUserSkills(skills);
+              setUserSkills(skills);
+            }
           }
         }
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     fetchData();
@@ -379,10 +397,10 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <StatsHoverBanner totalSummaries={books.length} />
+        {!loading && <StatsHoverBanner totalSummaries={sprintCount ?? books.length} />}
         <div className="hero-badge">
           <span className="pulse-dot"></span>
-          <span>{books.length} Skill Sprints • Ready to Start Today</span>
+          <span>{sprintCount === null ? '…' : `${sprintCount} Skill Sprints • Ready to Start Today`}</span>
         </div>
         <h1>What do you want to <span className="text-gradient">work on?</span></h1>
         <p className="hero-sub">Find your next sprint below, or search by skill, topic, or goal.</p>
