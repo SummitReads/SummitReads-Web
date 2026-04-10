@@ -268,25 +268,6 @@ export default function Library() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
-  const [sprintCount, setSprintCount] = useState(null);
-
-  // Lightweight dedicated query for the pill
-  useEffect(() => {
-    let isMounted = true;
-
-    supabase
-      .from('books')
-      .select('id', { count: 'exact', head: true })
-      .eq('review_status', 'approved')
-      .then(({ count, error }) => {
-        if (!isMounted || error) return;
-        if (typeof count === 'number') setSprintCount(count);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -295,7 +276,6 @@ export default function Library() {
       try {
         setErrorMessage('');
 
-        // Confirm session first so protected content does not briefly flash for signed-out users
         const {
           data: { session },
           error: sessionError,
@@ -308,7 +288,6 @@ export default function Library() {
           return;
         }
 
-        // Restore cached library after mount + auth confirmation
         const cachedState = getCachedLibraryState();
         if (cachedState && isMounted) {
           setBooks(cachedState.books);
@@ -340,7 +319,6 @@ export default function Library() {
           // Non-blocking cache write failure
         }
 
-        // User progress is nice to have, but should not blank the library if it fails
         const { data: progressData, error: progressError } = await supabase
           .from('user_progress')
           .select('book_id, day_number, completed')
@@ -486,12 +464,6 @@ export default function Library() {
     return cats.map((cat) => ({ category: cat, books: booksByCategory[cat] || [] }));
   }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory]);
 
-
-  const sprintCountLabel =
-    typeof sprintCount === 'number'
-      ? sprintCount.toLocaleString('en-US')
-      : '...';
-
   const featuredBook = useMemo(() => {
     if (!books.length) return null;
     const explicit = books.find((b) => b.featured);
@@ -523,79 +495,11 @@ export default function Library() {
       </nav>
 
       <header className="hero">
-        <style>{`
-          .library-hero-stats-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 18px;
-            min-height: 42px;
-          }
-          .library-hero-stat-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            min-height: 42px;
-            padding: 10px 14px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.04);
-            color: rgba(255,255,255,0.72);
-            font-family: var(--font-sans);
-            font-size: 0.82rem;
-            line-height: 1;
-            white-space: nowrap;
-            transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
-          }
-          .library-hero-stat-pill strong {
-            color: #EEF2F7;
-            font-weight: 700;
-          }
-          .library-hero-stat-pill.is-active {
-            border-color: rgba(25,190,227,0.24);
-            background: rgba(25,190,227,0.08);
-            color: rgba(255,255,255,0.84);
-          }
-          @media (max-width: 768px) {
-            .library-hero-stats-row {
-              gap: 10px;
-              margin-bottom: 16px;
-            }
-            .library-hero-stat-pill {
-              font-size: 0.78rem;
-              min-height: 38px;
-              padding: 9px 12px;
-            }
-          }
-        `}</style>
-
-        <div className="library-hero-stats-row">
-          <div className="library-hero-stat-pill">
-            <strong>15</strong> min / day
-            <span aria-hidden="true">·</span>
-            <strong>
-              <span style={{ display: 'inline-block', minWidth: '2ch', textAlign: 'right' }}>
-                {sprintCountLabel}
-              </span>
-            </strong>
-            sprints
-          </div>
-
-          <div className="library-hero-stat-pill">
-            Search by <strong>skill</strong>, topic, or author
-          </div>
-
-          <div className="library-hero-stat-pill is-active">
-            <strong>{selectedCategory === 'All' ? 'All categories' : getCategoryShortName(selectedCategory)}</strong>
-            selected
-          </div>
-        </div>
-
         <h1>
           What do you want to <span className="text-gradient">work on?</span>
         </h1>
         <p className="hero-sub">Find your next sprint below, or search by skill, topic, or goal.</p>
+
         <div className="search-wrapper">
           <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="11" cy="11" r="8" />
@@ -652,6 +556,7 @@ export default function Library() {
         >
           All
         </button>
+
         {categoryOrder.map((category) => {
           const isActive = selectedCategory === category;
           const pillColor = getCategoryPillColor(category);
@@ -685,19 +590,6 @@ export default function Library() {
       </div>
 
       <main className="container">
-        {refreshing && books.length > 0 && !loading && !errorMessage && (
-          <div
-            style={{
-              marginBottom: '16px',
-              color: 'rgba(255,255,255,0.35)',
-              fontSize: '0.8rem',
-              letterSpacing: '0.2px',
-            }}
-          >
-            Refreshing library…
-          </div>
-        )}
-
         {errorMessage && (
           <div
             className="glass-panel"
