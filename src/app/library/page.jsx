@@ -203,19 +203,25 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
-      if (event === 'SIGNED_OUT') router.push('/auth/login');
+    // Track whether we've seen an authenticated session yet.
+    // On hard refresh, Supabase fires SIGNED_OUT before rehydrating the stored
+    // session — we only redirect after confirming the user was actually signed in.
+    let wasSignedIn = false;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) wasSignedIn = true;
+      if (event === 'SIGNED_OUT' && wasSignedIn) router.push('/auth/login');
     });
 
     async function fetchData() {
-      // ── Books ──────────────────────────────────────────────────────────────
-      const { data: booksData, error: booksError } = await supabase
-        .from('books')
-        .select('*')
-        .eq('review_status', 'approved')
-        .order('created_at', { ascending: false });
-
       try {
+        // ── Books ────────────────────────────────────────────────────────────
+        const { data: booksData, error: booksError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('review_status', 'approved')
+          .order('created_at', { ascending: false });
+
         if (!booksError && booksData) {
           setBooks(booksData);
           const grouped = booksData.reduce((acc, book) => {
@@ -226,7 +232,7 @@ export default function Library() {
           }, {});
           setBooksByCategory(grouped);
 
-          // ── User skill passport ────────────────────────────────────────────
+          // ── User skill passport ──────────────────────────────────────────
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             const { data: progressData } = await supabase
