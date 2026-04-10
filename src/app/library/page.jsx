@@ -705,6 +705,9 @@ export default function Library() {
           style={{
             minHeight: '24px',
             visibility: 'visible',
+            gap: '7px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
           }}
         >
           <span className="pulse-dot"></span>
