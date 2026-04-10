@@ -7,6 +7,7 @@ import BookRow from '@/components/BookRow';
 
 const BOOKS_CACHE_KEY = 'ss_books';
 const BOOKS_BY_CATEGORY_CACHE_KEY = 'ss_booksByCategory';
+const USER_SKILLS_CACHE_KEY = 'ss_userSkills';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function groupBooksByCategory(booksData) {
@@ -53,6 +54,7 @@ function getCachedLibraryState() {
   try {
     const cachedBooksRaw = sessionStorage.getItem(BOOKS_CACHE_KEY);
     const cachedByCategoryRaw = sessionStorage.getItem(BOOKS_BY_CATEGORY_CACHE_KEY);
+    const cachedUserSkillsRaw = sessionStorage.getItem(USER_SKILLS_CACHE_KEY);
 
     if (!cachedBooksRaw || !cachedByCategoryRaw) return null;
 
@@ -63,9 +65,18 @@ function getCachedLibraryState() {
       return null;
     }
 
+    let cachedUserSkills = null;
+    if (cachedUserSkillsRaw !== null) {
+      const parsedSkills = JSON.parse(cachedUserSkillsRaw);
+      if (Array.isArray(parsedSkills)) {
+        cachedUserSkills = parsedSkills;
+      }
+    }
+
     return {
       books: cachedBooks,
       booksByCategory: cachedByCategory,
+      userSkills: cachedUserSkills,
     };
   } catch {
     return null;
@@ -107,6 +118,81 @@ function LoadingSkeleton() {
         </div>
       ))}
     </div>
+  );
+}
+
+// ── Skill Passport Placeholder ───────────────────────────────────────────────
+function SkillPassportPlaceholder() {
+  return (
+    <section style={{ marginBottom: '48px' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          marginBottom: '16px',
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--brand-teal)',
+            margin: 0,
+          }}
+        >
+          Skills You're Building
+        </p>
+        <div
+          style={{
+            flex: 1,
+            height: '1px',
+            background: 'rgba(255,255,255,0.06)',
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '14px 18px',
+          minHeight: '58px',
+          background: 'rgba(15, 23, 42, 0.45)',
+          border: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+        }}
+      >
+        <div
+          style={{
+            width: '34%',
+            height: '12px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
+        <div
+          style={{
+            flex: 1,
+            height: '4px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
+        <div
+          style={{
+            width: '88px',
+            height: '12px',
+            borderRadius: '999px',
+            background: 'rgba(255,255,255,0.07)',
+          }}
+        />
+      </div>
+    </section>
   );
 }
 
@@ -263,11 +349,30 @@ export default function Library() {
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
+  const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
+  const [sprintCount, setSprintCount] = useState(null);
+
+  // Keep the counter coming from Supabase
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('review_status', 'approved')
+      .then(({ count, error }) => {
+        if (!isMounted || error) return;
+        if (typeof count === 'number') setSprintCount(count);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -293,7 +398,11 @@ export default function Library() {
           setBooks(cachedState.books);
           setBooksByCategory(cachedState.booksByCategory);
           setLoading(false);
-          setRefreshing(true);
+
+          if (cachedState.userSkills !== null) {
+            setUserSkills(cachedState.userSkills);
+            setUserSkillsLoaded(true);
+          }
         }
 
         const { data: booksData, error: booksError } = await supabase
@@ -328,21 +437,28 @@ export default function Library() {
 
         if (progressError) {
           console.error('Error loading user progress:', progressError);
-          setUserSkills([]);
+          setUserSkillsLoaded(true);
         } else {
           const safeProgress = Array.isArray(progressData) ? progressData : [];
-          setUserSkills(buildUserSkills(safeProgress, safeBooks));
+          const builtSkills = buildUserSkills(safeProgress, safeBooks);
+          setUserSkills(builtSkills);
+          setUserSkillsLoaded(true);
+
+          try {
+            sessionStorage.setItem(USER_SKILLS_CACHE_KEY, JSON.stringify(builtSkills));
+          } catch {
+            // Non-blocking cache write failure
+          }
         }
 
         setLoading(false);
-        setRefreshing(false);
       } catch (err) {
         if (!isMounted) return;
 
         console.error('Error loading library:', err);
         setErrorMessage(err?.message || 'Unable to load your library right now.');
         setLoading(false);
-        setRefreshing(false);
+        setUserSkillsLoaded(true);
       }
     }
 
@@ -472,6 +588,12 @@ export default function Library() {
     return rich || books[0];
   }, [books]);
 
+  const showInitialSkeleton = loading && books.length === 0;
+  const sprintCountText =
+    typeof sprintCount === 'number'
+      ? `${sprintCount.toLocaleString('en-US')} Skill Sprint${sprintCount === 1 ? '' : 's'} • Ready to Start Today`
+      : '';
+
   return (
     <>
       <nav className="glass-nav">
@@ -495,6 +617,17 @@ export default function Library() {
       </nav>
 
       <header className="hero">
+        <div
+          className="hero-badge"
+          style={{
+            minHeight: '24px',
+            visibility: sprintCountText ? 'visible' : 'hidden',
+          }}
+        >
+          <span className="pulse-dot"></span>
+          <span>{sprintCountText}</span>
+        </div>
+
         <h1>
           What do you want to <span className="text-gradient">work on?</span>
         </h1>
@@ -607,9 +740,9 @@ export default function Library() {
           </div>
         )}
 
-        {loading && <LoadingSkeleton />}
+        {showInitialSkeleton && <LoadingSkeleton />}
 
-        {!loading && isSearching && (
+        {!showInitialSkeleton && isSearching && (
           <>
             <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
               {filteredBooks.length > 0
@@ -638,9 +771,9 @@ export default function Library() {
           </>
         )}
 
-        {!loading && !isSearching && (
+        {!showInitialSkeleton && !isSearching && (
           <>
-            <SkillPassport userSkills={userSkills} />
+            {!userSkillsLoaded ? <SkillPassportPlaceholder /> : <SkillPassport userSkills={userSkills} />}
 
             <section className="featured-section">
               {featuredBook ? (
