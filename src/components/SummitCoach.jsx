@@ -22,36 +22,14 @@ function getQuickChips(dayNum) {
   return chips;
 }
 
-// Explore Further chips — contextual to the active section
-function getExploreChips(activeSection) {
-  const base = [
-    { label: 'How do I apply this?', prompt: "How do I actually apply what I just read to my current situation?" },
-    { label: 'Tell me more',         prompt: "Can you go deeper on what I just read? I want to understand it better." },
+// Explore Further chips — always show the four section labels
+function getExploreChips() {
+  return [
+    { label: 'Worth Knowing',     prompt: "Let's talk about the Worth Knowing section — help me understand it better or connect it to my situation." },
+    { label: 'In Practice',       prompt: "I want to dig into the In Practice examples — help me find the one that fits my situation." },
+    { label: 'Think About This',  prompt: "Help me work through one of the Think About This reflection questions." },
+    { label: 'Try This',          prompt: "I want to try one of the challenges in the Try This section — help me figure out where to start." },
   ];
-
-  const bySection = {
-    reading: [
-      ...base,
-      { label: 'Connect to the sprint', prompt: "How does this connect to the core idea I've been working on this week?" },
-    ],
-    examples: [
-      { label: 'My situation is different', prompt: "The examples don't quite match my situation. Can you help me find one that does?" },
-      { label: 'Break this down',           prompt: "Walk me through one of those examples step by step." },
-      { label: 'How do I try this?',        prompt: "What's the first thing I should actually do to try this approach?" },
-    ],
-    reflections: [
-      { label: 'Help me answer this',  prompt: "Help me think through one of these reflection questions — I'm not sure where to start." },
-      { label: 'I noticed something',  prompt: "I noticed something when I read these questions. Let me tell you what came up." },
-      { label: 'What does this mean?', prompt: "I'm not sure what to make of my answer to these reflection questions. Can you help?" },
-    ],
-    challenges: [
-      { label: "I can't do this today", prompt: "I want to try this challenge but I can't do it today. What's a smaller version I can actually do?" },
-      { label: 'I tried one',           prompt: "I tried one of these challenges. Here's what happened..." },
-      { label: 'Which one first?',      prompt: "Which of these challenges should I start with given where I am in this sprint?" },
-    ],
-  };
-
-  return bySection[activeSection] || base;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -71,7 +49,7 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
 
   const isExplore = context === 'explore';
   const greeting  = isExplore ? EXPLORE_GREETING : INITIAL_GREETING;
-  const chips     = isExplore ? getExploreChips(activeSection) : getQuickChips(dayNum);
+  const chips     = isExplore ? getExploreChips() : getQuickChips(dayNum);
   const hasUserMessages = messages.some(m => m.role === 'user');
 
   // Auto-scroll
