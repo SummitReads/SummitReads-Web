@@ -5,9 +5,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
 
-const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything about what you just read — how it applies to your situation, what to do with it, or what it connects to from earlier in the sprint.`;
-
-// Day view chips — unchanged
 function getQuickChips(dayNum) {
   const day = Number(dayNum) || 1;
   const chips = [
@@ -22,41 +19,9 @@ function getQuickChips(dayNum) {
   return chips;
 }
 
-// Explore Further chips — contextual to the active section
-function getExploreChips(activeSection) {
-  const base = [
-    { label: 'How do I apply this?', prompt: "How do I actually apply what I just read to my current situation?" },
-    { label: 'Tell me more',         prompt: "Can you go deeper on what I just read? I want to understand it better." },
-  ];
-
-  const bySection = {
-    reading: [
-      ...base,
-      { label: 'Connect to the sprint', prompt: "How does this connect to the core idea I've been working on this week?" },
-    ],
-    examples: [
-      { label: 'My situation is different', prompt: "The examples don't quite match my situation. Can you help me find one that does?" },
-      { label: 'Break this down',           prompt: "Walk me through one of those examples step by step." },
-      { label: 'How do I try this?',        prompt: "What's the first thing I should actually do to try this approach?" },
-    ],
-    reflections: [
-      { label: 'Help me answer this',  prompt: "Help me think through one of these reflection questions — I'm not sure where to start." },
-      { label: 'I noticed something',  prompt: "I noticed something when I read these questions. Let me tell you what came up." },
-      { label: 'What does this mean?', prompt: "I'm not sure what to make of my answer to these reflection questions. Can you help?" },
-    ],
-    challenges: [
-      { label: "I can't do this today", prompt: "I want to try this challenge but I can't do it today. What's a smaller version I can actually do?" },
-      { label: 'I tried one',           prompt: "I tried one of these challenges. Here's what happened..." },
-      { label: 'Which one first?',      prompt: "Which of these challenges should I start with given where I am in this sprint?" },
-    ],
-  };
-
-  return bySection[activeSection] || base;
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SummitCoach({ bookId, dayNum, userId, context = 'day', activeSection = null }) {
+export default function SummitCoach({ bookId, dayNum, userId }) {
   const [isOpen,    setIsOpen]    = useState(false);
   const [messages,  setMessages]  = useState([]);
   const [input,     setInput]     = useState('');
@@ -69,9 +34,7 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
   const inputRef       = useRef(null);
   const abortRef       = useRef(null);
 
-  const isExplore = context === 'explore';
-  const greeting  = isExplore ? EXPLORE_GREETING : INITIAL_GREETING;
-  const chips     = isExplore ? getExploreChips(activeSection) : getQuickChips(dayNum);
+  const chips = getQuickChips(dayNum);
   const hasUserMessages = messages.some(m => m.role === 'user');
 
   // Auto-scroll
@@ -87,19 +50,10 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
   // Initial greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{ role: 'assistant', content: greeting }]);
+      setMessages([{ role: 'assistant', content: INITIAL_GREETING }]);
       setShowChips(true);
     }
   }, [isOpen]);
-
-  // Reset chips/greeting when activeSection changes (explore mode only)
-  useEffect(() => {
-    if (isExplore && isOpen && activeSection) {
-      setMessages([{ role: 'assistant', content: greeting }]);
-      setShowChips(true);
-      setError(null);
-    }
-  }, [activeSection]);
 
   // Cleanup
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -115,7 +69,7 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
     setLoading(true);
 
     const recentHistory = messages
-      .filter(m => m?.content && m.content !== greeting)
+      .filter(m => m?.content && m.content !== INITIAL_GREETING)
       .slice(-6);
 
     abortRef.current = new AbortController();
@@ -125,15 +79,7 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         signal:  abortRef.current.signal,
-        body: JSON.stringify({
-          bookId,
-          dayNum,
-          userId,
-          userMessage: text,
-          conversationHistory: recentHistory,
-          context,
-          activeSection,
-        }),
+        body: JSON.stringify({ bookId, dayNum, userId, userMessage: text, conversationHistory: recentHistory }),
       });
 
       if (!res.ok) {
@@ -175,21 +121,12 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
       setLoading(false);
       setStreaming(false);
     }
-  }, [messages, loading, streaming, bookId, dayNum, userId, context, activeSection, greeting]);
+  }, [messages, loading, streaming, bookId, dayNum, userId]);
 
   const handleSend    = () => sendPrompt(input);
   const handleChip    = (chip) => sendPrompt(chip.prompt);
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
-  const handleReset   = () => { setMessages([{ role: 'assistant', content: greeting }]); setShowChips(true); setError(null); };
-
-  // Subtitle shown under "Summit Coach" in the panel header
-  const subtitle = isExplore
-    ? activeSection === 'reading'     ? 'Worth Knowing'
-    : activeSection === 'examples'    ? 'In Practice'
-    : activeSection === 'reflections' ? 'Think About This'
-    : activeSection === 'challenges'  ? 'Try This'
-    : 'Explore Further'
-    : `Stage ${dayNum} of 7`;
+  const handleReset   = () => { setMessages([{ role: 'assistant', content: INITIAL_GREETING }]); setShowChips(true); setError(null); };
 
   return (
     <>
@@ -232,22 +169,25 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
         </div>
       )}
 
-      {/* Panel */}
+      {/* Chat panel */}
       {isOpen && (
         <div style={{
           position: 'fixed', bottom: '96px', right: '28px',
-          width: '360px', height: '520px',
-          background: 'rgba(10,18,35,0.97)', border: '1px solid rgba(25,190,227,0.18)',
-          borderRadius: '20px', display: 'flex', flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(25,190,227,0.08)',
+          width: '360px', maxWidth: 'calc(100vw - 40px)',
+          height: '540px', maxHeight: 'calc(100vh - 120px)',
+          borderRadius: '18px', background: 'rgba(13,21,32,0.97)',
+          border: '1px solid rgba(25,190,227,0.2)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column',
           zIndex: 999, overflow: 'hidden',
-          animation: 'coachSlideUp 0.25s ease',
+          animation: 'coachSlideUp 0.28s cubic-bezier(0.34,1.56,0.64,1)',
         }}>
 
           {/* Header */}
           <div style={{
-            padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0,
+            padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', gap: '12px',
+            background: 'rgba(25,190,227,0.04)', flexShrink: 0,
           }}>
             <div style={{
               width: '34px', height: '34px', borderRadius: '50%',
@@ -260,7 +200,7 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ color: 'white', fontWeight: '700', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>{subtitle}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>Stage {dayNum} of 7</div>
             </div>
             {hasUserMessages && (
               <button onClick={handleReset} style={{

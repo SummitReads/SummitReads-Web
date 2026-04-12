@@ -12,13 +12,12 @@ export default function DeepDivePage({ params }) {
   const id     = unwrappedParams.id;
   const dayNum = parseInt(unwrappedParams.dayNum);
 
-  const [book,          setBook]          = useState(null);
-  const [dayData,       setDayData]       = useState(null);
-  const [user,          setUser]          = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [error,         setError]         = useState(null);
-  const [open,          setOpen]          = useState({ reading: true, examples: false, reflections: false, challenges: false });
-  const [activeSection, setActiveSection] = useState('reading');
+  const [book,    setBook]    = useState(null);
+  const [dayData, setDayData] = useState(null);
+  const [user,    setUser]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+  const [open,    setOpen]    = useState({ reading: true, examples: false, reflections: false, challenges: false });
 
   useEffect(() => {
     async function fetchData() {
@@ -45,8 +44,6 @@ export default function DeepDivePage({ params }) {
 
   function toggle(key) {
     setOpen(prev => ({ ...prev, [key]: !prev[key] }));
-    // Update activeSection when a section is opened
-    setActiveSection(key);
   }
 
   if (loading) return (
@@ -294,16 +291,8 @@ export default function DeepDivePage({ params }) {
 
       </main>
 
-      {/* Summit Coach in explore mode — chips and prompt adapt to the active section */}
-      {user && (
-        <SummitCoach
-          bookId={id}
-          dayNum={dayNum}
-          userId={user.id}
-          context="explore"
-          activeSection={activeSection}
-        />
-      )}
+      {/* Summit Coach — mounted only once user is resolved to avoid null errors */}
+      {user && <SummitCoach bookId={id} dayNum={dayNum} userId={user.id} />}
     </>
   );
 }
