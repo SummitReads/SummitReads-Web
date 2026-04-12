@@ -12,6 +12,7 @@ function getQuickChips(dayNum) {
   const day = Number(dayNum) || 1;
   const chips = [
     { label: 'Help me get started',  prompt: "I just opened today's stage. Help me understand what I should be focusing on." },
+    { label: 'About the Ascent',     prompt: "Help me understand today's ascent — what's the core idea and why does it matter?" },
     { label: 'Help with milepost',   prompt: "I'm not sure what to write for the milepost. Can you help me figure it out?" },
     { label: 'Help with mission',    prompt: "Help me make today's mission feel more concrete and doable." },
     { label: "I'm stuck",            prompt: "I'm stuck on today's stage. Help me figure out what's getting in the way." },

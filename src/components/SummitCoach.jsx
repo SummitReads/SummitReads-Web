@@ -242,11 +242,30 @@ export default function SummitCoach({ bookId, dayNum, userId, context = 'day', a
               <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>{subtitle}</div>
             </div>
             {hasUserMessages && (
-              <button onClick={handleReset} style={{
-                background: 'transparent', border: 'none',
-                color: 'rgba(148,163,184,0.45)', cursor: 'pointer',
-                fontSize: '0.68rem', fontFamily: 'var(--font-sans)', padding: '4px',
-              }}>
+              <button
+                onClick={handleReset}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid rgba(148,163,184,0.2)',
+                  borderRadius: '6px',
+                  color: 'rgba(148,163,184,0.65)',
+                  cursor: 'pointer',
+                  fontSize: '0.68rem',
+                  fontFamily: 'var(--font-sans)',
+                  padding: '4px 8px',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.borderColor = 'rgba(148,163,184,0.5)';
+                  e.currentTarget.style.background = 'rgba(148,163,184,0.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.color = 'rgba(148,163,184,0.65)';
+                  e.currentTarget.style.borderColor = 'rgba(148,163,184,0.2)';
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
                 Reset
               </button>
             )}
