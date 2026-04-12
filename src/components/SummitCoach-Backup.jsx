@@ -5,6 +5,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
 
+const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything about what you just read — how it applies to your situation, what to do with it, or what it connects to from earlier in the sprint.`;
+
+// Day view chips — unchanged
 function getQuickChips(dayNum) {
   const day = Number(dayNum) || 1;
   const chips = [
@@ -19,9 +22,19 @@ function getQuickChips(dayNum) {
   return chips;
 }
 
+// Explore Further chips — always show the four section labels
+function getExploreChips() {
+  return [
+    { label: 'Worth Knowing',     prompt: "Let's talk about the Worth Knowing section — help me understand it better or connect it to my situation." },
+    { label: 'In Practice',       prompt: "I want to dig into the In Practice examples — help me find the one that fits my situation." },
+    { label: 'Think About This',  prompt: "Help me work through one of the Think About This reflection questions." },
+    { label: 'Try This',          prompt: "I want to try one of the challenges in the Try This section — help me figure out where to start." },
+  ];
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SummitCoach({ bookId, dayNum, userId }) {
+export default function SummitCoach({ bookId, dayNum, userId, context = 'day', activeSection = null }) {
   const [isOpen,    setIsOpen]    = useState(false);
   const [messages,  setMessages]  = useState([]);
   const [input,     setInput]     = useState('');
@@ -34,7 +47,9 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
   const inputRef       = useRef(null);
   const abortRef       = useRef(null);
 
-  const chips = getQuickChips(dayNum);
+  const isExplore = context === 'explore';
+  const greeting  = isExplore ? EXPLORE_GREETING : INITIAL_GREETING;
+  const chips     = isExplore ? getExploreChips() : getQuickChips(dayNum);
   const hasUserMessages = messages.some(m => m.role === 'user');
 
   // Auto-scroll
@@ -50,10 +65,19 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
   // Initial greeting
   useEffect(() => {
     if (isOpen && messages.length === 0) {
-      setMessages([{ role: 'assistant', content: INITIAL_GREETING }]);
+      setMessages([{ role: 'assistant', content: greeting }]);
       setShowChips(true);
     }
   }, [isOpen]);
+
+  // Reset chips/greeting when activeSection changes (explore mode only)
+  useEffect(() => {
+    if (isExplore && isOpen && activeSection) {
+      setMessages([{ role: 'assistant', content: greeting }]);
+      setShowChips(true);
+      setError(null);
+    }
+  }, [activeSection]);
 
   // Cleanup
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -69,7 +93,7 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
     setLoading(true);
 
     const recentHistory = messages
-      .filter(m => m?.content && m.content !== INITIAL_GREETING)
+      .filter(m => m?.content && m.content !== greeting)
       .slice(-6);
 
     abortRef.current = new AbortController();
@@ -79,7 +103,15 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         signal:  abortRef.current.signal,
-        body: JSON.stringify({ bookId, dayNum, userId, userMessage: text, conversationHistory: recentHistory }),
+        body: JSON.stringify({
+          bookId,
+          dayNum,
+          userId,
+          userMessage: text,
+          conversationHistory: recentHistory,
+          context,
+          activeSection,
+        }),
       });
 
       if (!res.ok) {
@@ -121,12 +153,21 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
       setLoading(false);
       setStreaming(false);
     }
-  }, [messages, loading, streaming, bookId, dayNum, userId]);
+  }, [messages, loading, streaming, bookId, dayNum, userId, context, activeSection, greeting]);
 
   const handleSend    = () => sendPrompt(input);
   const handleChip    = (chip) => sendPrompt(chip.prompt);
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
-  const handleReset   = () => { setMessages([{ role: 'assistant', content: INITIAL_GREETING }]); setShowChips(true); setError(null); };
+  const handleReset   = () => { setMessages([{ role: 'assistant', content: greeting }]); setShowChips(true); setError(null); };
+
+  // Subtitle shown under "Summit Coach" in the panel header
+  const subtitle = isExplore
+    ? activeSection === 'reading'     ? 'Worth Knowing'
+    : activeSection === 'examples'    ? 'In Practice'
+    : activeSection === 'reflections' ? 'Think About This'
+    : activeSection === 'challenges'  ? 'Try This'
+    : 'Explore Further'
+    : `Stage ${dayNum} of 7`;
 
   return (
     <>
@@ -169,25 +210,22 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
         </div>
       )}
 
-      {/* Chat panel */}
+      {/* Panel */}
       {isOpen && (
         <div style={{
           position: 'fixed', bottom: '96px', right: '28px',
-          width: '360px', maxWidth: 'calc(100vw - 40px)',
-          height: '540px', maxHeight: 'calc(100vh - 120px)',
-          borderRadius: '18px', background: 'rgba(13,21,32,0.97)',
-          border: '1px solid rgba(25,190,227,0.2)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(24px)', display: 'flex', flexDirection: 'column',
+          width: '360px', height: '520px',
+          background: 'rgba(10,18,35,0.97)', border: '1px solid rgba(25,190,227,0.18)',
+          borderRadius: '20px', display: 'flex', flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(25,190,227,0.08)',
           zIndex: 999, overflow: 'hidden',
-          animation: 'coachSlideUp 0.28s cubic-bezier(0.34,1.56,0.64,1)',
+          animation: 'coachSlideUp 0.25s ease',
         }}>
 
           {/* Header */}
           <div style={{
-            padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-            display: 'flex', alignItems: 'center', gap: '12px',
-            background: 'rgba(25,190,227,0.04)', flexShrink: 0,
+            padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0,
           }}>
             <div style={{
               width: '34px', height: '34px', borderRadius: '50%',
@@ -200,7 +238,7 @@ export default function SummitCoach({ bookId, dayNum, userId }) {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ color: 'white', fontWeight: '700', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>Stage {dayNum} of 7</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>{subtitle}</div>
             </div>
             {hasUserMessages && (
               <button onClick={handleReset} style={{
