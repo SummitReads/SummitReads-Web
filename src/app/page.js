@@ -365,11 +365,9 @@ export default function Home() {
       <div className="hero">
         <div className="hero-left">
           <div className="hero-stats-row">
-            {sprintCountLabel && (
-              <div className="hero-stat-pill">
-                <strong>{sprintCountLabel}</strong> sprints
-              </div>
-            )}
+            <div className="hero-stat-pill">
+              {sprintCountLabel && <><strong>{sprintCountLabel}</strong> sprints</>}
+            </div>
             <div className="hero-stat-pill"><strong>Written</strong> reflection</div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
