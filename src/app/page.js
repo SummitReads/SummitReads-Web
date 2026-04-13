@@ -450,9 +450,8 @@ export default function Home() {
 
         .coach-callout {
           padding: 80px 0;
-          background: rgba(23,184,224,0.03);
-          border-top: 1px solid rgba(23,184,224,0.1);
-          border-bottom: 1px solid rgba(23,184,224,0.1);
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
         }
         .coach-callout-inner {
           max-width: 640px;
@@ -499,7 +498,6 @@ export default function Home() {
           padding: 64px 0;
           border-top: 1px solid var(--border);
           border-bottom: 1px solid var(--border);
-          background: rgba(255,255,255,0.015);
         }
         .individual-cta-inner {
           display: flex;
