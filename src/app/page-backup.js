@@ -846,7 +846,7 @@ export default function Home() {
         <div className="wrap">
           <div className="individual-cta-inner reveal">
             <div className="individual-cta-left">
-              <h3 className="individual-cta-heading">For individual access.</h3>
+              <h3 className="individual-cta-heading">Here for yourself?</h3>
               <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
             </div>
             <div className="individual-cta-right">
