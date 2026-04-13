@@ -4,8 +4,8 @@ import Stripe from 'stripe'
 function getTeamPricePerSeat(seats) {
   if (seats >= 500) return null  // custom pricing
   if (seats >= 100) return 11900 // $119.00
-  if (seats >= 25)  return 14900 // $149.00
-  return 17900                   // $179.00
+  if (seats >= 25)  return 16900 // $169.00
+  return 19900                   // $199.00
 }
 
 export async function POST(req) {

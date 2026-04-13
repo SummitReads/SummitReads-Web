@@ -11,12 +11,12 @@ import './landing.css'
 // ── Pricing ──────────────────────────────────────────────────────────────────
 
 const TIERS = [
-  { min: 1,   max: 24,    price: 179,  label: '1–24 seats'    },
-  { min: 25,  max: 99,    price: 149,  label: '25–99 seats'   },
+  { min: 1,   max: 24,    price: 199,  label: '1–24 seats'    },
+  { min: 25,  max: 99,    price: 169,  label: '25–99 seats'   },
   { min: 100, max: 499,   price: 119,  label: '100–499 seats' },
   { min: 500, max: 99999, price: null, label: '500+ seats'    },
 ]
-const BASE_PRICE = 179
+const BASE_PRICE = 199
 const getTier = n => TIERS.find(t => n >= t.min && n <= t.max)
 const fmt = n => '$' + n.toLocaleString('en-US')
 

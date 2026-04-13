@@ -494,6 +494,85 @@ export default function Home() {
           max-width: 520px;
           margin: 0 auto;
         }
+
+        .individual-cta {
+          padding: 64px 0;
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+          background: rgba(255,255,255,0.015);
+        }
+        .individual-cta-inner {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 48px;
+        }
+        .individual-cta-label {
+          font-family: var(--mono);
+          font-size: 0.65rem;
+          font-weight: 500;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: var(--teal);
+          margin-bottom: 12px;
+        }
+        .individual-cta-heading {
+          font-family: var(--serif);
+          font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+          font-weight: 800;
+          color: var(--text);
+          margin-bottom: 12px;
+          line-height: 1.2;
+        }
+        .individual-cta-body {
+          font-family: var(--sans);
+          font-size: 0.9rem;
+          color: var(--muted);
+          line-height: 1.7;
+          max-width: 420px;
+        }
+        .individual-cta-right {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 12px;
+          flex-shrink: 0;
+        }
+        .individual-cta-price {
+          font-family: var(--mono);
+          font-size: 2rem;
+          font-weight: 700;
+          color: var(--text);
+        }
+        .individual-cta-price span {
+          font-size: 1rem;
+          color: var(--muted);
+          font-weight: 400;
+        }
+        .individual-cta-btn {
+          background: var(--teal);
+          color: var(--ink);
+          border: none;
+          border-radius: 8px;
+          padding: 12px 24px;
+          font-family: var(--sans);
+          font-size: 0.9rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity 0.15s;
+          white-space: nowrap;
+        }
+        .individual-cta-btn:hover { opacity: 0.88; }
+        .individual-cta-btn:disabled { opacity: 0.5; cursor: wait; }
+        .individual-cta-note {
+          font-family: var(--sans);
+          font-size: 0.72rem;
+          color: var(--faint);
+        }
+        @media (max-width: 640px) {
+          .individual-cta-inner { flex-direction: column; align-items: flex-start; }
+          .individual-cta-right { align-items: flex-start; }
+        }
       `}</style>
       <nav>
         <a href="#" className="logo">
@@ -791,15 +870,7 @@ export default function Home() {
                 </button>
                 <div className="checkout-note">14-day team pilot · Card required · MSA required · Billed on day 15</div>
 
-                <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                  <button
-                    onClick={handleIndividualCheckout}
-                    disabled={checkoutLoading}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', fontSize: '0.78rem', color: 'var(--faint)', textDecoration: 'underline', textUnderlineOffset: '3px' }}
-                  >
-                    Individual access also available · $149/yr · 7-day free trial →
-                  </button>
-                </div>
+
               </div>
             </div>
 
@@ -820,6 +891,29 @@ export default function Home() {
                 <h5>14-Day Team Pilot</h5>
                 <p>Full team access from day one. Card collected at signup. No charge until your pilot ends on day 15.</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="individual-cta">
+        <div className="wrap">
+          <div className="individual-cta-inner reveal">
+            <div className="individual-cta-left">
+              <div className="individual-cta-label">Using this for yourself?</div>
+              <h3 className="individual-cta-heading">Individual access is available.</h3>
+              <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
+            </div>
+            <div className="individual-cta-right">
+              <div className="individual-cta-price">$149 <span>/ year</span></div>
+              <button
+                onClick={handleIndividualCheckout}
+                disabled={checkoutLoading}
+                className="individual-cta-btn"
+              >
+                {checkoutLoading ? 'Loading…' : 'Start Free Trial →'}
+              </button>
+              <div className="individual-cta-note">7-day free trial · No MSA · Cancel anytime</div>
             </div>
           </div>
         </div>
