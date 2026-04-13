@@ -518,7 +518,8 @@
   content: ''; position: absolute; inset: 0;
   background:
     linear-gradient(to right,  var(--ink) 0%,   transparent 7%),
-    linear-gradient(to left,   var(--ink) 0%,   transparent 7%);
+    linear-gradient(to left,   var(--ink) 0%,   transparent 7%),
+    linear-gradient(to bottom, var(--ink) 0%,   transparent 5%);
   pointer-events: none;
 }
 

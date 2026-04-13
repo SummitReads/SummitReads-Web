@@ -625,12 +625,12 @@ export default function Home() {
             </div>
             <div className="hw-body">
               <div className="hw-body-label">Stage 3 · Small Start</div>
-              <div className="hw-body-heading">Before Stage 4 unlocks</div>
-              <div className="hw-body-text">You've worked through the concept. Now connect it to something real before moving on. Something in your own day, your own team.</div>
+              <div className="hw-body-heading">Connect it to your work</div>
+              <div className="hw-body-text">You've worked through the concept. Now connect it to something real in your own day, your own team.</div>
               <div className="hw-gate">
                 <div className="hw-gate-label">Example response</div>
                 <div className="hw-gate-text">I'll write the first three bullet points of the report. Not the whole thing. Just enough to have something on the page.</div>
-                <div className="hw-gate-btn">Submit response to unlock Stage 4 →</div>
+                <div className="hw-gate-btn">Submit and continue to Stage 4 →</div>
               </div>
             </div>
             <div className="hw-footer">
