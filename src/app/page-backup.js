@@ -592,18 +592,18 @@ export default function Home() {
             <div className="hero-stat-pill">
               <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
             </div>
-            <div className="hero-stat-pill">Written reflection <strong>encouraged</strong></div>
+            <div className="hero-stat-pill"><strong>Written</strong> reflection</div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>This is the work.</em></h1>
           <p className="hero-sub">
-            Skill development built around written reflection and real behavior change. Managers assign sprints, see every written response, and track actual progress by individual. Built-in coaching support helps team members apply the work as they go. Teams set up in minutes, no implementation call, no LMS.
+            Skill development that produces real behavior change. Managers assign sprints, track progress by individual, and read every written response. Teams are live in minutes.
           </p>
           <div className="hero-actions">
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day team pilot · Card required · MSA required · No charge until day 15</p>
+          <p className="hero-footnote">14-day team pilot · No charge until day 15</p>
         </div>
 
         <div className="hero-right">
@@ -648,7 +648,7 @@ export default function Home() {
           <div className="mechanic-inner">
             <div className="mechanic-lede reveal">
               <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
-              <p>Completion rates tell you who clicked through. Written reflection logs tell you who actually engaged. SummitSkills is built around the second kind of evidence.</p>
+              <p>Most learning tools tell you who clicked through. SummitSkills tells you who actually engaged with the work.</p>
             </div>
             <div className="mechanic-steps">
               <div className="mechanic-step reveal">
@@ -671,14 +671,14 @@ export default function Home() {
                 <div className="mechanic-num">03</div>
                 <div>
                   <h3>Every stage includes a written reflection prompt.</h3>
-                  <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice. They write it out. Every response is logged. Managers see the actual writing, stage by stage.</p>
+                  <p>They connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
                   <h3>Stage 7 produces a real work deliverable</h3>
-                  <p>A prioritization framework, a communication plan, a habit system built from their own reflections. Not a certificate. Something they made for their actual job.</p>
+                  <p>Built from their own reflections across the sprint. A working tool for their actual job, not a certificate to file away.</p>
                 </div>
               </div>
             </div>
@@ -689,7 +689,7 @@ export default function Home() {
       <section className="sprint-section">
         <div className="wrap">
           <div className="sprint-intro reveal">
-            <h2>What a completed sprint produces.</h2>
+            <h2>Seven stages. One real output.</h2>
           </div>
           <div className="sprint-wrap reveal">
             <div className="sprint-chrome">
@@ -717,7 +717,7 @@ export default function Home() {
             </div>
 
             <div className="sprint-footer-line">
-              <p>Same structure, every sprint. Stage 7 always produces a real work deliverable.</p>
+              <p>Same structure, every sprint.</p>
               <a href="#pricing">See pricing →</a>
             </div>
             <div className="sprint-deliverable">
@@ -735,7 +735,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Written reflection responses, stage-by-stage progress, and sprint assignment in one dashboard. No manual reporting, no waiting for a post-training survey.</p>
+            <p>Stage-by-stage progress, every written response, and sprint assignment in one place. No manual reporting, no post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -761,7 +761,7 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">Written.</div>
-                <div className="credibility-label">At every stage, employees are prompted to connect the concept to their actual work. No quiz, no multiple choice. The actual thinking, in their own words.</div>
+                <div className="credibility-label">At every stage, employees connect the concept to something real in their work. No quiz, no multiple choice. Their actual thinking, in their own words.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Logged.</div>
@@ -783,7 +783,7 @@ export default function Home() {
         <div className="wrap">
           <div className="pricing-header reveal">
             <h2>Straightforward team pricing.</h2>
-            <p>One annual price per seat. Manager dashboard, reflection logging, and sprint assignment built in. No content tiers, no per-sprint fees, no implementation costs.</p>
+            <p>One annual price per seat. Manager dashboard and sprint assignment built in. No content tiers, no per-sprint fees, no implementation costs.</p>
           </div>
 
           <div className="team-calc-header reveal" id="team-pricing">
@@ -796,14 +796,13 @@ export default function Home() {
                 <div className="plan-tag">Team Plan · Annual</div>
                 <div className="plan-name">Team Skill Development Plan</div>
                 <ul className="plan-features">
-                  <li>Manager dashboard: reflection logs, progress tracking, sprint assignment</li>
-                  <li>Written reflection prompt at every stage, logged and manager-visible</li>
-                  <li>Stage 7 work deliverable per sprint, not a certificate</li>
+                  <li>Manager dashboard: progress tracking, reflection logs, sprint assignment</li>
+                  <li>Built-in coach per seat, trained on each sprint</li>
+                  <li>Stage 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
-                  <li>Built-in coaching support per seat</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{sprintCountLabel} sprints across leadership, communication, productivity, and more</li>
-                  <li>Signed MSA · Annual price lock · No renewal surprises</li>
+                  <li>{sprintCountLabel} sprints across leadership, sales, productivity, and more</li>
+                  <li>Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
 
@@ -866,7 +865,7 @@ export default function Home() {
                 >
                   {checkoutLoading ? 'Loading…' : 'Start Team Pilot →'}
                 </button>
-                <div className="checkout-note">14-day team pilot · Card required · MSA required · Billed on day 15</div>
+                <div className="checkout-note">14-day pilot · Simple contract · No charge until day 15</div>
 
 
               </div>
@@ -899,7 +898,7 @@ export default function Home() {
           <div className="individual-cta-inner reveal">
             <div className="individual-cta-left">
               <div className="individual-cta-label">Using this for yourself?</div>
-              <h3 className="individual-cta-heading">Individual access is available.</h3>
+              <h3 className="individual-cta-heading">Here for yourself?</h3>
               <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
             </div>
             <div className="individual-cta-right">
@@ -946,10 +945,10 @@ export default function Home() {
       </section>
 
       <section className="final-cta">
-        <h2>Your team could finish a sprint<br /><em>in the next 7 days.</em></h2>
-        <p>No implementation call, no LMS, no IT ticket. Your team is live in minutes.</p>
+        <h2>Your team could be a week in<br /><em>by this time next week.</em></h2>
+        <p>No implementation call, no LMS, no IT ticket. You invite your team and they're in.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
-        <p className="final-note">14-day team pilot · Card required · MSA required · Billed on day 15</p>
+        <p className="final-note">14-day pilot · Simple contract · No charge until day 15</p>
       </section>
 
       <footer>
