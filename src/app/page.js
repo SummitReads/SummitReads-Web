@@ -447,6 +447,53 @@ export default function Home() {
           color: var(--muted);
           line-height: 1.5;
         }
+
+        .coach-callout {
+          padding: 80px 0;
+          background: rgba(23,184,224,0.03);
+          border-top: 1px solid rgba(23,184,224,0.1);
+          border-bottom: 1px solid rgba(23,184,224,0.1);
+        }
+        .coach-callout-inner {
+          max-width: 640px;
+          margin: 0 auto;
+          text-align: center;
+        }
+        .coach-callout-eyebrow {
+          font-family: var(--mono);
+          font-size: 0.65rem;
+          font-weight: 500;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
+          color: var(--teal);
+          margin-bottom: 20px;
+          display: inline-block;
+          padding: 5px 14px;
+          border: 1px solid rgba(23,184,224,0.2);
+          border-radius: 20px;
+          background: rgba(23,184,224,0.06);
+        }
+        .coach-callout-heading {
+          font-family: var(--serif);
+          font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+          font-weight: 800;
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          color: var(--text);
+          margin-bottom: 24px;
+        }
+        .coach-callout-heading em {
+          font-style: italic;
+          color: var(--teal);
+        }
+        .coach-callout-body {
+          font-family: var(--sans);
+          font-size: 1rem;
+          color: var(--muted);
+          line-height: 1.8;
+          max-width: 520px;
+          margin: 0 auto;
+        }
       `}</style>
       <nav>
         <a href="#" className="logo">
@@ -615,6 +662,16 @@ export default function Home() {
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
+          </div>
+        </div>
+      </section>
+
+      <section className="coach-callout">
+        <div className="wrap">
+          <div className="coach-callout-inner reveal">
+            <div className="coach-callout-eyebrow">Built-in Coach</div>
+            <h2 className="coach-callout-heading">Your coach knows the sprint.<br /><em>Not just the topic.</em></h2>
+            <p className="coach-callout-body">Most coaching tools make you explain yourself from scratch. The Summit Coach already knows what you&rsquo;re working on, where you are in the sprint, and what today&rsquo;s concept is asking of you. Stuck on a reflection? Trying to apply the concept to something real? It&rsquo;s already there.</p>
           </div>
         </div>
       </section>

@@ -471,7 +471,7 @@ export default function Home() {
             <div className="hero-stat-pill">Written reflection <strong>encouraged</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
-          <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
+          <h1>Real skills take<br />more than watching.<br /><em>This is the work.</em></h1>
           <p className="hero-sub">
             Skill development built around written reflection and real behavior change. Managers assign sprints, see every written response, and track actual progress by individual. Built-in coaching support helps team members apply the work as they go. Teams set up in minutes, no implementation call, no LMS.
           </p>
