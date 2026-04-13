@@ -48,7 +48,7 @@ const getFaqItems = sprintCountLabel => [
   },
   {
     q: 'Does this work for remote or distributed teams?',
-    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. It's built for a real workday, not a blocked training afternoon.</p>,
+    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
   },
   {
     q: 'How is this different from a course library or passive learning platform?',
@@ -466,7 +466,7 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill">
-              <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
+              <strong>15</strong> min / day <span aria-hidden="true">·</span> <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
             </div>
             <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
@@ -538,7 +538,7 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>One stage per day</h3>
+                  <h3>One 15-minute stage per day</h3>
                   <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
                   <p className="aside">✓ Async. No scheduling, no time zones.</p>
                 </div>
@@ -577,7 +577,7 @@ export default function Home() {
               </div>
               <div className="sprint-chrome-right">
                 <div className="sprint-stat"><strong>7</strong> stages</div>
-                
+                <div className="sprint-stat"><strong>~15</strong> min / day</div>
                 <div className="sprint-stat">Reflection-gated</div>
               </div>
             </div>

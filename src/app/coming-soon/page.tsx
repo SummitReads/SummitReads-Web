@@ -179,16 +179,16 @@ export default function ComingSoon() {
           </h1>
 
           <p className="cs-sub">
-            Skill development built around written reflection, manager-visible progress, and real behavior change. Launching soon.
+            Skill development built around daily practice, real-world missions, and a built-in coach that knows exactly where you are. Launching soon.
           </p>
 
           <div className="cs-divider" />
 
           <div className="cs-pills">
-            <div className="cs-pill"><strong>15</strong> min / day</div>
+            <div className="cs-pill">Daily practice</div>
             <div className="cs-pill"><strong>7-stage</strong> sprints</div>
-            <div className="cs-pill"><strong>295</strong> sprints</div>
-            <div className="cs-pill">No LMS required</div>
+            <div className="cs-pill">Built-in coach</div>
+            <div className="cs-pill">Real behavior change</div>
           </div>
 
           <p className="cs-contact">
