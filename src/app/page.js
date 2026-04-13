@@ -30,7 +30,7 @@ const getFaqItems = sprintCountLabel => [
   },
   {
     q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. {sprintCountLabel ? `${sprintCountLabel} sprints are` : 'Sprints are'} available across leadership, communication, productivity, strategy, sales, and more.</p>,
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. {sprintCountLabel !== '—' ? `${sprintCountLabel} sprints are` : 'Sprints are'} available across leadership, communication, productivity, strategy, sales, and more.</p>,
   },
   {
     q: "What if someone doesn't finish?",
@@ -40,7 +40,7 @@ const getFaqItems = sprintCountLabel => [
     q: 'What does the contract commit us to?',
     a: <>
       <p>An annual subscription at the seat count and per-seat rate you select. The MSA covers term length, seat count, total price, and renewal terms. <strong>Your per-seat rate is locked for the full term.</strong> It won't increase at renewal without your agreement.</p>
-      <p>Payment is collected via Stripe only after the MSA is countersigned. Your card is on file but not charged until day 15 of your pilot.</p>
+      <p>Payment is collected via Stripe only after the MSA is countersigned. You're not charged until you've signed.</p>
     </>,
   },
   {
@@ -155,6 +155,34 @@ export default function Home() {
   const total = tier?.price ? seats * tier.price : null
   const saved = total ? seats * BASE_PRICE - total : 0
 
+  // Modal state
+  const [modalOpen,    setModalOpen]    = useState(false)
+  const [modalSuccess, setModalSuccess] = useState(false)
+  const [form,         setForm]         = useState({ name: '', company: '', email: '' })
+  const [submitting,   setSubmitting]   = useState(false)
+
+  async function submitContract() {
+    if (!form.name || !form.company || !form.email) { alert('Please fill in all fields.'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { alert('Please enter a valid email address.'); return }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/create-contract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, seats, pricePerSeat: tier.price, total }),
+      })
+      if (res.ok) {
+        setModalSuccess(true)
+      } else {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message || 'Something went wrong. Please try again.')
+      }
+    } catch (e) {
+      setSubmitting(false)
+      alert(e.message + '\n\nOr email us directly: sales@summitskills.io')
+    }
+  }
+
   // FAQ state
   const [openFaq, setOpenFaq] = useState(null)
 
@@ -210,7 +238,7 @@ export default function Home() {
   const sprintCountLabel =
     typeof sprintCount === 'number'
       ? sprintCount.toLocaleString('en-US')
-      : null
+      : '—'
 
   const faqItems = getFaqItems(sprintCountLabel)
 
@@ -232,7 +260,153 @@ export default function Home() {
 
   return (
     <div className="landing-page" style={cssVars}>
+      {/*
+        FIX #1: Replaced <Head> (next/head — Pages Router only, ignored during
+        SSR in App Router) with a plain <style> element. This guarantees the
+        fonts and supplementary CSS are present on every render without a FOUC.
+
+      */}
       <style>{`
+        .hero-footnote-indiv {
+          font-family: var(--sans);
+          font-size: 0.78rem;
+          color: var(--faint);
+          margin-top: 8px;
+          line-height: 1.5;
+        }
+        .manager-usecases {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 24px;
+          margin-top: 48px;
+        }
+        .manager-usecase {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 10px;
+          padding: 28px 24px;
+        }
+        .manager-usecase h4 {
+          font-family: var(--sans);
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--teal);
+          margin: 0 0 10px;
+        }
+        .manager-usecase p {
+          font-family: var(--sans);
+          font-size: 0.88rem;
+          color: var(--muted);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .best-fit {
+          padding: 72px 0;
+          background: rgba(255,255,255,0.015);
+          border-top: 1px solid var(--border);
+          border-bottom: 1px solid var(--border);
+        }
+        .best-fit-inner {
+          display: grid;
+          grid-template-columns: 1fr 380px;
+          gap: 56px;
+          align-items: start;
+        }
+        .best-fit-intro {
+          margin-bottom: 40px;
+        }
+        .best-fit-intro h2 {
+          font-family: var(--serif);
+          font-size: clamp(1.6rem, 3vw, 2.2rem);
+          color: var(--text);
+          line-height: 1.25;
+          margin-bottom: 0;
+        }
+        .best-fit-intro h2 em { color: var(--teal); font-style: italic; }
+        .best-fit-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .best-fit-card {
+          display: flex;
+          gap: 18px;
+          align-items: flex-start;
+        }
+        .best-fit-num {
+          font-family: var(--mono);
+          font-size: 0.7rem;
+          font-weight: 500;
+          color: var(--teal);
+          background: rgba(23,184,224,0.1);
+          border: 1px solid rgba(23,184,224,0.2);
+          border-radius: 6px;
+          padding: 4px 8px;
+          min-width: 32px;
+          text-align: center;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+        .best-fit-card h4 {
+          font-family: var(--sans);
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 6px;
+        }
+        .best-fit-card p {
+          font-family: var(--sans);
+          font-size: 0.84rem;
+          color: var(--muted);
+          line-height: 1.65;
+          margin: 0;
+        }
+        .best-fit-not {
+          font-family: var(--sans);
+          font-size: 0.84rem;
+          color: var(--faint);
+          line-height: 1.6;
+          padding: 16px 20px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          margin-top: 32px;
+        }
+        .best-fit-not-label {
+          font-weight: 600;
+          color: var(--muted);
+          margin-right: 6px;
+        }
+        .best-fit-right { position: sticky; top: 100px; }
+        .best-fit-visual {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 28px 28px 24px;
+        }
+        .bfv-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: var(--faint);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 20px;
+        }
+        .bfv-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+        .bfv-cat { font-size: 0.8rem; color: var(--muted); width: 130px; flex-shrink: 0; }
+        .bfv-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+        .bfv-bar { height: 100%; background: var(--teal); border-radius: 2px; opacity: 0.7; }
+        .bfv-n { font-family: var(--mono); font-size: 0.75rem; color: var(--faint); width: 24px; text-align: right; }
+        @media (max-width: 768px) {
+          .best-fit-inner { grid-template-columns: 1fr; gap: 48px; }
+          .best-fit-right { position: static; }
+        }
+
         .coach-callout {
           padding: 80px 0;
           border-top: 1px solid var(--border);
@@ -366,7 +540,7 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill">
-              {sprintCountLabel && <><strong>{sprintCountLabel}</strong> sprints</>}
+              <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
             </div>
             <div className="hero-stat-pill"><strong>Written</strong> reflection</div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
@@ -379,7 +553,7 @@ export default function Home() {
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
             <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
           </div>
-          <p className="hero-footnote">14-day pilot · Full access · No charge until day 15</p>
+          <p className="hero-footnote">14-day team pilot · No charge until day 15</p>
         </div>
 
         <div className="hero-right">
@@ -576,7 +750,7 @@ export default function Home() {
                   <li>Stage 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{sprintCountLabel ? `${sprintCountLabel} sprints` : 'Sprints'} across leadership, sales, productivity, and more</li>
+                  <li>{typeof sprintCount === 'number' ? `${sprintCountLabel} sprints` : 'Sprints'} across leadership, sales, productivity, and more</li>
                   <li>Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
@@ -640,7 +814,7 @@ export default function Home() {
                 >
                   {checkoutLoading ? 'Loading…' : 'Start Team Pilot →'}
                 </button>
-                <div className="checkout-note">14-day pilot · Full access · No charge until day 15</div>
+                <div className="checkout-note">14-day pilot · Simple contract · No charge until day 15</div>
 
 
               </div>
@@ -661,7 +835,7 @@ export default function Home() {
               </div>
               <div className="pb-item">
                 <h5>14-Day Team Pilot</h5>
-                <p>Full team access from day one. Your card is on file but not charged until day 15.</p>
+                <p>Full team access from day one. Card collected at signup. No charge until your pilot ends on day 15.</p>
               </div>
             </div>
           </div>
@@ -672,7 +846,7 @@ export default function Home() {
         <div className="wrap">
           <div className="individual-cta-inner reveal">
             <div className="individual-cta-left">
-              <h3 className="individual-cta-heading">Learning on your own terms.</h3>
+              <h3 className="individual-cta-heading">Here for yourself?</h3>
               <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
             </div>
             <div className="individual-cta-right">
@@ -722,7 +896,7 @@ export default function Home() {
         <h2>Your team could be a week in<br /><em>by this time next week.</em></h2>
         <p>No implementation call, no LMS, no IT ticket. You invite your team and they're in.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
-        <p className="final-note">14-day pilot · Full access · No charge until day 15</p>
+        <p className="final-note">14-day pilot · Simple contract · First charge on day 15</p>
       </section>
 
       <footer>
@@ -738,6 +912,68 @@ export default function Home() {
         <div className="footer-copy">© 2026 SummitSkills. All rights reserved.</div>
       </footer>
 
+      {modalOpen && (
+        <div
+          className="modal-overlay open"
+          onClick={e => { if (e.target === e.currentTarget) setModalOpen(false) }}
+        >
+          <div className="modal">
+            <button className="modal-close" onClick={() => setModalOpen(false)}>×</button>
+
+            {modalSuccess ? (
+              <div className="success-state">
+                <div className="success-icon">✓</div>
+                <h3>Contract sent!</h3>
+                <p>
+                  Your MSA is on its way to <strong style={{ color: '#fff' }}>{form.email}</strong>.<br /><br />
+                  Sign at your convenience. Takes under 2 minutes. Once signed, you'll receive a Stripe payment link automatically.
+                </p>
+                <button className="btn-done" onClick={() => setModalOpen(false)}>Done</button>
+              </div>
+            ) : (
+              <>
+                <div className="modal-eyebrow">Almost there</div>
+                <h3>Set up your contract</h3>
+                <p className="modal-sub">We'll generate a pre-filled MSA and send it to your email for e-signature. Payment follows only after you sign.</p>
+
+                <div className="order-summary">
+                  <div>
+                    <div className="order-label">{seats} seat{seats !== 1 ? 's' : ''} · Annual</div>
+                    <div className="order-price">{fmt(total)} <sub>/ year</sub></div>
+                  </div>
+                  <div className="order-seats">{fmt(tier.price)}/seat</div>
+                </div>
+
+                <div className="form-fields">
+                  <div>
+                    <label className="field-label" htmlFor="fName">Full Name *</label>
+                    <input id="fName" className="field-input" type="text" placeholder="Jane Smith"
+                      value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="field-label" htmlFor="fCompany">Company Name *</label>
+                    <input id="fCompany" className="field-input" type="text" placeholder="Acme Corp"
+                      value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="field-label" htmlFor="fEmail">Work Email *</label>
+                    <input id="fEmail" className="field-input" type="email" placeholder="jane@acmecorp.com"
+                      value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                  </div>
+                </div>
+
+                <button className="btn-send-contract" onClick={submitContract} disabled={submitting}>
+                  {submitting ? 'Sending contract…' : 'Send My Contract →'}
+                </button>
+                <div className="modal-footnote">
+                  Your MSA will arrive via Docuseal within minutes.<br />
+                  Payment collected only after you sign.
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
