@@ -48,13 +48,13 @@ const getFaqItems = sprintCountLabel => [
   },
   {
     q: 'Does this work for remote or distributed teams?',
-    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. The 15-minute format is built for a real workday, not a blocked training afternoon.</p>,
+    a: <p>Yes. It's built for async. No scheduled sessions, no time zones to coordinate. Each team member works through their sprint on their own schedule. It's built for a real workday, not a blocked training afternoon.</p>,
   },
   {
     q: 'How is this different from a course library or passive learning platform?',
     a: <>
       <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-      <p>The difference is the written reflection gate. At every stage, the employee writes a response connecting the concept to something real in their work before the next stage opens. It can't be skipped or bypassed. Every response is logged to the manager dashboard.</p>
+      <p>The difference is the written reflection prompt. At every stage, the employee is asked to connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
       <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
     </>,
   },
@@ -466,14 +466,14 @@ export default function Home() {
         <div className="hero-left">
           <div className="hero-stats-row">
             <div className="hero-stat-pill">
-              <strong>15</strong> min / day <span aria-hidden="true">·</span> <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
+              <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
             </div>
-            <div className="hero-stat-pill">Written reflection <strong>required</strong></div>
+            <div className="hero-stat-pill">Written reflection <strong>encouraged</strong></div>
             <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
           </div>
           <h1>Real skills take<br />more than watching.<br /><em>We require the work.</em></h1>
           <p className="hero-sub">
-            Skill development built around required written reflection and real behavior change. Managers assign sprints, see every written response, and track actual progress by individual. Built-in coaching support helps team members apply the work as they go. Teams set up in minutes, no implementation call, no LMS.
+            Skill development built around written reflection and real behavior change. Managers assign sprints, see every written response, and track actual progress by individual. Built-in coaching support helps team members apply the work as they go. Teams set up in minutes, no implementation call, no LMS.
           </p>
           <div className="hero-actions">
             <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
@@ -538,7 +538,7 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>One 15-minute stage per day</h3>
+                  <h3>One stage per day</h3>
                   <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
                   <p className="aside">✓ Async. No scheduling, no time zones.</p>
                 </div>
@@ -546,7 +546,7 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
-                  <h3>Every stage requires a written response. No skipping.</h3>
+                  <h3>Every stage includes a written reflection prompt.</h3>
                   <p>Before the next stage opens, they connect the concept to something real in their work. Not multiple choice. They write it out. Every response is logged. Managers see the actual writing, stage by stage.</p>
                 </div>
               </div>
@@ -577,7 +577,7 @@ export default function Home() {
               </div>
               <div className="sprint-chrome-right">
                 <div className="sprint-stat"><strong>7</strong> stages</div>
-                <div className="sprint-stat"><strong>~15</strong> min / day</div>
+                
                 <div className="sprint-stat">Reflection-gated</div>
               </div>
             </div>
@@ -627,7 +627,7 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">Written.</div>
-                <div className="credibility-label">Written responses are required before the next stage opens. No quiz, no multiple choice. The actual thinking, in their own words.</div>
+                <div className="credibility-label">At every stage, employees are prompted to connect the concept to their actual work. No quiz, no multiple choice. The actual thinking, in their own words.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Logged.</div>
@@ -663,7 +663,7 @@ export default function Home() {
                 <div className="plan-name">Team Skill Development Plan</div>
                 <ul className="plan-features">
                   <li>Manager dashboard: reflection logs, progress tracking, sprint assignment</li>
-                  <li>Written reflection at every stage, logged and manager-visible</li>
+                  <li>Written reflection prompt at every stage, logged and manager-visible</li>
                   <li>Stage 7 work deliverable per sprint, not a certificate</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Built-in coaching support per seat</li>
