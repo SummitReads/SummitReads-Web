@@ -701,8 +701,7 @@ export default function Home() {
               </div>
               <div className="sprint-chrome-right">
                 <div className="sprint-stat"><strong>7</strong> stages</div>
-                
-                <div className="sprint-stat">Reflection-gated</div>
+                <div className="sprint-stat">Reflection-prompted</div>
               </div>
             </div>
 

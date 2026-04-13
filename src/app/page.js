@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-// NOTE: next/head is not supported in App Router — removed.
-// Google Fonts are loaded server-side via next/font/google in app/layout.js.
-// For production, move fonts to app/layout.js using next/font/google.
 import { supabase } from '@/app/supabaseClient'
 import './landing.css'
 
@@ -33,7 +30,7 @@ const getFaqItems = sprintCountLabel => [
   },
   {
     q: 'Can we assign specific sprints to specific roles?',
-    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. {sprintCountLabel} sprints are available across leadership, communication, productivity, strategy, sales, and more.</p>,
+    a: <p>Yes. From the manager dashboard you can assign any sprint to individual team members or groups. You can run the whole team on the same sprint, useful for a shared skill gap, or run different sprints by role simultaneously. {sprintCountLabel !== '—' ? `${sprintCountLabel} sprints are` : 'Sprints are'} available across leadership, communication, productivity, strategy, sales, and more.</p>,
   },
   {
     q: "What if someone doesn't finish?",
@@ -164,16 +161,6 @@ export default function Home() {
   const [form,         setForm]         = useState({ name: '', company: '', email: '' })
   const [submitting,   setSubmitting]   = useState(false)
 
-  function openModal() {
-    if (!tier?.price) {
-      window.location.href = `mailto:sales@summitskills.io?subject=Enterprise%20Inquiry%20%E2%80%94%20${seats}%20Seats`
-      return
-    }
-    setModalSuccess(false)
-    setForm({ name: '', company: '', email: '' })
-    setModalOpen(true)
-  }
-
   async function submitContract() {
     if (!form.name || !form.company || !form.email) { alert('Please fill in all fields.'); return }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { alert('Please enter a valid email address.'); return }
@@ -251,7 +238,7 @@ export default function Home() {
   const sprintCountLabel =
     typeof sprintCount === 'number'
       ? sprintCount.toLocaleString('en-US')
-      : ''
+      : '—'
 
   const faqItems = getFaqItems(sprintCountLabel)
 
@@ -420,34 +407,6 @@ export default function Home() {
           .best-fit-right { position: static; }
         }
 
-        .dashboard-annotations {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 16px;
-          margin-top: 20px;
-          justify-content: space-between;
-        }
-        .dash-annotation {
-          display: flex;
-          align-items: flex-start;
-          gap: 10px;
-          max-width: 280px;
-        }
-        .dash-ann-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: var(--teal);
-          flex-shrink: 0;
-          margin-top: 5px;
-        }
-        .dash-ann-text {
-          font-family: var(--sans);
-          font-size: 0.8rem;
-          color: var(--muted);
-          line-height: 1.5;
-        }
-
         .coach-callout {
           padding: 80px 0;
           border-top: 1px solid var(--border);
@@ -504,15 +463,6 @@ export default function Home() {
           align-items: center;
           justify-content: space-between;
           gap: 48px;
-        }
-        .individual-cta-label {
-          font-family: var(--mono);
-          font-size: 0.65rem;
-          font-weight: 500;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: var(--teal);
-          margin-bottom: 12px;
         }
         .individual-cta-heading {
           font-family: var(--serif);
@@ -677,7 +627,7 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
-                  <h3>Stage 7 produces a real work deliverable</h3>
+                  <h3>Stage 7 produces a real work deliverable.</h3>
                   <p>Built from their own reflections across the sprint. A working tool for their actual job, not a certificate to file away.</p>
                 </div>
               </div>
@@ -793,14 +743,14 @@ export default function Home() {
             <div className="pricing-top">
               <div className="plan-info">
                 <div className="plan-tag">Team Plan · Annual</div>
-                <div className="plan-name">Team Skill Development Plan</div>
+                <div className="plan-name">Skill Sprints for Teams</div>
                 <ul className="plan-features">
                   <li>Manager dashboard: progress tracking, reflection logs, sprint assignment</li>
                   <li>Built-in coach per seat, trained on each sprint</li>
                   <li>Stage 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{sprintCountLabel} sprints across leadership, sales, productivity, and more</li>
+                  <li>{typeof sprintCount === 'number' ? `${sprintCountLabel} sprints` : 'Sprints'} across leadership, sales, productivity, and more</li>
                   <li>Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
@@ -896,7 +846,6 @@ export default function Home() {
         <div className="wrap">
           <div className="individual-cta-inner reveal">
             <div className="individual-cta-left">
-              <div className="individual-cta-label">Using this for yourself?</div>
               <h3 className="individual-cta-heading">Here for yourself?</h3>
               <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
             </div>
@@ -947,7 +896,7 @@ export default function Home() {
         <h2>Your team could be a week in<br /><em>by this time next week.</em></h2>
         <p>No implementation call, no LMS, no IT ticket. You invite your team and they're in.</p>
         <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
-        <p className="final-note">14-day pilot · Simple contract · No charge until day 15</p>
+        <p className="final-note">14-day pilot · Simple contract · First charge on day 15</p>
       </section>
 
       <footer>
