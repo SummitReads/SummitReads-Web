@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import BookRow from '@/components/BookRow';
 
@@ -409,17 +409,13 @@ function FeaturedPlaceholder() {
 // ── Main library page ────────────────────────────────────────────────────────
 export default function Library() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
   const [hasHydratedCache, setHasHydratedCache] = useState(false);
   const [isColdLoading, setIsColdLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(() => {
-    const cat = searchParams?.get('category');
-    return cat ? cat : 'All';
-  });
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
   const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
