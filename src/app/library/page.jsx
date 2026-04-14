@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
@@ -407,7 +407,7 @@ function FeaturedPlaceholder() {
 }
 
 // ── Main library page ────────────────────────────────────────────────────────
-export default function Library() {
+function LibraryInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -985,5 +985,13 @@ export default function Library() {
         )}
       </main>
     </>
+  );
+}
+
+export default function Library() {
+  return (
+    <Suspense>
+      <LibraryInner />
+    </Suspense>
   );
 }
