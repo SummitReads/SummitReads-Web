@@ -68,7 +68,7 @@ export default function DashboardPage() {
         supabase.from('goal_streaks').select('*').eq('user_id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title, cover_url)')
+          .select('*, books!user_progress_book_id_fkey(id, title, author, category, sprint_title, cover_url)')
           .eq('user_id', uid)
           .order('updated_at', { ascending: false }),
       ]);
