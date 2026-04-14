@@ -56,6 +56,58 @@ function CoachIcon() {
   );
 }
 
+// ── Stages preview (step 2) ───────────────────────────────────────────────────
+
+function StagesPreview() {
+  const stages = ['Anchor', 'Apply', 'Reflect', 'Specify', 'Track', 'Adjust', 'Commit'];
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px 20px', margin: '0 0 24px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+        {stages.map((s, i) => (
+          <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', background: i < 2 ? '#17B8E0' : i === 2 ? 'rgba(23,184,224,0.4)' : 'rgba(255,255,255,0.08)' }} />
+        ))}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {stages.map((s, i) => (
+          <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '0.52rem', color: i < 2 ? '#17B8E0' : i === 2 ? 'rgba(23,184,224,0.5)' : 'rgba(238,242,247,0.2)', fontWeight: i === 6 ? 700 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {i === 6 ? 'Summit' : s}
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.75rem', color: 'rgba(238,242,247,0.4)', lineHeight: 1.6 }}>
+        Stage 7 is where it comes together. You leave with something you actually made.
+      </div>
+    </div>
+  );
+}
+
+// ── Coach preview (step 4) ────────────────────────────────────────────────────
+
+function CoachPreview() {
+  const messages = [
+    { role: 'coach', text: "You mentioned your morning coffee ritual as a trigger. What is it about that moment that makes it so automatic for you?" },
+    { role: 'user',  text: "Honestly I think I've just done it so many times. My hands do it before I've even decided to." },
+    { role: 'coach', text: "That's exactly how habits solidify. Which other parts of your workday feel that automatic right now?" },
+  ];
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', margin: '0 0 24px' }}>
+      <div style={{ padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#17B8E0', boxShadow: '0 0 6px rgba(23,184,224,0.6)' }} />
+        <span style={{ fontSize: '0.68rem', color: 'rgba(238,242,247,0.4)', fontFamily: 'monospace' }}>Summit Coach · Stage 3</span>
+      </div>
+      <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div style={{ maxWidth: '85%', padding: '8px 12px', borderRadius: m.role === 'coach' ? '4px 12px 12px 12px' : '12px 4px 12px 12px', background: m.role === 'coach' ? 'rgba(23,184,224,0.08)' : 'rgba(255,255,255,0.06)', border: m.role === 'coach' ? '1px solid rgba(23,184,224,0.15)' : '1px solid rgba(255,255,255,0.08)', fontSize: '0.75rem', color: m.role === 'coach' ? 'rgba(238,242,247,0.75)' : 'rgba(238,242,247,0.55)', lineHeight: 1.6 }}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Animated reflection preview ───────────────────────────────────────────────
 
 function ReflectionPreview() {
@@ -99,11 +151,11 @@ function ReflectionPreview() {
           {typed}
           {!done && <span style={{ display: 'inline-block', width: '2px', height: '13px', background: '#17B8E0', marginLeft: '1px', verticalAlign: 'middle', animation: 'blink 0.8s step-end infinite' }} />}
         </div>
-        <div style={{ padding: '0 0 14px' }}>
-          <div style={{ width: '100%', padding: '10px', borderRadius: '8px', background: done ? '#17B8E0' : 'rgba(23,184,224,0.08)', border: `1px solid ${done ? '#17B8E0' : 'rgba(23,184,224,0.15)'}`, color: done ? '#0D1520' : 'rgba(23,184,224,0.4)', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center', transition: 'all 0.4s ease', transform: unlocked ? 'scale(1.02)' : 'scale(1)' }}>
-            {unlocked ? '✓ Stage 4 unlocked →' : 'Continue to Stage 4 →'}
+          <div style={{ padding: '0 0 14px' }}>
+            <div style={{ width: '100%', padding: '10px', borderRadius: '8px', background: done ? '#17B8E0' : 'rgba(23,184,224,0.08)', border: `1px solid ${done ? '#17B8E0' : 'rgba(23,184,224,0.15)'}`, color: done ? '#0D1520' : 'rgba(23,184,224,0.4)', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center', transition: 'all 0.4s ease', transform: unlocked ? 'scale(1.02)' : 'scale(1)' }}>
+              Continue to Stage 4 →
+            </div>
           </div>
-        </div>
       </div>
       <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.75)}}`}</style>
     </div>
@@ -113,11 +165,11 @@ function ReflectionPreview() {
 // ── Steps ─────────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { tag: 'Welcome',            title: 'Skills that actually stick.',   body: 'SummitSkills is built on one insight: reading about a skill and building it are completely different things. Every sprint requires you to do the work, not just consume it.', icon: 'logo',    hasPreview: false },
-  { tag: 'How it works',       title: '7 stages. One real output.',    body: 'Each sprint has 7 stages. The first six build the concept one layer at a time. The seventh produces a real deliverable. Something you made, that applies to your actual job.', icon: 'none',    hasPreview: false },
-  { tag: 'The reflection gate', title: 'You write your way through.',   body: 'Every stage includes a reflection prompt. Not multiple choice. Not a rating. Your honest thinking, in your own words. Writing it down is what makes it stick. Watch how it works:', icon: 'gate',    hasPreview: true  },
-  { tag: 'Your coach',         title: 'A coach in your corner.',        body: "Every sprint includes an AI coaching companion built around your sprint content. It won't give you answers, it'll ask the right questions. Use it when something resonates, when you're stuck, or when you want to go deeper.", icon: 'coach',   hasPreview: false },
-  { tag: 'Let\'s go',          title: null,                            body: null,                                                                                                                                                                                                icon: 'none',   hasPreview: false, isFinal: true },
+  { tag: 'Welcome',             title: null,                           body: null,                                                                                                                                                                         icon: 'logo',  hasPreview: false },
+  { tag: 'How it works',        title: '7 stages. One real output.',   body: "Each sprint has 7 stages. The first six build the concept one layer at a time. Stage 7 is the Summit — where you produce something concrete that applies to your actual job.", icon: 'none',  hasPreview: 'stages' },
+  { tag: 'The reflection gate', title: 'You write your way through.',  body: "Each stage ends with a reflection prompt. No multiple choice, no ratings — just your honest thinking in your own words. That's what makes it actually land. Here's what it looks like:", icon: 'gate',  hasPreview: 'reflection' },
+  { tag: 'Your coach',          title: 'A coach in your corner.',      body: "Each sprint comes with an AI coach that knows your content. It won't give you the answers — it'll push you to find them. Use it when something clicks, when you're stuck, or when you want to go further.", icon: 'coach', hasPreview: 'coach' },
+  { tag: "Let's go",            title: null,                           body: null,                                                                                                                                                                         icon: 'none',  hasPreview: false, isFinal: true },
 ];
 
 function renderIcon(icon) {
@@ -132,10 +184,11 @@ function renderIcon(icon) {
 
 export default function OnboardingModal({ assignedSprint = null, managerName = null }) {
   const router = useRouter();
-  const [step,    setStep]    = useState(0);
-  const [visible, setVisible] = useState(false);
-  const [exiting, setExiting] = useState(false);
-  const [userId,  setUserId]  = useState(null);
+  const [step,      setStep]      = useState(0);
+  const [visible,   setVisible]   = useState(false);
+  const [exiting,   setExiting]   = useState(false);
+  const [userId,    setUserId]    = useState(null);
+  const [firstName, setFirstName] = useState(null);
 
   useEffect(() => {
     async function checkOnboarding() {
@@ -146,9 +199,13 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed')
+        .select('onboarding_completed, full_name')
         .eq('id', uid)
         .single();
+
+      if (profile?.full_name) {
+        setFirstName(profile.full_name.split(' ')[0]);
+      }
 
       if (!profile?.onboarding_completed) {
         setTimeout(() => setVisible(true), 400);
@@ -181,11 +238,13 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
   if (!visible) return null;
 
+  const greeting    = firstName ? `Good to have you, ${firstName}.` : 'Skills that actually stick.';
+  const welcomeBody = 'Most skill-building fails because it stops at reading. Every sprint here asks you to actually do something — a small, specific action that connects the idea to your real work.';
   const isLastStep  = step === STEPS.length - 1;
   const current     = STEPS[step];
-  const finalTitle  = assignedSprint ? `${managerName ? `${managerName} has` : 'Your manager has'} assigned you a sprint.` : 'Pick your first sprint.';
-  const finalBody   = assignedSprint ? `You've been assigned "${assignedSprint.title}". Hit the button below to start Stage 1.` : "Browse the library and pick a sprint that matters to you right now. There's no wrong choice. Every sprint follows the same structure.";
-  const finalCTA    = assignedSprint ? `Start "${assignedSprint.title}" →` : 'Browse the library →';
+  const finalTitle  = assignedSprint ? `${managerName ? `${managerName} has` : 'Your manager has'} assigned you a sprint.` : `${firstName ? `What do you want to get better at, ${firstName}?` : 'What do you want to get better at?'}`;
+  const finalBody   = assignedSprint ? `You've been assigned "${assignedSprint.title}". Hit the button below to start Stage 1.` : "Pick something relevant to where you are right now. You can always start another one when you're done.";
+  const finalCTA    = assignedSprint ? `Start "${assignedSprint.title}" →` : 'Pick your first sprint →';
 
   return (
     <div
@@ -213,19 +272,21 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         <p style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', color: '#17B8E0', margin: '0 0 8px', fontFamily: 'var(--font-sans)' }}>{current.tag}</p>
 
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.6rem', fontWeight: 800, lineHeight: 1.15, color: '#EEF2F7', margin: '0 0 12px', letterSpacing: '-0.02em' }}>
-          {isLastStep ? finalTitle : current.title}
+          {isLastStep ? finalTitle : step === 0 ? greeting : current.title}
         </h2>
 
         <p style={{ fontSize: '0.88rem', color: 'rgba(238,242,247,0.62)', lineHeight: 1.75, margin: `0 0 ${current.hasPreview ? '20px' : '32px'}`, fontFamily: 'var(--font-sans)' }}>
-          {isLastStep ? finalBody : current.body}
+          {isLastStep ? finalBody : step === 0 ? welcomeBody : current.body}
         </p>
 
-        {current.hasPreview && <ReflectionPreview />}
+        {current.hasPreview === 'stages'     && <StagesPreview />}
+        {current.hasPreview === 'reflection' && <ReflectionPreview />}
+        {current.hasPreview === 'coach'      && <CoachPreview />}
 
-        {current.hasPreview && (
+        {current.hasPreview === 'reflection' && (
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', padding: '12px 14px', marginBottom: '20px' }}>
             <p style={{ fontSize: '0.75rem', color: 'rgba(238,242,247,0.45)', lineHeight: 1.65, margin: 0 }}>
-              <strong style={{ color: 'rgba(238,242,247,0.65)' }}>Best practice:</strong> Write at least 2–3 sentences connecting the concept to something real in your work. The more specific you are, the more useful it becomes.
+              <strong style={{ color: 'rgba(238,242,247,0.65)' }}>Tip:</strong> Try to connect the concept to something specific in your own work. A real example is always more useful than a general one.
             </p>
           </div>
         )}
