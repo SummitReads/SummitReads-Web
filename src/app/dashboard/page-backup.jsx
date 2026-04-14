@@ -65,7 +65,7 @@ export default function DashboardPage() {
       // ── Parallel fetches ────────────────────────────────────────────────────
       const [profileRes, streakRes, progressRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
-        supabase.from('goal_streaks').select('*').eq('user_id', uid).single(),
+        supabase.from('user_streaks').select('*').eq('user_id', uid).single(),
         supabase
           .from('user_progress')
           .select('*, books(id, title, author, category, sprint_title, cover_url)')
@@ -173,7 +173,7 @@ export default function DashboardPage() {
               />
               <StatCard
                 label="Days Active"
-                value={streak?.total_days_completed ?? 0}
+                value={streak?.total_days_active ?? 0}
                 sub="total sprint days"
               />
               <StatCard
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                           Day {nextDay} of 7
                         </div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
-                        {book.sprint_title || book.title}
+                          {book.sprint_title || book.title}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '14px' }}>
                           {book.author}
