@@ -416,10 +416,13 @@ function LibraryInner() {
   const [hasHydratedCache, setHasHydratedCache] = useState(false);
   const [isColdLoading, setIsColdLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(() => {
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // Sync selectedCategory with URL param on mount and when param changes
+  useEffect(() => {
     const cat = searchParams?.get('category');
-    return cat ? cat : 'All';
-  });
+    setSelectedCategory(cat ? cat : 'All');
+  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
   const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
@@ -571,15 +574,12 @@ function LibraryInner() {
 
   const getCategoryShortName = (category) => {
     const shortNames = {
-      'Habits & Self-Discipline': 'Habits',
-      'Money & Investing': 'Money',
-      'Productivity & Performance': 'Productivity',
-      'Mindset & Mental Toughness': 'Mindset',
-      'Strategic Thinking': 'Strategy',
-      'Communication & Influence': 'Communication',
-      'Leadership & Business': 'Leadership',
-      'Philosophy & Wisdom': 'Philosophy',
-      'Health & Wellness': 'Health',
+      'Productivity & Habits':           'Productivity',
+      'Financial Intelligence':          'Finance',
+      'Leadership & People Management':  'Leadership',
+      'Sales, Persuasion & Negotiation': 'Sales',
+      'Strategy & Innovation':           'Strategy',
+      'Marketing, Branding & Storytelling': 'Marketing',
     };
     return shortNames[category] || category;
   };
@@ -601,15 +601,12 @@ function LibraryInner() {
   };
 
   const categoryOrder = [
-    'Habits & Self-Discipline',
-    'Money & Investing',
-    'Productivity & Performance',
-    'Mindset & Mental Toughness',
-    'Strategic Thinking',
-    'Communication & Influence',
-    'Leadership & Business',
-    'Philosophy & Wisdom',
-    'Health & Wellness',
+    'Productivity & Habits',
+    'Financial Intelligence',
+    'Leadership & People Management',
+    'Sales, Persuasion & Negotiation',
+    'Strategy & Innovation',
+    'Marketing, Branding & Storytelling',
   ];
 
   const sortedCategories = useMemo(() => {
@@ -747,7 +744,7 @@ function LibraryInner() {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              if (e.target.value) setSelectedCategory('All');
+              if (e.target.value) router.replace('/library', { scroll: false });
             }}
           />
           {searchQuery && (
@@ -786,7 +783,7 @@ function LibraryInner() {
           onClick={() => {
             if (isColdLoading && books.length === 0) return;
             setSearchQuery('');
-            setSelectedCategory('All');
+            router.replace('/library', { scroll: false });
           }}
           style={isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}}
         >
@@ -804,7 +801,7 @@ function LibraryInner() {
               onClick={() => {
                 if (isColdLoading && books.length === 0) return;
                 setSearchQuery('');
-                setSelectedCategory(category);
+                router.replace(`/library?category=${encodeURIComponent(category)}`, { scroll: false });
               }}
               style={{
                 ...(isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}),

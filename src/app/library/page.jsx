@@ -790,7 +790,7 @@ function LibraryInner() {
           All
         </button>
 
-        {categoryOrder.map((category) => {
+        {categoryOrder.filter(category => booksByCategory[category]?.length > 0).map((category) => {
           const isActive = selectedCategory === category;
           const pillColor = getCategoryPillColor(category);
 
