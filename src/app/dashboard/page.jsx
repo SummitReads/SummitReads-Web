@@ -65,7 +65,7 @@ export default function DashboardPage() {
       // ── Parallel fetches ────────────────────────────────────────────────────
       const [profileRes, streakRes, progressRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
-        supabase.from('goal_streaks').select('*').eq('user_id', uid).single(),
+        supabase.from('goal_streaks').select('*').eq('user_id', uid).maybeSingle(),
         supabase
           .from('user_progress')
           .select('*, books(id, title, author, category, sprint_title, cover_url, summit_days(count))')
@@ -293,17 +293,29 @@ export default function DashboardPage() {
                 {categoriesExplored.map(([cat, { started, completed }], i) => {
                   const color = categoryColor(cat);
                   return (
-                    <div key={cat} style={{
-                      display: 'flex', alignItems: 'center', gap: '16px',
-                      padding: '14px 24px',
-                      borderBottom: i < categoriesExplored.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                    }}>
-                      <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-                      <div style={{ flex: 1, fontWeight: '500', fontSize: '0.9rem' }}>{cat}</div>
-                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>
-                        {completed} completed · {started} started
+                    <Link
+                      key={cat}
+                      href={`/library?category=${encodeURIComponent(cat)}`}
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: '16px',
+                        padding: '14px 24px',
+                        borderBottom: i < categoriesExplored.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s',
+                      }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                        <div style={{ flex: 1, fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-main)' }}>{cat}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap' }}>
+                          {completed} completed · {started} started
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--brand-teal)', marginLeft: '8px' }}>→</div>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

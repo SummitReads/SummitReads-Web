@@ -65,12 +65,12 @@ export default function DashboardPage() {
       // ── Parallel fetches ────────────────────────────────────────────────────
       const [profileRes, streakRes, progressRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
-        supabase.from('user_streaks').select('*').eq('user_id', uid).single(),
+        supabase.from('goal_streaks').select('*').eq('user_id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title, cover_url)')
+          .select('*, books(id, title, author, category, sprint_title, cover_url, summit_days(count))')
           .eq('user_id', uid)
-          .order('updated_at', { ascending: false }),
+          .order('unlocked_at', { ascending: false }),
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
@@ -87,10 +87,13 @@ export default function DashboardPage() {
     allProgress.filter(p => p.completed), [allProgress]);
 
   // A sprint = one book. "Started" = any day touched. "Completed" = all 7 days done.
+  // Only include books that actually have summit_days content.
   const sprintMap = useMemo(() => {
     const map = {};
     allProgress.forEach(p => {
       const id = p.book_id;
+      const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
+      if (!hasDays) return;
       if (!map[id]) map[id] = { book: p.books, days: [], completedDays: 0 };
       map[id].days.push(p.day_number);
       if (p.completed) map[id].completedDays++;
@@ -173,7 +176,7 @@ export default function DashboardPage() {
               />
               <StatCard
                 label="Days Active"
-                value={streak?.total_days_active ?? 0}
+                value={streak?.total_days_completed ?? 0}
                 sub="total sprint days"
               />
               <StatCard
@@ -218,7 +221,7 @@ export default function DashboardPage() {
                           Day {nextDay} of 7
                         </div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
-                          {book.sprint_title || book.title}
+                        {book.sprint_title || book.title}
                         </div>
                         <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '14px' }}>
                           {book.author}
