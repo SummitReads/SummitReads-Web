@@ -157,7 +157,7 @@ function ReflectionPreview() {
             </div>
           </div>
       </div>
-      <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.75)}}`}</style>
+      <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.75)}}@media(max-width:480px){.onboarding-inner{padding:24px 20px 24px!important}}`}</style>
     </div>
   );
 }
@@ -249,9 +249,9 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget) dismiss(); }}
-      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(14px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', opacity: exiting ? 0 : 1, transition: 'opacity 0.3s ease' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(14px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px', overflowY: 'auto', minHeight: '100dvh', opacity: exiting ? 0 : 1, transition: 'opacity 0.3s ease' }}
     >
-      <div style={{ background: '#101C2C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: current.hasPreview ? '36px 40px 32px' : '48px', maxWidth: current.hasPreview ? '520px' : '480px', width: '100%', position: 'relative', transform: exiting ? 'translateY(12px)' : 'translateY(0)', transition: 'transform 0.3s ease' }}>
+      <div className="onboarding-inner" style={{ background: '#101C2C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: current.hasPreview ? '36px 40px 32px' : '48px', maxWidth: current.hasPreview ? '520px' : '480px', width: '100%', position: 'relative', transform: exiting ? 'translateY(12px)' : 'translateY(0)', transition: 'transform 0.3s ease', margin: 'auto' }}>
 
         {/* Skip */}
         <button onClick={dismiss} style={{ position: 'absolute', top: '18px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}

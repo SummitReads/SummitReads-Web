@@ -207,7 +207,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         setFirstName(profile.full_name.split(' ')[0]);
       }
 
-      if (!profile?.onboarding_completed) {
+      if (!profile?.onboarding_completed && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
         setTimeout(() => setVisible(true), 400);
       }
     }
@@ -216,11 +216,8 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
   async function dismiss() {
     setExiting(true);
-    if (userId) {
-      await supabase
-        .from('profiles')
-        .update({ onboarding_completed: true })
-        .eq('id', userId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('summitskills_onboarding_skipped', '1');
     }
     setTimeout(() => {
       setVisible(false);
@@ -252,6 +249,16 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
       style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(14px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '16px', overflowY: 'auto', minHeight: '100dvh', opacity: exiting ? 0 : 1, transition: 'opacity 0.3s ease' }}
     >
       <div className="onboarding-inner" style={{ background: '#101C2C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: current.hasPreview ? '36px 40px 32px' : '48px', maxWidth: current.hasPreview ? '520px' : '480px', width: '100%', position: 'relative', transform: exiting ? 'translateY(12px)' : 'translateY(0)', transition: 'transform 0.3s ease', margin: 'auto' }}>
+
+        {/* Back button */}
+        {step > 0 && !isLastStep && (
+          <button onClick={() => setStep(s => s - 1)}
+            style={{ position: 'absolute', top: '18px', left: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}
+            onMouseEnter={e => e.target.style.color = 'rgba(238,242,247,0.6)'}
+            onMouseLeave={e => e.target.style.color = 'rgba(238,242,247,0.3)'}>
+            ← Back
+          </button>
+        )}
 
         {/* Skip */}
         <button onClick={dismiss} style={{ position: 'absolute', top: '18px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}
@@ -291,12 +298,34 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
           </div>
         )}
 
-        <button onClick={handleNext}
-          style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: '#17B8E0', color: '#0D1520', fontSize: '0.93rem', fontWeight: 700, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'opacity 0.15s' }}
-          onMouseEnter={e => e.target.style.opacity = '0.88'}
-          onMouseLeave={e => e.target.style.opacity = '1'}>
-          {isLastStep ? finalCTA : step === STEPS.length - 2 ? 'Got it →' : 'Next →'}
-        </button>
+        {isLastStep && !assignedSprint ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[
+              { label: 'Productivity & Habits',           short: 'Productivity & Habits',      color: '#06B6D4' },
+              { label: 'Financial Intelligence',          short: 'Financial Intelligence',     color: '#10B981' },
+              { label: 'Leadership & People Management',  short: 'Leadership & Management',    color: '#6B8FD6' },
+              { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',        color: '#F43F5E' },
+              { label: 'Strategy & Innovation',           short: 'Strategy & Innovation',      color: '#0EA5E9' },
+              { label: 'Marketing, Branding & Storytelling', short: 'Marketing & Branding',   color: '#EAB308' },
+            ].map(({ label, short, color }) => (
+              <button key={label}
+                onClick={() => { dismiss(); router.push(`/library?category=${encodeURIComponent(label)}`); }}
+                style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
+                onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                {short}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <button onClick={handleNext}
+            style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: '#17B8E0', color: '#0D1520', fontSize: '0.93rem', fontWeight: 700, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.target.style.opacity = '0.88'}
+            onMouseLeave={e => e.target.style.opacity = '1'}>
+            {isLastStep ? finalCTA : step === STEPS.length - 2 ? 'Got it →' : 'Next →'}
+          </button>
+        )}
 
         <p style={{ textAlign: 'center', fontSize: '0.65rem', color: 'rgba(238,242,247,0.2)', marginTop: '14px', fontFamily: 'monospace' }}>
           {step + 1} / {STEPS.length}
