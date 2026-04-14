@@ -77,6 +77,15 @@ export default function DashboardPage() {
       if (streakRes.data) setStreak(streakRes.data);
       if (progressRes.data) setAllProgress(progressRes.data);
 
+      // ── DEBUG — remove once data is confirmed working ──────────────────────
+      console.log('=== DASHBOARD DEBUG ===')
+      console.log('uid:', uid)
+      console.log('profile:', profileRes.data, profileRes.error)
+      console.log('streaks:', streakRes.data, streakRes.error)
+      console.log('progress rows:', progressRes.data?.length, progressRes.error)
+      console.log('progress sample:', progressRes.data?.[0])
+      // ──────────────────────────────────────────────────────────────────────
+
       setLoading(false);
     }
     load();
