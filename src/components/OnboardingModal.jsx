@@ -301,12 +301,10 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         {isLastStep && !assignedSprint ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { label: 'Productivity & Habits',           short: 'Productivity & Habits',      color: '#06B6D4' },
-              { label: 'Financial Intelligence',          short: 'Financial Intelligence',     color: '#10B981' },
-              { label: 'Leadership & People Management',  short: 'Leadership & Management',    color: '#6B8FD6' },
-              { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',        color: '#F43F5E' },
-              { label: 'Strategy & Innovation',           short: 'Strategy & Innovation',      color: '#0EA5E9' },
-              { label: 'Marketing, Branding & Storytelling', short: 'Marketing & Branding',   color: '#EAB308' },
+              { label: 'Productivity & Habits',           short: 'Productivity & Habits',   color: '#06B6D4' },
+              { label: 'Financial Intelligence',          short: 'Financial Intelligence',  color: '#10B981' },
+              { label: 'Leadership & People Management',  short: 'Leadership & Management', color: '#6B8FD6' },
+              { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
                 onClick={() => { dismiss(); router.push(`/library?category=${encodeURIComponent(label)}`); }}
