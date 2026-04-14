@@ -30,15 +30,12 @@ function SkeletonBlock({ width = '100%', height = '20px', style = {} }) {
 }
 
 const categoryColors = {
-  'Habits & Self-Discipline': '#06B6D4',
-  'Money & Investing': '#10B981',
-  'Productivity & Performance': '#06B6D4',
-  'Mindset & Mental Toughness': '#8B5CF6',
-  'Strategic Thinking': '#0EA5E9',
-  'Communication & Influence': '#F43F5E',
-  'Leadership & Business': '#6B8FD6',
-  'Philosophy & Wisdom': '#EAB308',
-  'Health & Wellness': '#84CC16',
+  'Productivity & Habits':           '#06B6D4',
+  'Financial Intelligence':          '#10B981',
+  'Leadership & People Management':  '#6B8FD6',
+  'Sales, Persuasion & Negotiation': '#F43F5E',
+  'Strategy & Innovation':           '#0EA5E9',
+  'Marketing, Branding & Storytelling': '#EAB308',
 };
 function categoryColor(cat) { return categoryColors[cat] || 'var(--brand-teal)'; }
 
