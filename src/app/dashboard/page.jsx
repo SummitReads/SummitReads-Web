@@ -68,7 +68,7 @@ export default function DashboardPage() {
         supabase.from('goal_streaks').select('*').eq('user_id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title, cover_url)')
+          .select('*, books(id, title, author, category, sprint_title, cover_url, summit_days(count))')
           .eq('user_id', uid)
           .order('unlocked_at', { ascending: false }),
       ]);
@@ -76,15 +76,6 @@ export default function DashboardPage() {
       if (profileRes.data) setProfile(profileRes.data);
       if (streakRes.data) setStreak(streakRes.data);
       if (progressRes.data) setAllProgress(progressRes.data);
-
-      // ── DEBUG — remove once data is confirmed working ──────────────────────
-      console.log('=== DASHBOARD DEBUG ===')
-      console.log('uid:', uid)
-      console.log('profile:', profileRes.data, profileRes.error)
-      console.log('streaks:', streakRes.data, streakRes.error)
-      console.log('progress rows:', progressRes.data?.length, progressRes.error)
-      console.log('progress sample:', progressRes.data?.[0])
-      // ──────────────────────────────────────────────────────────────────────
 
       setLoading(false);
     }
@@ -96,10 +87,13 @@ export default function DashboardPage() {
     allProgress.filter(p => p.completed), [allProgress]);
 
   // A sprint = one book. "Started" = any day touched. "Completed" = all 7 days done.
+  // Only include books that actually have summit_days content.
   const sprintMap = useMemo(() => {
     const map = {};
     allProgress.forEach(p => {
       const id = p.book_id;
+      const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
+      if (!hasDays) return;
       if (!map[id]) map[id] = { book: p.books, days: [], completedDays: 0 };
       map[id].days.push(p.day_number);
       if (p.completed) map[id].completedDays++;
