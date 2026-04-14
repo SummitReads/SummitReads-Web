@@ -165,10 +165,10 @@ function ReflectionPreview() {
 // ── Steps ─────────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { tag: 'Welcome',             title: null,                           body: null,                                                                                                                                                                         icon: 'logo',  hasPreview: false },
-  { tag: 'How it works',        title: '7 stages. One real output.',   body: "Each sprint has 7 stages. The first six build the concept one layer at a time. Stage 7 is the Summit — where you produce something concrete that applies to your actual job.", icon: 'none',  hasPreview: 'stages' },
-  { tag: 'The reflection gate', title: 'You write your way through.',  body: "Each stage ends with a reflection prompt. No multiple choice, no ratings — just your honest thinking in your own words. That's what makes it actually land. Here's what it looks like:", icon: 'gate',  hasPreview: 'reflection' },
-  { tag: 'Your coach',          title: 'A coach in your corner.',      body: "Each sprint comes with an AI coach that knows your content. It won't give you the answers — it'll push you to find them. Use it when something clicks, when you're stuck, or when you want to go further.", icon: 'coach', hasPreview: 'coach' },
+  { tag: 'Welcome',             title: null,                           body: null,                                                                                                                                                                         icon: 'none',  hasPreview: false },
+  { tag: 'How it works',        title: '7 stages. One real output.',   body: "Each sprint has 7 stages. The first six build the concept one layer at a time. Stage 7 is the Summit, where you produce something concrete that applies to your actual job.", icon: 'none',  hasPreview: 'stages' },
+  { tag: 'The reflection gate', title: 'You write your way through.',  body: "Each stage ends with a reflection prompt. No multiple choice, no ratings. Just your honest thinking in your own words. That's what makes it actually land. Here's what it looks like:", icon: 'gate',  hasPreview: 'reflection' },
+  { tag: 'Your coach',          title: 'A coach in your corner.',      body: "Each sprint comes with an AI coach that knows your content. It won't give you the answers. It'll push you to find them. Use it when something clicks, when you're stuck, or when you want to go further.", icon: 'coach', hasPreview: 'coach' },
   { tag: "Let's go",            title: null,                           body: null,                                                                                                                                                                         icon: 'none',  hasPreview: false, isFinal: true },
 ];
 
@@ -239,7 +239,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
   if (!visible) return null;
 
   const greeting    = firstName ? `Good to have you, ${firstName}.` : 'Skills that actually stick.';
-  const welcomeBody = 'Most skill-building fails because it stops at reading. Every sprint here asks you to actually do something — a small, specific action that connects the idea to your real work.';
+  const welcomeBody = 'Most skill-building fails because it stops at reading. Every sprint here asks you to actually do something. A small, specific action that connects the idea to your real work.';
   const isLastStep  = step === STEPS.length - 1;
   const current     = STEPS[step];
   const finalTitle  = assignedSprint ? `${managerName ? `${managerName} has` : 'Your manager has'} assigned you a sprint.` : `${firstName ? `What do you want to get better at, ${firstName}?` : 'What do you want to get better at?'}`;
