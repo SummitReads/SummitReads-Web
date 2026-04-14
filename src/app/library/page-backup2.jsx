@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useLayoutEffect, useState, useMemo, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import BookRow from '@/components/BookRow';
 
@@ -407,9 +407,8 @@ function FeaturedPlaceholder() {
 }
 
 // ── Main library page ────────────────────────────────────────────────────────
-function LibraryInner() {
+export default function Library() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [books, setBooks] = useState([]);
   const [booksByCategory, setBooksByCategory] = useState({});
@@ -417,12 +416,6 @@ function LibraryInner() {
   const [isColdLoading, setIsColdLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-
-  // Sync selectedCategory with URL param on mount and when param changes
-  useEffect(() => {
-    const cat = searchParams?.get('category');
-    setSelectedCategory(cat ? cat : 'All');
-  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState('');
   const [userSkills, setUserSkills] = useState([]);
   const [userSkillsLoaded, setUserSkillsLoaded] = useState(false);
@@ -750,7 +743,7 @@ function LibraryInner() {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              if (e.target.value) router.replace('/library', { scroll: false });
+              if (e.target.value) setSelectedCategory('All');
             }}
           />
           {searchQuery && (
@@ -789,7 +782,7 @@ function LibraryInner() {
           onClick={() => {
             if (isColdLoading && books.length === 0) return;
             setSearchQuery('');
-            router.replace('/library', { scroll: false });
+            setSelectedCategory('All');
           }}
           style={isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}}
         >
@@ -807,7 +800,7 @@ function LibraryInner() {
               onClick={() => {
                 if (isColdLoading && books.length === 0) return;
                 setSearchQuery('');
-                router.replace(`/library?category=${encodeURIComponent(category)}`, { scroll: false });
+                setSelectedCategory(category);
               }}
               style={{
                 ...(isColdLoading && books.length === 0 ? { pointerEvents: 'none' } : {}),
@@ -988,13 +981,5 @@ function LibraryInner() {
         )}
       </main>
     </>
-  );
-}
-
-export default function Library() {
-  return (
-    <Suspense>
-      <LibraryInner />
-    </Suspense>
   );
 }
