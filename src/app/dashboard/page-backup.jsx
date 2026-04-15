@@ -119,7 +119,19 @@ export default function DashboardPage() {
     return Object.entries(cats).sort((a, b) => b[1].started - a[1].started);
   }, [sprintList]);
 
-  if (!mounted) return null;
+  // Reflections grouped by sprint, most recent sprint first
+  const reflectionsBySprint = useMemo(() => {
+    const map = {};
+    allProgress.forEach(p => {
+      if (!p.reflection_data || !p.books) return;
+      const id = p.book_id;
+      if (!map[id]) map[id] = { book: p.books, entries: [] };
+      map[id].entries.push({ day_number: p.day_number, text: p.reflection_data, unlocked_at: p.unlocked_at });
+    });
+    return Object.values(map)
+      .map(s => ({ ...s, entries: s.entries.sort((a, b) => a.day_number - b.day_number) }))
+      .sort((a, b) => new Date(b.entries[b.entries.length - 1].unlocked_at) - new Date(a.entries[a.entries.length - 1].unlocked_at));
+  }, [allProgress]);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
 
@@ -299,6 +311,63 @@ export default function DashboardPage() {
                         <div style={{ fontSize: '0.75rem', color: 'var(--brand-teal)', marginLeft: '8px' }}>→</div>
                       </div>
                     </Link>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── Your Work ── */}
+        {(loading || reflectionsBySprint.length > 0) && (
+          <section style={{ marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '16px' }}>
+              Your Work
+            </h2>
+            {loading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[1,2].map(i => <SkeletonBlock key={i} height="80px" style={{ borderRadius: '10px' }} />)}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {reflectionsBySprint.map(({ book, entries }) => {
+                  if (!book) return null;
+                  const color = categoryColor(book.category);
+                  return (
+                    <div key={book.id} className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+                      {/* Sprint header */}
+                      <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                        <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{book.sprint_title || book.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>{book.author}</div>
+                      </div>
+                      {/* Reflection entries */}
+                      {entries.map((entry, i) => (
+                        <Link
+                          key={entry.day_number}
+                          href={`/summit/${book.id}/day/${entry.day_number}`}
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <div style={{
+                            padding: '14px 20px',
+                            borderBottom: i < entries.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                            display: 'flex', gap: '14px', alignItems: 'flex-start',
+                            transition: 'background 0.15s', cursor: 'pointer',
+                          }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <div style={{ fontSize: '0.68rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--brand-teal)', whiteSpace: 'nowrap', paddingTop: '2px', minWidth: '52px' }}>
+                              Stage {entry.day_number}
+                            </div>
+                            <div style={{ fontSize: '0.85rem', color: 'rgba(238,242,247,0.6)', lineHeight: 1.6, flex: 1 }}>
+                              {entry.text}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', paddingTop: '2px' }}>→</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
                   );
                 })}
               </div>
