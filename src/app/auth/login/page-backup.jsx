@@ -25,7 +25,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/library');
+      router.push('/');
     } catch (err) {
       setError(err.message);
       setLoading(false);

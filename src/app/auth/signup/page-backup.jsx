@@ -61,7 +61,7 @@ function SignupForm() {
         setSuccess(true);
         setLoading(false);
       } else {
-        router.push('/library');
+        router.push('/');
       }
     } catch (err) {
       setError(err.message);
