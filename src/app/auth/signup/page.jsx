@@ -145,10 +145,10 @@ function SignupForm() {
             )}
 
             <div style={{ marginBottom: '24px' }}>
-              <label htmlFor="fullName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Full Name</label>
+              <label htmlFor="fullName" style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>First Name</label>
               <input id="fullName" name="fullName" type="text" value={fullName}
-                onChange={e => setFullName(e.target.value)} required autoComplete="name"
-                placeholder="Jane Smith" style={inputStyle} />
+                onChange={e => setFullName(e.target.value)} required autoComplete="given-name"
+                placeholder="Jane" style={inputStyle} />
             </div>
 
             {isTrial && (

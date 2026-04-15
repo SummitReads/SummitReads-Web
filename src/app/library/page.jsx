@@ -635,7 +635,7 @@ function LibraryInner() {
     return books.filter((book) =>
       (book.sprint_title || '').toLowerCase().includes(q) ||
       (book.title || '').toLowerCase().includes(q) ||
-      (book.author || '').toLowerCase().includes(q) ||
+      (book.title || '').toLowerCase().includes(q) ||
       (book.category || '').toLowerCase().includes(q) ||
       (book.brief_content || '').toLowerCase().includes(q)
     );
@@ -868,7 +868,7 @@ function LibraryInner() {
                 style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}
               >
                 <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
-                <p>Try a different keyword — like a skill, topic, or author name.</p>
+                <p>Try a different keyword — like a skill, topic, or category.</p>
               </div>
             )}
 
@@ -933,10 +933,6 @@ function LibraryInner() {
                       </span>
                       <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
                         {featuredBook.title}
-                      </span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>·</span>
-                      <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)' }}>
-                        {featuredBook.author}
                       </span>
                     </div>
 
