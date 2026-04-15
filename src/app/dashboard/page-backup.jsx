@@ -104,7 +104,7 @@ export default function DashboardPage() {
   const recentlyCompleted = useMemo(() =>
     sprintList
       .filter(s => s.completedDays >= 7)
-      .slice(0, 6),
+      .slice(0, 3),
   [sprintList]);
 
   // Categories explored
@@ -192,16 +192,21 @@ export default function DashboardPage() {
         {/* ── In Progress ── */}
         {(loading || sprintsInProgress.length > 0) && (
           <section style={{ marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '16px' }}>
-              Continue Where You Left Off
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
+                Continue Where You Left Off
+              </h2>
+              {sprintsInProgress.length > 3 && (
+                <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              )}
+            </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 {[1,2].map(i => <SkeletonBlock key={i} width="260px" height="120px" style={{ borderRadius: '12px' }} />)}
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                {sprintsInProgress.map(({ book, completedDays: cd }) => {
+                {sprintsInProgress.slice(0, 3).map(({ book, completedDays: cd }) => {
                   if (!book) return null;
                   const nextDay = cd + 1;
                   const pct = Math.round((cd / 7) * 100);
@@ -238,9 +243,14 @@ export default function DashboardPage() {
         {/* ── Recently Completed ── */}
         {(loading || recentlyCompleted.length > 0) && (
           <section style={{ marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '16px' }}>
-              Recently Completed
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
+                Recently Completed
+              </h2>
+              {recentlyCompleted.length > 3 && (
+                <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              )}
+            </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                 {[1,2,3].map(i => <SkeletonBlock key={i} width="200px" height="80px" style={{ borderRadius: '12px' }} />)}
@@ -321,16 +331,21 @@ export default function DashboardPage() {
         {/* ── Your Work ── */}
         {(loading || reflectionsBySprint.length > 0) && (
           <section style={{ marginBottom: '40px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '16px' }}>
-              Your Work
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
+                Your Work
+              </h2>
+              {reflectionsBySprint.length > 3 && (
+                <Link href="/dashboard/reflections" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              )}
+            </div>
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[1,2].map(i => <SkeletonBlock key={i} height="80px" style={{ borderRadius: '10px' }} />)}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {reflectionsBySprint.map(({ book, entries }) => {
+                {reflectionsBySprint.slice(0, 3).map(({ book, entries }) => {
                   if (!book) return null;
                   const color = categoryColor(book.category);
                   return (
