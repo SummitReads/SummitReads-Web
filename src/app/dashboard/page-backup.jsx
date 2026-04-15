@@ -45,7 +45,6 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [streak, setStreak] = useState(null);
   const [allProgress, setAllProgress] = useState([]);   // user_progress rows + book data
   const [loading, setLoading] = useState(true);
 
@@ -60,9 +59,8 @@ export default function DashboardPage() {
       setUser(session.user);
 
       // ── Parallel fetches ────────────────────────────────────────────────────
-      const [profileRes, streakRes, progressRes] = await Promise.all([
+      const [profileRes, progressRes] = await Promise.all([
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
-        supabase.from('goal_streaks').select('*').eq('user_id', uid).maybeSingle(),
         supabase
           .from('user_progress')
           .select('*, books(id, title, author, category, sprint_title, cover_url, summit_days(count))')
@@ -71,7 +69,6 @@ export default function DashboardPage() {
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
-      if (streakRes.data) setStreak(streakRes.data);
       if (progressRes.data) setAllProgress(progressRes.data);
 
       setLoading(false);
@@ -162,20 +159,9 @@ export default function DashboardPage() {
         {/* ── Stat cards ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '40px' }}>
           {loading ? (
-            [1,2,3,4].map(i => <SkeletonBlock key={i} height="100px" style={{ borderRadius: '12px' }} />)
+            [1,2].map(i => <SkeletonBlock key={i} height="100px" style={{ borderRadius: '12px' }} />)
           ) : (
             <>
-              <StatCard
-                label="Current Streak"
-                value={`${streak?.current_streak ?? 0}`}
-                sub={`Best: ${streak?.longest_streak ?? 0} days`}
-                color="#f97316"
-              />
-              <StatCard
-                label="Days Active"
-                value={streak?.total_days_completed ?? 0}
-                sub="total sprint days"
-              />
               <StatCard
                 label="Sprints Started"
                 value={sprintsStarted}
