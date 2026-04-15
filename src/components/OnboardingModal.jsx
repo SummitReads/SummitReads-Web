@@ -268,7 +268,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         </button>
 
         {/* Progress */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '28px', marginTop: step > 0 && !isLastStep ? '28px' : '0' }}>
           {STEPS.map((_, i) => (
             <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= step ? '#17B8E0' : 'rgba(255,255,255,0.08)', transition: 'background 0.3s ease' }} />
           ))}
