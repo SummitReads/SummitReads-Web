@@ -199,6 +199,9 @@ function SkillPassportPlaceholder() {
 function SkillPassport({ userSkills }) {
   if (!userSkills || userSkills.length === 0) return null;
 
+  const visibleSkills = userSkills.slice(0, 3);
+  const hasMore = userSkills.length > 3;
+
   return (
     <section style={{ marginBottom: '48px' }}>
       <div
@@ -229,6 +232,11 @@ function SkillPassport({ userSkills }) {
             background: 'rgba(255,255,255,0.06)',
           }}
         />
+        {hasMore && (
+          <Link href="/dashboard" style={{ fontSize: '0.78rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', flexShrink: 0 }}>
+            View all →
+          </Link>
+        )}
       </div>
 
       <div
@@ -238,7 +246,7 @@ function SkillPassport({ userSkills }) {
           gap: '10px',
         }}
       >
-        {userSkills.map((skill) => {
+        {visibleSkills.map((skill) => {
           const isComplete = skill.daysCompleted >= 7;
           const progressPct = Math.round((skill.daysCompleted / 7) * 100);
           const resumeDay = Math.min(skill.daysCompleted + 1, 7);

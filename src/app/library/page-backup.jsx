@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import BookRow from '@/components/BookRow';
+import OnboardingModal from '@/components/OnboardingModal';
 
 const BOOKS_CACHE_KEY = 'ss_books';
 const BOOKS_BY_CATEGORY_CACHE_KEY = 'ss_booksByCategory';
@@ -679,6 +680,7 @@ function LibraryInner() {
 
   return (
     <>
+      <OnboardingModal />
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/library" className="logo">
