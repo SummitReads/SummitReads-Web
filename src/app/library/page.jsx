@@ -233,7 +233,9 @@ function SkillPassport({ userSkills }) {
           }}
         />
         {hasMore && (
-          <Link href="/dashboard" style={{ fontSize: '0.78rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', flexShrink: 0 }}>
+          <Link href="/dashboard" className="view-all-link" style={{ fontSize: '0.78rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', flexShrink: 0, transition: 'opacity 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
             View all →
           </Link>
         )}

@@ -63,7 +63,7 @@ export default function DashboardPage() {
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title, cover_url, summit_days(count))')
+          .select('*, books(id, title, category, sprint_title, cover_url, summit_days(count))')
           .eq('user_id', uid)
           .order('unlocked_at', { ascending: false }),
       ]);
@@ -149,6 +149,7 @@ export default function DashboardPage() {
             Summit<span>Skills</span>
           </Link>
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button className="btn-primary small" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
             <button className="btn-primary small" onClick={() => router.push('/settings')}>Settings</button>
             <button className="btn-primary small" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
           </div>
@@ -196,9 +197,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Continue Where You Left Off
               </h2>
-              {sprintsInProgress.length > 3 && (
-                <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
-              )}
+              <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -223,9 +222,6 @@ export default function DashboardPage() {
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
                         {book.sprint_title || book.title}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', marginBottom: '14px' }}>
-                          {book.author}
-                        </div>
                         {/* Progress bar */}
                         <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '4px', overflow: 'hidden' }}>
                           <div style={{ width: `${pct}%`, height: '100%', background: 'var(--brand-teal)', borderRadius: '99px', transition: 'width 0.4s' }} />
@@ -247,9 +243,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Recently Completed
               </h2>
-              {recentlyCompleted.length > 3 && (
-                <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
-              )}
+              <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -271,9 +265,6 @@ export default function DashboardPage() {
                       </div>
                       <div style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '4px' }}>
                         {book.sprint_title || book.title}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
-                        {book.author}
                       </div>
                     </div>
                   );
@@ -335,9 +326,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Your Work
               </h2>
-              {reflectionsBySprint.length > 3 && (
-                <Link href="/dashboard/reflections" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
-              )}
+              <Link href="/dashboard/reflections" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -354,7 +343,6 @@ export default function DashboardPage() {
                       <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
                         <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{book.sprint_title || book.title}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>{book.author}</div>
                       </div>
                       {/* Reflection entries */}
                       {entries.map((entry, i) => (
