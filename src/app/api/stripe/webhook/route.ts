@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       // Fires when a payment fails — flag the account
       case 'invoice.payment_failed': {
         const invoice      = event.data.object as Stripe.Invoice
-        const subscription = invoice.subscription as string
+        const subscription = (typeof invoice.subscription === "string" ? invoice.subscription : (invoice.subscription as any)?.id ?? null)
 
         const { error } = await supabase
           .from('profiles')
