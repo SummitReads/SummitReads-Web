@@ -35,7 +35,11 @@ export async function middleware(request) {
       const cookie = request.cookies.get(COOKIE_NAME)
       const hasCookie = cookie?.value === 'granted'
 
-      if (!isAllowedIP && !hasCookie) {
+      // Authenticated users always get through — checked later in the auth block
+      // We use a lightweight cookie check here; full auth verify happens below
+      const hasAuthCookie = [...request.cookies.getAll()].some(c => c.name.includes('auth-token') || c.name.includes('sb-'))
+
+      if (!isAllowedIP && !hasCookie && !hasAuthCookie) {
         return NextResponse.rewrite(new URL('/coming-soon', request.url))
       }
     }
