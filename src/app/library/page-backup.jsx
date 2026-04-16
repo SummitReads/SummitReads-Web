@@ -942,11 +942,9 @@ function LibraryInner() {
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
                       {[
-                        { num: '~15 min', label: 'per day' },
                         { num: '7 days', label: 'total' },
                       ].map(({ num, label }, i) => (
                         <div key={num} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          {i > 0 && <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '1rem' }}>·</span>}
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
                             <span
                               style={{
