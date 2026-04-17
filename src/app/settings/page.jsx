@@ -172,7 +172,7 @@ export default function SettingsPage() {
   const sectionStyle = { marginBottom: '24px' };
   const labelStyle = {
     display: 'block', fontSize: '0.75rem', fontWeight: '700',
-    textTransform: 'uppercase' as const, letterSpacing: '0.8px',
+    textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'rgba(255,255,255,0.35)', marginBottom: '6px',
   };
   const valueStyle = { fontSize: '1rem', color: 'rgba(255,255,255,0.85)' };
