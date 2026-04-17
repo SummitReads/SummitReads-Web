@@ -59,18 +59,15 @@ export default async function LibraryPage() {
   // ── Fetch books ────────────────────────────────────────────────────────────
   const { data: booksData, error: booksError } = await supabase
     .from('books')
-    .select('*')
+    .select('id, title, sprint_title, sprint_skill, category, brief_content, featured, author')
     .eq('review_status', 'approved')
     .order('created_at', { ascending: false })
 
   const books = booksError || !booksData ? [] : booksData
   const booksByCategory = groupBooksByCategory(books)
 
-  // ── Fetch sprint count ─────────────────────────────────────────────────────
-  const { count: sprintCount } = await supabase
-    .from('books')
-    .select('id', { count: 'exact', head: true })
-    .eq('review_status', 'approved')
+  // ── Sprint count derived from books — no extra query needed ─────────────
+  const sprintCount = books.length
 
   // ── Fetch user progress ────────────────────────────────────────────────────
   const { data: progressData } = await supabase
