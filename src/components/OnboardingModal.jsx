@@ -182,7 +182,7 @@ function renderIcon(icon) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export default function OnboardingModal({ assignedSprint = null, managerName = null }) {
+export default function OnboardingModal({ assignedSprint = null, managerName = null, onCategorySelect = null }) {
   const router = useRouter();
   const [step,      setStep]      = useState(0);
   const [visible,   setVisible]   = useState(false);
@@ -192,9 +192,9 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
   useEffect(() => {
     async function checkOnboarding() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-      const uid = session.user.id;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const uid = user.id;
       setUserId(uid);
 
       const { data: profile } = await supabase
@@ -307,7 +307,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
               { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
-                onClick={() => { dismiss(); router.push(`/library?category=${encodeURIComponent(label)}`); }}
+                onClick={() => { dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
                 style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>

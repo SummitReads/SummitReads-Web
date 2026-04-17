@@ -155,7 +155,7 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const [searchQuery,      setSearchQuery]      = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') ?? 'All')
 
-  // Sync selectedCategory with URL param whenever it changes
+  // Sync with URL on back/forward navigation
   useEffect(() => {
     const cat = searchParams?.get('category')
     setSelectedCategory(cat ?? 'All')
@@ -224,7 +224,10 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
 
   return (
     <>
-      <OnboardingModal />
+      <OnboardingModal onCategorySelect={(cat) => {
+        setSelectedCategory(cat)
+        window.history.replaceState(null, '', `/library?category=${encodeURIComponent(cat)}`)
+      }} />
 
       <nav className="glass-nav">
         <div className="nav-content">
@@ -277,7 +280,11 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
       <div className="category-scroll">
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-          onClick={() => { setSearchQuery(''); router.replace('/library', { scroll: false }) }}
+          onClick={() => {
+              setSearchQuery('')
+              setSelectedCategory('All')
+              window.history.replaceState(null, '', '/library')
+            }}
         >
           All
         </button>
@@ -286,7 +293,11 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
           const pillColor  = getCategoryPillColor(category)
           return (
             <button key={category} className="pill"
-              onClick={() => { setSearchQuery(''); router.replace(`/library?category=${encodeURIComponent(category)}`, { scroll: false }) }}
+              onClick={() => {
+                setSearchQuery('')
+                setSelectedCategory(category)
+                window.history.replaceState(null, '', `/library?category=${encodeURIComponent(category)}`)
+              }}
               style={isActive ? { background: pillColor, borderColor: pillColor, color: '#0F172A', fontWeight: '700', boxShadow: `0 0 12px ${pillColor}55` } : {}}
             >
               {getCategoryShortName(category)}
