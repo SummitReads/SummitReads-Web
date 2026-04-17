@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/app/supabaseClient'
@@ -154,12 +154,6 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const [sprintCount,      setSprintCount]      = useState(initialSprintCount)
   const [searchQuery,      setSearchQuery]      = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') ?? 'All')
-
-  // Sync selectedCategory with URL param whenever it changes
-  useEffect(() => {
-    const cat = searchParams?.get('category')
-    setSelectedCategory(cat ?? 'All')
-  }, [searchParams])
 
   const sortedCategories = useMemo(() => {
     return Object.keys(booksByCategory).sort((a, b) => {

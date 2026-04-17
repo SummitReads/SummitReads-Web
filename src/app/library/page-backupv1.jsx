@@ -49,9 +49,8 @@ export default async function LibraryPage() {
   const supabase = await createSupabaseServerClient()
 
   // ── Auth check — redirect before anything renders ─────────────────────────
-  // getUser() validates server-side — more secure than getSession()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session?.user) {
     redirect('/auth/login')
   }
 
@@ -75,7 +74,7 @@ export default async function LibraryPage() {
   const { data: progressData } = await supabase
     .from('user_progress')
     .select('book_id, day_number, completed')
-    .eq('user_id', user.id)
+    .eq('user_id', session.user.id)
 
   const userSkills = buildUserSkills(progressData ?? [], books)
 
