@@ -1,9 +1,8 @@
 'use client'
 import { useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 function ConfirmingInner() {
-  const router       = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -12,18 +11,15 @@ function ConfirmingInner() {
     const next       = searchParams.get('next')
 
     if (!token_hash || !type) {
-      router.replace('/auth/login?error=invalid_link')
+      window.location.href = '/auth/login?error=invalid_link'
       return
     }
 
-    // Small delay so the loading UI has time to paint before forwarding
-    const timer = setTimeout(() => {
-      const params = new URLSearchParams({ token_hash, type })
-      if (next) params.set('next', next)
-      router.replace(`/auth/callback?${params.toString()}`)
-    }, 800)
-
-    return () => clearTimeout(timer)
+    // Use window.location.href instead of router.replace so the loading
+    // page stays visible during the server-side callback processing
+    const params = new URLSearchParams({ token_hash, type })
+    if (next) params.set('next', next)
+    window.location.href = `/auth/callback?${params.toString()}`
   }, [])
 
   return (
