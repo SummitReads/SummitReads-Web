@@ -92,9 +92,9 @@ function BookRow({ title, books, description }) {
         </div>
         <Link
           href="/library"
-          style={{ fontSize: '0.78rem', color: '#475569', textDecoration: 'none', fontWeight: '600', flexShrink: 0, transition: 'color 0.2s' }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--brand-teal)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = '#475569'}
+          style={{ fontSize: '0.78rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', flexShrink: 0, transition: 'opacity 0.15s' }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
         >
           View all →
         </Link>
@@ -272,20 +272,8 @@ function SprintCard({ book }) {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            marginBottom: '3px',
           }}>
             {book.title}
-          </div>
-          {/* Author — quieter, below */}
-          <div style={{
-            fontSize: '0.72rem',
-            color: 'rgba(255,255,255,0.50)',
-            fontWeight: '500',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}>
-            {book.author}
           </div>
         </div>
 

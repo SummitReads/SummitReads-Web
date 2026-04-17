@@ -211,7 +211,7 @@ function SprintCard({ book }) {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}>
-            {book.tag || categoryLabel}
+            {book.sprint_skill || categoryLabel}
           </div>
 
           {/* Sprint title */}
