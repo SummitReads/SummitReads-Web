@@ -154,6 +154,7 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const [sprintCount,      setSprintCount]      = useState(initialSprintCount)
   const [searchQuery,      setSearchQuery]      = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') ?? 'All')
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
 
   // Sync with URL on back/forward navigation
   useEffect(() => {
@@ -224,7 +225,14 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
 
   return (
     <>
-      <OnboardingModal onCategorySelect={(cat) => {
+      {/* Gate — holds dark overlay until onboarding check completes so library never flashes before modal */}
+      {!onboardingChecked && (
+        <div style={{ position: 'fixed', inset: 0, background: '#0D1520', zIndex: 999 }} />
+      )}
+
+      <OnboardingModal
+        onCheckComplete={() => setOnboardingChecked(true)}
+        onCategorySelect={(cat) => {
         setSelectedCategory(cat)
         window.history.replaceState(null, '', `/library?category=${encodeURIComponent(cat)}`)
       }} />

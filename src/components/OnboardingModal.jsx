@@ -200,7 +200,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed, onboarding_status, full_name')
+        .select('onboarding_completed, full_name')
         .eq('id', uid)
         .single();
 
@@ -208,8 +208,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         setFirstName(profile.full_name.split(' ')[0]);
       }
 
-      const alreadyDone = profile?.onboarding_status === 'completed' || profile?.onboarding_status === 'skipped' || profile?.onboarding_completed === true;
-      if (!alreadyDone && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
+      if (!profile?.onboarding_completed && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
         setTimeout(() => setVisible(true), 400);
       }
     }
@@ -222,11 +221,11 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('summitskills_onboarding_skipped', '1');
     }
-    // Write skipped status — modal never shows again
+    // Permanently mark complete in database so modal never shows again
     if (userId) {
       await supabase
         .from('profiles')
-        .update({ onboarding_status: 'skipped', onboarding_completed: true })
+        .update({ onboarding_completed: true })
         .eq('id', userId);
     }
     setTimeout(() => {
@@ -273,18 +272,22 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         {/* Skip */}
         {!isLastStep && (
           confirmSkip ? (
-            <div style={{ position: 'absolute', top: '14px', right: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '0.7rem', color: 'rgba(238,242,247,0.45)', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>Are you sure? You won't see this again.</span>
-              <button onClick={dismiss} style={{ background: 'transparent', border: '1px solid rgba(238,242,247,0.15)', color: 'rgba(238,242,247,0.6)', fontSize: '0.7rem', cursor: 'pointer', padding: '3px 8px', borderRadius: '5px', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(238,242,247,0.06)'; e.currentTarget.style.color = 'white'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,242,247,0.6)'; }}>
-                Yes, skip
-              </button>
-              <button onClick={() => setConfirmSkip(false)} style={{ background: 'transparent', border: '1px solid rgba(23,184,224,0.3)', color: '#17B8E0', fontSize: '0.7rem', cursor: 'pointer', padding: '3px 8px', borderRadius: '5px', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(23,184,224,0.08)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
-                Keep going
-              </button>
+            <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(238,242,247,0.55)', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+                Are you sure? You won't see this again.
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={dismiss} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(238,242,247,0.15)', color: 'rgba(238,242,247,0.6)', fontSize: '0.82rem', cursor: 'pointer', padding: '8px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontWeight: 600, transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(238,242,247,0.06)'; e.currentTarget.style.color = 'white'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,242,247,0.6)'; }}>
+                  Yes, skip
+                </button>
+                <button onClick={() => setConfirmSkip(false)} style={{ flex: 1, background: 'rgba(23,184,224,0.08)', border: '1px solid rgba(23,184,224,0.3)', color: '#17B8E0', fontSize: '0.82rem', cursor: 'pointer', padding: '8px', borderRadius: '8px', fontFamily: 'var(--font-sans)', fontWeight: 600, transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(23,184,224,0.15)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(23,184,224,0.08)'; }}>
+                  Keep going
+                </button>
+              </div>
             </div>
           ) : (
             <button onClick={() => setConfirmSkip(true)} style={{ position: 'absolute', top: '18px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}
@@ -335,7 +338,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
               { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
-                onClick={async () => { if (userId) { await supabase.from('profiles').update({ onboarding_status: 'completed', onboarding_completed: true }).eq('id', userId); } dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
+                onClick={() => { dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
                 style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>
