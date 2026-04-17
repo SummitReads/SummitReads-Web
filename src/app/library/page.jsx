@@ -26,6 +26,7 @@ function buildUserSkills(progressData, booksData) {
     .map(([bookId, daysCompleted]) => {
       const book = booksData.find((b) => b.id === bookId)
       if (!book || !book.sprint_skill) return null
+      if (daysCompleted < 1) return null
       return {
         bookId,
         bookTitle:   book.title,
