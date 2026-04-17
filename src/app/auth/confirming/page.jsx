@@ -16,10 +16,14 @@ function ConfirmingInner() {
       return
     }
 
-    // Forward to the actual callback route handler
-    const params = new URLSearchParams({ token_hash, type })
-    if (next) params.set('next', next)
-    router.replace(`/auth/callback?${params.toString()}`)
+    // Small delay so the loading UI has time to paint before forwarding
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams({ token_hash, type })
+      if (next) params.set('next', next)
+      router.replace(`/auth/callback?${params.toString()}`)
+    }, 800)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return (
@@ -28,7 +32,7 @@ function ConfirmingInner() {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
-      <div style={{ minHeight: '100vh', background: '#0D1520', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', animation: 'fadeIn 0.2s ease', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+      <div style={{ minHeight: '100vh', background: '#0D1520', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', animation: 'fadeIn 0.3s ease', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
         <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'rgba(238,242,247,0.9)', letterSpacing: '-0.5px' }}>
           Summit<span style={{ color: '#17B8E0' }}>Skills</span>
         </div>
