@@ -100,8 +100,6 @@ export const metadata = {
     canonical: 'https://summitskills.io',
   },
 
-  themeColor: '#0D1520',
-
   icons: {
     icon: '/favicon.ico',
     // [PLACEHOLDER] add these to /public if you have them:
