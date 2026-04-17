@@ -15,6 +15,8 @@ function ConfirmingInner() {
       return
     }
 
+    // Use window.location.href instead of router.replace so the loading
+    // page stays visible during the server-side callback processing
     const params = new URLSearchParams({ token_hash, type })
     if (next) params.set('next', next)
     window.location.href = `/auth/callback?${params.toString()}`
@@ -23,11 +25,6 @@ function ConfirmingInner() {
   return (
     <>
       <style>{`
-        html, body {
-          background: #0D1520 !important;
-          margin: 0;
-          padding: 0;
-        }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
@@ -44,9 +41,7 @@ function ConfirmingInner() {
 
 export default function ConfirmingPage() {
   return (
-    <Suspense fallback={
-      <div style={{ minHeight: '100vh', background: '#0D1520' }} />
-    }>
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: '#0D1520' }} />}>
       <ConfirmingInner />
     </Suspense>
   )
