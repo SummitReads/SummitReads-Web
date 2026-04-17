@@ -77,6 +77,15 @@ export default function SummitDayPage({ params }) {
             setReflectionText(currentProgress.reflection_data || '');
             setMissionComplete(currentProgress.completed || false);
           }
+
+          // Mark onboarding complete the first time a user lands on any Day 1
+          if (dayNum === 1) {
+            supabase
+              .from('profiles')
+              .update({ onboarding_completed: true })
+              .eq('id', currentUser.id)
+              .then(() => {});
+          }
         }
 
         if (bookError) setError('Book not found');

@@ -330,7 +330,7 @@ export default function SummitDayPage({ params }) {
               })
             }}>
               <div className="tag-featured">
-                {dayNum === 7 ? '🏔 Your Commitment' : 'Milepost'}
+                {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
               </div>
 
               <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.6 }}>
