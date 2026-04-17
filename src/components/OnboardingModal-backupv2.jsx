@@ -200,7 +200,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed, onboarding_status, full_name')
+        .select('onboarding_completed, full_name')
         .eq('id', uid)
         .single();
 
@@ -208,8 +208,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         setFirstName(profile.full_name.split(' ')[0]);
       }
 
-      const alreadyDone = profile?.onboarding_status === 'completed' || profile?.onboarding_status === 'skipped' || profile?.onboarding_completed === true;
-      if (!alreadyDone && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
+      if (!profile?.onboarding_completed && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
         setTimeout(() => setVisible(true), 400);
       }
     }
@@ -222,11 +221,11 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('summitskills_onboarding_skipped', '1');
     }
-    // Write skipped status — modal never shows again
+    // Permanently mark complete in database so modal never shows again
     if (userId) {
       await supabase
         .from('profiles')
-        .update({ onboarding_status: 'skipped', onboarding_completed: true })
+        .update({ onboarding_completed: true })
         .eq('id', userId);
     }
     setTimeout(() => {
@@ -335,7 +334,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
               { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
-                onClick={async () => { if (userId) { await supabase.from('profiles').update({ onboarding_status: 'completed', onboarding_completed: true }).eq('id', userId); } dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
+                onClick={() => { dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
                 style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>
