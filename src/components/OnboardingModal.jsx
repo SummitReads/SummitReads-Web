@@ -182,7 +182,7 @@ function renderIcon(icon) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export default function OnboardingModal({ assignedSprint = null, managerName = null, onCategorySelect = null }) {
+export default function OnboardingModal({ assignedSprint = null, managerName = null, onCategorySelect = null, onCheckComplete = null }) {
   const router = useRouter();
   const [step,      setStep]      = useState(0);
   const [visible,   setVisible]   = useState(false);
@@ -210,7 +210,9 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
       const alreadyDone = profile?.onboarding_status === 'completed' || profile?.onboarding_status === 'skipped' || profile?.onboarding_completed === true;
       if (!alreadyDone && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
-        setTimeout(() => setVisible(true), 400);
+        setVisible(true);
+      } else {
+        if (onCheckComplete) onCheckComplete();
       }
     }
     checkOnboarding();
@@ -232,6 +234,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
     setTimeout(() => {
       setVisible(false);
       setExiting(false);
+      if (onCheckComplete) onCheckComplete();
     }, 300);
   }
 
