@@ -59,7 +59,7 @@ export default async function LibraryPage() {
   // ── Fetch books ────────────────────────────────────────────────────────────
   const { data: booksData, error: booksError } = await supabase
     .from('books')
-    .select('id, title, sprint_title, sprint_skill, category, brief_content, featured, author')
+    .select('id, title, author, category, tag, cover_url, brief_content, sprint_title, sprint_skill, featured, review_status')
     .eq('review_status', 'approved')
     .order('created_at', { ascending: false })
 
