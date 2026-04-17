@@ -211,7 +211,7 @@ export default function SummitDayPage({ params }) {
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/" className="logo">
+          <Link href="/library" className="logo">
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
