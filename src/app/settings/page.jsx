@@ -91,7 +91,7 @@ export default function SettingsPage() {
       } else {
         setPasswordResetSent(true);
       }
-    } catch (err: any) {
+    } catch (err) {
       setPasswordResetError(err.message);
     } finally {
       setPasswordResetLoading(false);
@@ -113,7 +113,7 @@ export default function SettingsPage() {
       setSeatSuccess(true);
       setProfile(prev => ({ ...prev, seat_count: seatCount }));
       setTimeout(() => setSeatSuccess(false), 3000);
-    } catch (err: any) {
+    } catch (err) {
       setSeatError(err.message);
     } finally {
       setSeatLoading(false);
@@ -134,7 +134,7 @@ export default function SettingsPage() {
       setCancelSuccess(true);
       setProfile(prev => ({ ...prev, subscription_status: 'canceling' }));
       setConfirmCancel(false);
-    } catch (err: any) {
+    } catch (err) {
       setCancelError(err.message);
     } finally {
       setCancelLoading(false);
@@ -149,18 +149,18 @@ export default function SettingsPage() {
   if (!mounted) return null;
 
   // ── Helpers ──────────────────────────────────────────────────────────────
-  function formatDate(iso: string | null) {
+  function formatDate(iso) {
     if (!iso) return null;
     return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  function getPlanLabel(planType: string | null) {
+  function getPlanLabel(planType) {
     if (planType === 'team')       return 'Team Plan';
     if (planType === 'individual') return 'Individual Plan';
     return 'Free';
   }
 
-  function getStatusLabel(status: string | null) {
+  function getStatusLabel(status) {
     if (status === 'trialing')  return { label: '14-Day Trial',  color: '#17B8E0' };
     if (status === 'active')    return { label: 'Active',        color: '#10B981' };
     if (status === 'canceling') return { label: 'Canceling',     color: '#F59E0B' };
