@@ -211,7 +211,7 @@ export default function SummitDayPage({ params }) {
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
+          <Link href="/" className="logo">
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
@@ -367,7 +367,7 @@ export default function SummitDayPage({ params }) {
 
               {/* Soft skip note — Days 1–6 only */}
               {dayNum < 7 && (
-                <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.25)', marginTop: 10, textAlign: 'right' }}>
+                <p style={{ fontSize: '0.75rem', color: 'rgba(25,190,227,0.6)', marginTop: 10, textAlign: 'right' }}>
                   Writing it down helps it stick — but you can skip and continue below.
                 </p>
               )}
