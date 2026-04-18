@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [cancelLoading,         setCancelLoading]         = useState(false);
   const [cancelSuccess,         setCancelSuccess]         = useState(false);
   const [cancelError,           setCancelError]           = useState('');
+  const [menuOpen,              setMenuOpen]              = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -194,10 +195,20 @@ export default function SettingsPage() {
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn-primary small" onClick={() => router.push('/dashboard')}>Dashboard</button>
-            <button className="btn-primary small" onClick={() => router.push('/library')}>Library</button>
-            <button className="btn-primary small" onClick={handleSignOut}>Sign Out</button>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={handleSignOut}>Sign Out</button>
+            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+              <span /><span /><span />
+            </button>
+            {menuOpen && (
+              <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
+                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

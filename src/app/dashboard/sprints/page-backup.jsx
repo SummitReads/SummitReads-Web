@@ -51,7 +51,7 @@ export default function SprintsPage() {
         supabase.from('profiles').select('full_name').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title, summit_days(count))')
+          .select('*, books(id, title, category, sprint_title, summit_days(count))')
           .eq('user_id', uid)
           .order('unlocked_at', { ascending: false }),
       ]);
@@ -103,6 +103,8 @@ export default function SprintsPage() {
         .sprint-filter { cursor: pointer; border: 1px solid rgba(255,255,255,0.1); border-radius: 99px; padding: 5px 14px; font-size: 0.78rem; font-weight: 600; background: transparent; color: rgba(238,242,247,0.5); transition: all 0.15s; font-family: var(--font-sans); }
         .sprint-filter:hover { border-color: rgba(255,255,255,0.25); color: rgba(238,242,247,0.8); }
         .sprint-filter.active { background: var(--brand-teal); border-color: var(--brand-teal); color: #0D1520; }
+        .view-all-link { transition: opacity 0.15s; }
+        .view-all-link:hover { opacity: 0.7; }
       `}</style>
 
       <div className="ambient-glow" />
@@ -123,7 +125,7 @@ export default function SprintsPage() {
 
         {/* ── Header ── */}
         <div style={{ marginBottom: '32px' }}>
-          <Link href="/dashboard" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '16px' }}>
+          <Link href="/dashboard" className="view-all-link" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '16px' }}>
             ← Back to Dashboard
           </Link>
           <p style={{ color: 'var(--text-muted)', marginBottom: '4px', fontSize: '0.875rem', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '700' }}>
@@ -196,9 +198,6 @@ export default function SprintsPage() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {book.sprint_title || book.title}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', marginBottom: '8px' }}>
-                        {book.author}
                       </div>
                       {/* Progress bar */}
                       <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '3px', overflow: 'hidden', maxWidth: '260px' }}>

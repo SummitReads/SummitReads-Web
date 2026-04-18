@@ -39,13 +39,14 @@ export default function SprintsPage() {
   const [allProgress, setAllProgress] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [filter,      setFilter]      = useState('All');
+  const [menuOpen,    setMenuOpen]    = useState(false);
 
   useEffect(() => {
     setMounted(true);
     async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/auth/login'); return; }
-      const uid = session.user.id;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push('/auth/login'); return; }
+      const uid = user.id;
 
       const [profileRes, progressRes] = await Promise.all([
         supabase.from('profiles').select('full_name').eq('id', uid).single(),
@@ -114,9 +115,18 @@ export default function SprintsPage() {
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn-primary small" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+              <span /><span /><span />
+            </button>
+            {menuOpen && (
+              <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
+                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

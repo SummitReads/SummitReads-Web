@@ -47,7 +47,7 @@ export default function ReflectionsPage() {
         supabase.from('profiles').select('full_name').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, author, category, sprint_title)')
+          .select('*, books(id, title, category, sprint_title)')
           .eq('user_id', uid)
           .not('reflection_data', 'is', null)
           .order('unlocked_at', { ascending: false }),
@@ -80,7 +80,6 @@ export default function ReflectionsPage() {
           p.reflection_data,
           p.books.sprint_title,
           p.books.title,
-          p.books.author,
           p.books.category,
         ].join(' ').toLowerCase();
         if (!haystack.includes(q)) return;
@@ -231,7 +230,6 @@ export default function ReflectionsPage() {
                   <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
                     <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{book.sprint_title || book.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>{book.author}</div>
                   </div>
                   {/* Entries */}
                   {entries.map((entry, i) => (
