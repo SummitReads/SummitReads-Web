@@ -139,6 +139,8 @@ export default function DashboardPage() {
     <>
       <style>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .view-all-link { transition: opacity 0.15s; }
+        .view-all-link:hover { opacity: 0.7; }
       `}</style>
 
       <div className="ambient-glow"></div>
@@ -197,7 +199,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Continue Where You Left Off
               </h2>
-              <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              <Link href="/dashboard/sprints" className="view-all-link" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -243,7 +245,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Recently Completed
               </h2>
-              <Link href="/dashboard/sprints" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              <Link href="/dashboard/sprints" className="view-all-link" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
@@ -326,7 +328,7 @@ export default function DashboardPage() {
               <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>
                 Your Work
               </h2>
-              <Link href="/dashboard/reflections" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
+              <Link href="/dashboard/reflections" className="view-all-link" style={{ fontSize: '0.8rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600' }}>View all →</Link>
             </div>
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

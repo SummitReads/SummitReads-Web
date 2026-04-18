@@ -42,6 +42,7 @@ function categoryColor(cat) { return categoryColors[cat] || 'var(--brand-teal)';
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -150,10 +151,20 @@ export default function DashboardPage() {
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button className="btn-primary small" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
-            <button className="btn-primary small" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+              <span /><span /><span />
+            </button>
+            {menuOpen && (
+              <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard/sprints'); }}>My Sprints</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
+                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
