@@ -8,3 +8,7 @@ node_modules/
 google-credentials.json
 .vercel
 .env.local.save
+.env.local.backup
+.env.local.bak*
+.env.local.backup
+.env.local.bak*

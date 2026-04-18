@@ -1,5 +1,5 @@
 'use client'
-import { useState, useMemo, Suspense } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/app/supabaseClient'
@@ -153,7 +153,14 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const [userSkills,       setUserSkills]       = useState(initialUserSkills)
   const [sprintCount,      setSprintCount]      = useState(initialSprintCount)
   const [searchQuery,      setSearchQuery]      = useState('')
-  const [selectedCategory, setSelectedCategory] = useState(searchParams?.get('category') ?? 'All')
+  const [selectedCategory,  setSelectedCategory]  = useState(searchParams?.get('category') ?? 'All')
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
+
+  // Sync with URL on back/forward navigation
+  useEffect(() => {
+    const cat = searchParams?.get('category')
+    setSelectedCategory(cat ?? 'All')
+  }, [searchParams])
 
   const sortedCategories = useMemo(() => {
     return Object.keys(booksByCategory).sort((a, b) => {
@@ -218,7 +225,16 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
 
   return (
     <>
-      <OnboardingModal />
+      {!onboardingChecked && (
+        <div style={{ position: 'fixed', inset: 0, background: '#0D1520', zIndex: 999 }} />
+      )}
+
+      <OnboardingModal
+        onCheckComplete={() => setOnboardingChecked(true)}
+        onCategorySelect={(cat) => {
+        setSelectedCategory(cat)
+        window.history.replaceState(null, '', `/library?category=${encodeURIComponent(cat)}`)
+      }} />
 
       <nav className="glass-nav">
         <div className="nav-content">
@@ -271,7 +287,11 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
       <div className="category-scroll">
         <button
           className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-          onClick={() => { setSearchQuery(''); router.replace('/library', { scroll: false }) }}
+          onClick={() => {
+              setSearchQuery('')
+              setSelectedCategory('All')
+              window.history.replaceState(null, '', '/library')
+            }}
         >
           All
         </button>
@@ -280,7 +300,11 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
           const pillColor  = getCategoryPillColor(category)
           return (
             <button key={category} className="pill"
-              onClick={() => { setSearchQuery(''); router.replace(`/library?category=${encodeURIComponent(category)}`, { scroll: false }) }}
+              onClick={() => {
+                setSearchQuery('')
+                setSelectedCategory(category)
+                window.history.replaceState(null, '', `/library?category=${encodeURIComponent(category)}`)
+              }}
               style={isActive ? { background: pillColor, borderColor: pillColor, color: '#0F172A', fontWeight: '700', boxShadow: `0 0 12px ${pillColor}55` } : {}}
             >
               {getCategoryShortName(category)}

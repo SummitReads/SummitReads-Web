@@ -155,6 +155,7 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const [searchQuery,      setSearchQuery]      = useState('')
   const [selectedCategory,  setSelectedCategory]  = useState(searchParams?.get('category') ?? 'All')
   const [onboardingChecked, setOnboardingChecked] = useState(false)
+  const [menuOpen,          setMenuOpen]          = useState(false)
 
   // Sync with URL on back/forward navigation
   useEffect(() => {
@@ -242,10 +243,26 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
             <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
             Summit<span>Skills</span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
             <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small" onClick={handleSignOut}>Sign Out</button>
+            <button className="btn-primary small nav-btn-desktop" onClick={handleSignOut}>Sign Out</button>
+            {/* Hamburger — mobile only */}
+            <button
+              className="nav-hamburger"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label="Menu"
+            >
+              <span /><span /><span />
+            </button>
+            {/* Mobile dropdown */}
+            {menuOpen && (
+              <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
+                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign Out</button>
+              </div>
+            )}
           </div>
         </div>
       </nav>

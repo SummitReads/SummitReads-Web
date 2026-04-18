@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
             plan_type:  planType,
             seat_count: seatCount,
           },
-          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?token_hash=TOKEN&type=invite`,
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?token_hash=TOKEN&type=invite`,
         })
 
         if (userError) {

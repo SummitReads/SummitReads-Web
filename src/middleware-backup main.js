@@ -72,6 +72,11 @@ export async function middleware(request) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Redirect unauthenticated users from protected pages server-side
+  if (pathname.startsWith('/library') && !user) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+
   if (pathname.startsWith('/admin')) {
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', request.url))

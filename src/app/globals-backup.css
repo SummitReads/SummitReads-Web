@@ -436,7 +436,6 @@ input[type="text"]:focus {
 }
 
 @media (min-width: 768px) {
-  .nav-hamburger { display: none; }
   .featured-card h2 {
     font-size: 3rem;
   }
@@ -719,61 +718,6 @@ a:hover .card .author { color: var(--text-muted) !important; }
   .logo-img { width: 34px; height: 34px; margin-right: 6px; }
   .nav-actions { gap: 8px; }
   .nav-btn-desktop { display: none; }
-
-  /* Hamburger button */
-  .nav-hamburger {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    width: 36px;
-    height: 36px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 8px;
-    cursor: pointer;
-    padding: 8px;
-  }
-  .nav-hamburger span {
-    display: block;
-    height: 2px;
-    background: rgba(238,242,247,0.8);
-    border-radius: 2px;
-    transition: all 0.2s;
-  }
-
-  /* Mobile dropdown */
-  .nav-mobile-menu {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background: #101C2C;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 8px;
-    min-width: 160px;
-    z-index: 200;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .nav-mobile-menu button {
-    display: block;
-    width: 100%;
-    padding: 10px 14px;
-    background: transparent;
-    border: none;
-    color: rgba(238,242,247,0.75);
-    font-size: 0.9rem;
-    font-weight: 600;
-    font-family: var(--font-sans);
-    text-align: left;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.15s;
-  }
-  .nav-mobile-menu button:hover {
-    background: rgba(255,255,255,0.06);
-    color: white;
-  }
   .nav-actions .btn-primary.small {
     padding: 6px 10px;
     font-size: 0.8rem;
