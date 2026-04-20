@@ -182,24 +182,25 @@ function renderIcon(icon) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export default function OnboardingModal({ assignedSprint = null, managerName = null }) {
+export default function OnboardingModal({ assignedSprint = null, managerName = null, onCategorySelect = null, onCheckComplete = null }) {
   const router = useRouter();
   const [step,      setStep]      = useState(0);
   const [visible,   setVisible]   = useState(false);
   const [exiting,   setExiting]   = useState(false);
   const [userId,    setUserId]    = useState(null);
   const [firstName, setFirstName] = useState(null);
+  const [confirmSkip, setConfirmSkip] = useState(false);
 
   useEffect(() => {
     async function checkOnboarding() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-      const uid = session.user.id;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const uid = user.id;
       setUserId(uid);
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_completed, full_name')
+        .select('onboarding_completed, onboarding_status, full_name')
         .eq('id', uid)
         .single();
 
@@ -207,8 +208,11 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         setFirstName(profile.full_name.split(' ')[0]);
       }
 
-      if (!profile?.onboarding_completed && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
-        setTimeout(() => setVisible(true), 400);
+      const alreadyDone = profile?.onboarding_status === 'completed' || profile?.onboarding_status === 'skipped' || profile?.onboarding_completed === true;
+      if (!alreadyDone && !sessionStorage.getItem('summitskills_onboarding_skipped')) {
+        setVisible(true);
+      } else {
+        if (onCheckComplete) onCheckComplete();
       }
     }
     checkOnboarding();
@@ -216,12 +220,21 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
 
   async function dismiss() {
     setExiting(true);
+    setConfirmSkip(false);
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('summitskills_onboarding_skipped', '1');
+    }
+    // Write skipped status — modal never shows again
+    if (userId) {
+      await supabase
+        .from('profiles')
+        .update({ onboarding_status: 'skipped', onboarding_completed: true })
+        .eq('id', userId);
     }
     setTimeout(() => {
       setVisible(false);
       setExiting(false);
+      if (onCheckComplete) onCheckComplete();
     }, 300);
   }
 
@@ -261,11 +274,29 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
         )}
 
         {/* Skip */}
-        <button onClick={dismiss} style={{ position: 'absolute', top: '18px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}
-          onMouseEnter={e => e.target.style.color = 'rgba(238,242,247,0.6)'}
-          onMouseLeave={e => e.target.style.color = 'rgba(238,242,247,0.3)'}>
-          Skip
-        </button>
+        {!isLastStep && (
+          confirmSkip ? (
+            <div style={{ position: 'absolute', top: '14px', right: '16px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '0.7rem', color: 'rgba(238,242,247,0.45)', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' }}>Are you sure? You won't see this again.</span>
+              <button onClick={dismiss} style={{ background: 'transparent', border: '1px solid rgba(238,242,247,0.15)', color: 'rgba(238,242,247,0.6)', fontSize: '0.7rem', cursor: 'pointer', padding: '3px 8px', borderRadius: '5px', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(238,242,247,0.06)'; e.currentTarget.style.color = 'white'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(238,242,247,0.6)'; }}>
+                Yes, skip
+              </button>
+              <button onClick={() => setConfirmSkip(false)} style={{ background: 'transparent', border: '1px solid rgba(23,184,224,0.3)', color: '#17B8E0', fontSize: '0.7rem', cursor: 'pointer', padding: '3px 8px', borderRadius: '5px', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(23,184,224,0.08)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
+                Keep going
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setConfirmSkip(true)} style={{ position: 'absolute', top: '18px', right: '20px', background: 'transparent', border: 'none', color: 'rgba(238,242,247,0.3)', fontSize: '0.75rem', cursor: 'pointer', padding: '4px 8px', fontFamily: 'var(--font-sans)', transition: 'color 0.15s' }}
+              onMouseEnter={e => e.target.style.color = 'rgba(238,242,247,0.6)'}
+              onMouseLeave={e => e.target.style.color = 'rgba(238,242,247,0.3)'}>
+              Skip
+            </button>
+          )
+        )}
 
         {/* Progress */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '28px', marginTop: step > 0 && !isLastStep ? '28px' : '0' }}>
@@ -307,7 +338,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
               { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
-                onClick={() => { dismiss(); router.push(`/library?category=${encodeURIComponent(label)}`); }}
+                onClick={async () => { if (userId) { await supabase.from('profiles').update({ onboarding_status: 'completed', onboarding_completed: true }).eq('id', userId); } dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
                 style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>
