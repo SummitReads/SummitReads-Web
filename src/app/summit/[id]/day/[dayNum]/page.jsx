@@ -290,7 +290,7 @@ export default function SummitDayPage({ params }) {
               {dayData.title}
             </h2>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
-              {book.sprint_title || book.title} · Stage {dayNum} of 7
+              Stage {dayNum} of 7
             </p>
             {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
             {dayData.skill_focus && (

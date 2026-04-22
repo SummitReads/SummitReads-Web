@@ -285,10 +285,13 @@ export default function SummitDayPage({ params }) {
           previousDayProgress={previousDayProgress}
         >
           {/* Stage title */}
-          <div style={{ marginBottom: 48, textAlign: 'center' }}>
-            <h2 className="text-gradient" style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
+          <div style={{ marginBottom: 40, textAlign: 'left' }}>
+            <h2 className="text-gradient" style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
               {dayData.title}
             </h2>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
+              {book.sprint_title || book.title} · Stage {dayNum} of 7
+            </p>
             {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
             {dayData.skill_focus && (
               <div style={{
@@ -310,7 +313,7 @@ export default function SummitDayPage({ params }) {
           </div>
 
           {/* Today's insight */}
-          <div className="glass-panel" style={{ marginBottom: 32 }}>
+          <div className="glass-panel" style={{ marginBottom: 24 }}>
             <div className="tag-featured">
               <div className="pulse-dot" />
               Today's Ascent
@@ -323,7 +326,7 @@ export default function SummitDayPage({ params }) {
           {/* Milepost */}
           {dayData.milepost && (
             <div className="glass-panel" style={{
-              marginBottom: 32,
+              marginBottom: 24,
               ...(dayNum === 7 && {
                 borderColor: 'rgba(25,190,227,0.35)',
                 boxShadow: '0 0 24px rgba(25,190,227,0.08)',
