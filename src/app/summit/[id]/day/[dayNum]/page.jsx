@@ -315,7 +315,7 @@ export default function SummitDayPage({ params }) {
               <div className="pulse-dot" />
               Today's Ascent
             </div>
-            <div style={{ fontSize: '1.1rem', lineHeight: 1.85, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            <div style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
             </div>
           </div>
@@ -333,7 +333,7 @@ export default function SummitDayPage({ params }) {
                 {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
               </div>
 
-              <p style={{ fontSize: '1.25rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.6 }}>
+              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.7 }}>
                 {dayData.milepost}
               </p>
 
@@ -374,7 +374,7 @@ export default function SummitDayPage({ params }) {
 
               {/* Day 7 nudge */}
               {dayNum === 7 && (
-                <p style={{ fontSize: '0.82rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
+                <p style={{ fontSize: '0.78rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
                   This is the one sentence that makes next week different. Take 60 seconds and write yours.
                 </p>
               )}
@@ -385,7 +385,7 @@ export default function SummitDayPage({ params }) {
           {dayData.summit_mission && (
             <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
               <div className="tag-featured">Stage Mission</div>
-              <p style={{ fontSize: '1.15rem', marginBottom: 28, lineHeight: 1.7, color: 'var(--text-main)' }}>
+              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.8, color: 'var(--text-main)' }}>
                 {dayData.summit_mission}
               </p>
               <button
