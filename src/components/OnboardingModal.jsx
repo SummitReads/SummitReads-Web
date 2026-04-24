@@ -345,8 +345,8 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
             {[
               { id: 'examples_first', label: 'Walk me through examples first', sub: 'Show me how it works in practice before explaining the concept' },
-              { id: 'question_led',   label: 'Ask me questions',               sub: 'Help me think it through — don't just give me the answer' },
-              { id: 'action_first',   label: 'Tell me what to do',             sub: 'Give me a clear next action and I'll figure out the rest' },
+              { id: 'question_led',   label: 'Ask me questions',               sub: 'Help me think it through - just give me the space to figure it out' },
+              { id: 'action_first',   label: 'Tell me what to do',             sub: "Give me a clear next action and I'll figure out the rest" },
               { id: 'reasoning_first',label: 'Give me the reasoning first',    sub: 'I want to understand why before I know what to do' },
             ].map(({ id, label, sub }) => (
               <button key={id}
