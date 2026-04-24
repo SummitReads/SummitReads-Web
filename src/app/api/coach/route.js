@@ -9,7 +9,7 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function buildSystemPrompt({ book, currentDay, userReflection, userMission }) {
+function buildSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
     ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s insight shows up in their current reality. Push awareness before action.'
@@ -31,6 +31,10 @@ User Reflection: ${userReflection || 'Not written yet — ask what stood out.'}
 Mission Status: ${userMission ? '✓ Done' : 'Not done'}
 
 Posture: ${stagePhaseGuidance}
+
+${learningPreferences ? `LEARNER PREFERENCES:
+${learningPreferences.context === 'individual_contributor' ? '- Context: Individual contributor. Frame examples through personal workflow and individual performance — not team leadership.' : ''}${learningPreferences.context === 'people_manager' ? '- Context: People manager. Frame examples through leading a team, 1:1s, direct reports, and management decisions.' : ''}${learningPreferences.context === 'business_owner' ? '- Context: Business owner or founder. Frame examples through organizational decisions, strategy, and leading at scale.' : ''}
+${learningPreferences.style === 'examples_first' ? '- Coaching style: Lead with a concrete real-world example before explaining the concept. Make it tangible first.' : ''}${learningPreferences.style === 'question_led' ? '- Coaching style: Guide through questions more than statements. Help them find the answer themselves.' : ''}${learningPreferences.style === 'action_first' ? '- Coaching style: Lead with a specific next action. Be direct. They will figure out the reasoning themselves.' : ''}${learningPreferences.style === 'reasoning_first' ? '- Coaching style: Explain the why before the what. They want to understand the mechanism before acting.' : ''}` : ''}
 
 RULES:
 - 1–3 sentences per response. 4 max.
@@ -100,12 +104,15 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const [bookRes, currentDayRes, progressRes] = await Promise.all([
+    const [bookRes, currentDayRes, progressRes, profileRes] = await Promise.all([
       supabase.from('books').select('*').eq('id', bookId).single(),
       supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
       userId
         ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
-        : { data: [], error: null }
+        : { data: [], error: null },
+      userId
+        ? supabase.from('profiles').select('learning_preferences').eq('id', userId).single()
+        : { data: null, error: null }
     ]);
 
     if (bookRes.error) {
@@ -117,7 +124,8 @@ export async function POST(request) {
       return NextResponse.json({ error: `Stage query failed: ${currentDayRes.error.message}` }, { status: 500 });
     }
 
-    const book       = bookRes.data;
+    const book                = bookRes.data;
+    const learningPreferences = profileRes?.data?.learning_preferences || null;
     const currentDay = currentDayRes.data;
 
     if (!book || !currentDay) {
@@ -137,8 +145,9 @@ export async function POST(request) {
       : buildSystemPrompt({
           book,
           currentDay,
-          userReflection: currentProgress?.reflection_text || null,
-          userMission:    currentProgress?.mission_completed || false
+          userReflection:      currentProgress?.reflection_text || null,
+          userMission:         currentProgress?.mission_completed || false,
+          learningPreferences,
         });
 
     const messages = [

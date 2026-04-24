@@ -169,6 +169,8 @@ const STEPS = [
   { tag: 'How it works',        title: '7 stages. One real output.',   body: "Each sprint has 7 stages. The first six build the concept one layer at a time. Stage 7 is the Summit, where you produce something concrete that applies to your actual job.", icon: 'none',  hasPreview: 'stages' },
   { tag: 'Do the work', title: 'You write your way through.',  body: "Each stage ends with a reflection prompt. No multiple choice, no ratings. Just your honest thinking in your own words. That's what makes it actually land. Here's what it looks like:", icon: 'gate',  hasPreview: 'reflection' },
   { tag: 'Your coach',          title: 'A coach in your corner.',      body: "Each sprint comes with an AI coach that knows your content. It won't give you the answers. It'll push you to find them. Use it when something clicks, when you're stuck, or when you want to go further.", icon: 'coach', hasPreview: 'coach' },
+  { tag: 'Your role',           title: 'Where are you right now?',     body: 'This helps us frame sprint content in the right context for your work. Pick the one that fits best.',                                                                       icon: 'none',  hasPreview: false, isSurveyContext: true },
+  { tag: 'Your coach',           title: 'How should your coach work with you?', body: 'Your Summit Coach adapts to how you think. This setting only affects the coach — not the reading material.',                                                              icon: 'coach', hasPreview: false, isSurveyStyle: true },
   { tag: "Let's go",            title: null,                           body: null,                                                                                                                                                                         icon: 'none',  hasPreview: false, isFinal: true },
 ];
 
@@ -189,7 +191,9 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
   const [exiting,   setExiting]   = useState(false);
   const [userId,    setUserId]    = useState(null);
   const [firstName, setFirstName] = useState(null);
-  const [confirmSkip, setConfirmSkip] = useState(false);
+  const [confirmSkip,        setConfirmSkip]        = useState(false);
+  const [workContext,        setWorkContext]        = useState(null);
+  const [coachStyle,         setCoachStyle]         = useState(null);
 
   useEffect(() => {
     async function checkOnboarding() {
@@ -224,12 +228,13 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('summitskills_onboarding_skipped', '1');
     }
-    // Write skipped status — modal never shows again
+    // Write skipped status and any collected preferences
     if (userId) {
-      await supabase
-        .from('profiles')
-        .update({ onboarding_status: 'skipped', onboarding_completed: true })
-        .eq('id', userId);
+      const updates = { onboarding_status: 'skipped', onboarding_completed: true };
+      if (workContext || coachStyle) {
+        updates.learning_preferences = { context: workContext, style: coachStyle };
+      }
+      await supabase.from('profiles').update(updates).eq('id', userId);
     }
     setTimeout(() => {
       setVisible(false);
@@ -315,6 +320,47 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
           </div>
         )}
 
+        {/* Work context survey step */}
+        {current.isSurveyContext && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+            {[
+              { id: 'individual_contributor', label: 'Individual contributor', sub: 'I focus on my own work and performance' },
+              { id: 'people_manager',         label: 'People manager',         sub: 'I lead a team and manage others' },
+              { id: 'business_owner',         label: 'Business owner or founder', sub: 'I run or co-run an organization' },
+            ].map(({ id, label, sub }) => (
+              <button key={id}
+                onClick={() => setWorkContext(id)}
+                style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${workContext === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`, background: workContext === id ? 'rgba(23,184,224,0.08)' : 'transparent', color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', flexDirection: 'column', gap: '3px' }}
+                onMouseEnter={e => { if (workContext !== id) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; } }}
+                onMouseLeave={e => { if (workContext !== id) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'transparent'; } }}>
+                <span>{label}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'rgba(238,242,247,0.45)' }}>{sub}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Coach style survey step */}
+        {current.isSurveyStyle && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+            {[
+              { id: 'examples_first', label: 'Walk me through examples first', sub: 'Show me how it works in practice before explaining the concept' },
+              { id: 'question_led',   label: 'Ask me questions',               sub: 'Help me think it through — don't just give me the answer' },
+              { id: 'action_first',   label: 'Tell me what to do',             sub: 'Give me a clear next action and I'll figure out the rest' },
+              { id: 'reasoning_first',label: 'Give me the reasoning first',    sub: 'I want to understand why before I know what to do' },
+            ].map(({ id, label, sub }) => (
+              <button key={id}
+                onClick={() => setCoachStyle(id)}
+                style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${coachStyle === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`, background: coachStyle === id ? 'rgba(23,184,224,0.08)' : 'transparent', color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', flexDirection: 'column', gap: '3px' }}
+                onMouseEnter={e => { if (coachStyle !== id) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; } }}
+                onMouseLeave={e => { if (coachStyle !== id) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'transparent'; } }}>
+                <span>{label}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'rgba(238,242,247,0.45)' }}>{sub}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Inline skip confirmation — appears in flow, no overlap */}
         {!isLastStep && confirmSkip && (
           <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px 16px', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -347,7 +393,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
               { label: 'Sales, Persuasion & Negotiation', short: 'Sales & Negotiation',     color: '#F43F5E' },
             ].map(({ label, short, color }) => (
               <button key={label}
-                onClick={async () => { if (userId) { await supabase.from('profiles').update({ onboarding_status: 'completed', onboarding_completed: true }).eq('id', userId); } dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
+                onClick={async () => { if (userId) { const updates = { onboarding_status: 'completed', onboarding_completed: true }; if (workContext || coachStyle) { updates.learning_preferences = { context: workContext, style: coachStyle }; } await supabase.from('profiles').update(updates).eq('id', userId); } dismiss(); if (onCategorySelect) { onCategorySelect(label); } else { router.push(`/library?category=${encodeURIComponent(label)}`); } }}
                 style={{ width: '100%', padding: '13px 16px', borderRadius: '10px', border: `1px solid ${color}33`, background: `${color}11`, color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${color}22`; e.currentTarget.style.borderColor = `${color}66`; }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${color}11`; e.currentTarget.style.borderColor = `${color}33`; }}>
@@ -358,9 +404,10 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
           </div>
         ) : (
           <button onClick={handleNext}
-            style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: '#17B8E0', color: '#0D1520', fontSize: '0.93rem', fontWeight: 700, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'opacity 0.15s' }}
-            onMouseEnter={e => e.target.style.opacity = '0.88'}
-            onMouseLeave={e => e.target.style.opacity = '1'}>
+            disabled={current.isSurveyContext && !workContext || current.isSurveyStyle && !coachStyle}
+            style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: '#17B8E0', color: '#0D1520', fontSize: '0.93rem', fontWeight: 700, fontFamily: 'var(--font-sans)', cursor: (current.isSurveyContext && !workContext || current.isSurveyStyle && !coachStyle) ? 'not-allowed' : 'pointer', transition: 'opacity 0.15s', opacity: (current.isSurveyContext && !workContext || current.isSurveyStyle && !coachStyle) ? 0.4 : 1 }}
+            onMouseEnter={e => { if (!(current.isSurveyContext && !workContext || current.isSurveyStyle && !coachStyle)) e.target.style.opacity = '0.88'; }}
+            onMouseLeave={e => { if (!(current.isSurveyContext && !workContext || current.isSurveyStyle && !coachStyle)) e.target.style.opacity = '1'; }}>
             {isLastStep ? finalCTA : step === STEPS.length - 2 ? 'Got it →' : 'Next →'}
           </button>
         )}
