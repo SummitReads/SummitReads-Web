@@ -9,7 +9,51 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function buildSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
+// ──────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────────────────────────
+
+// reflection_data is jsonb; values may be plain strings or future structured objects.
+function extractMilepostText(reflectionData) {
+  if (!reflectionData) return null;
+  if (typeof reflectionData === 'string') return reflectionData.trim() || null;
+  if (typeof reflectionData === 'object') {
+    if (reflectionData.text) return String(reflectionData.text).trim() || null;
+    try {
+      const stringified = JSON.stringify(reflectionData);
+      return stringified === '{}' ? null : stringified;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+// Fire-and-forget logger — never blocks the response stream
+async function logInteraction({ userId, bookId, dayNumber, interactionType, userInput, coachOutput, metadata }) {
+  if (!userId || !bookId || !dayNumber) return; // skip logging for anonymous / malformed calls
+  try {
+    await supabase.from('coach_interactions').insert({
+      user_id:          userId,
+      book_id:          bookId,
+      day_number:       dayNumber,
+      interaction_type: interactionType,
+      user_input:       userInput || null,
+      coach_output:     coachOutput || null,
+      metadata:         metadata || null,
+    });
+  } catch (err) {
+    console.error('Failed to log coach interaction:', err?.message ?? err);
+    // Logging failures must not affect the user experience
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// PROMPT BUILDERS
+// ──────────────────────────────────────────────────────────────────────────
+
+// CHAT mode — the existing widget. Voice unchanged from the field-name fix.
+function buildChatSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
     ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s insight shows up in their current reality. Push awareness before action.'
@@ -58,6 +102,7 @@ QUESTIONS — visceral and specific:
 NORTH STAR: One concrete behavioral shift by Stage 7. One real change.`;
 }
 
+// EXPLORE mode — unchanged from current behavior.
 function buildExploreSystemPrompt({ book, currentDay, activeSection }) {
   const sectionLabel = {
     reading:     'Worth Knowing (extended reading)',
@@ -96,138 +141,239 @@ RULES:
 NEVER: assign new tasks beyond the stage content, mention you're an AI, end without a question.`;
 }
 
-// ── Helper: extract milepost text from reflection_data ────────────────────
-// reflection_data is a jsonb column. Historically it has been written as a
-// raw string from the page (which Postgres wraps as a JSON string), so the
-// value coming back from Supabase may be a string OR an object. This helper
-// normalizes both cases to a plain string for the coach prompt.
-function extractMilepostText(reflectionData) {
-  if (!reflectionData) return null;
-  if (typeof reflectionData === 'string') return reflectionData.trim() || null;
-  if (typeof reflectionData === 'object') {
-    // If a future version stores structured data, prefer a `text` field,
-    // otherwise stringify defensively.
-    if (reflectionData.text) return String(reflectionData.text).trim() || null;
-    try {
-      const stringified = JSON.stringify(reflectionData);
-      return stringified === '{}' ? null : stringified;
-    } catch {
-      return null;
-    }
-  }
-  return null;
+// SECOND_LOOK mode — Phase 2 stub. Real prompt comes in Phase 2.
+function buildSecondLookSystemPrompt({ book, currentDay, milepostText, previousMileposts }) {
+  return `[STUB] Second look prompt placeholder. Phase 2 will replace this with the advisory voice we drafted.
+Book: ${book.title} | Day ${currentDay.day_number} | Milepost: ${milepostText}`;
 }
 
+// OPENING mode — Phase 3 stub.
+function buildOpeningSystemPrompt({ book, currentDay, yesterdayMilepost, yesterdayReflection }) {
+  return `[STUB] Opening check-in prompt placeholder. Phase 3 will replace this.`;
+}
+
+// CLOSING mode — Phase 3 stub.
+function buildClosingSystemPrompt({ book, currentDay, todayMilepost }) {
+  return `[STUB] Closing reflection prompt placeholder. Phase 3 will replace this.`;
+}
+
+// ARTIFACT mode — Phase 4 stub.
+function buildArtifactSystemPrompt({ book, allDays, allProgress }) {
+  return `[STUB] Day 7 artifact generation prompt placeholder. Phase 4 will replace this.`;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// MAIN ROUTE
+// ──────────────────────────────────────────────────────────────────────────
+
 export async function POST(request) {
+  let requestBody;
   try {
-    const { bookId, dayNum, userId, userMessage, conversationHistory, context = 'day', activeSection = null } = await request.json();
-
-    if (!bookId || !dayNum || !userMessage) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    const [bookRes, currentDayRes, progressRes, profileRes] = await Promise.all([
-      supabase.from('books').select('*').eq('id', bookId).single(),
-      supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
-      userId
-        ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
-        : { data: [], error: null },
-      userId
-        ? supabase.from('profiles').select('learning_preferences').eq('id', userId).single()
-        : { data: null, error: null }
-    ]);
-
-    if (bookRes.error) {
-      console.error('Books query failed:', bookRes.error.message);
-      return NextResponse.json({ error: `Books query failed: ${bookRes.error.message}` }, { status: 500 });
-    }
-    if (currentDayRes.error) {
-      console.error('Current day query failed:', currentDayRes.error.message);
-      return NextResponse.json({ error: `Stage query failed: ${currentDayRes.error.message}` }, { status: 500 });
-    }
-
-    const book                = bookRes.data;
-    const learningPreferences = profileRes?.data?.learning_preferences || null;
-    const currentDay          = currentDayRes.data;
-
-    if (!book || !currentDay) {
-      return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
-    }
-
-    const progressMap = {};
-    (progressRes.data || []).forEach(p => {
-      progressMap[p.day_number] = p;
-    });
-
-    const currentProgress = progressMap[dayNum];
-
-    // ── FIELD NAME FIX ────────────────────────────────────────────────────
-    // The schema columns are `reflection_data` (jsonb) and `completed` (bool).
-    // Previous code read `reflection_text` and `mission_completed`, which do
-    // not exist — so the coach has been operating without the user's milepost
-    // for an unknown amount of time. Fixed below.
-    const userReflection = extractMilepostText(currentProgress?.reflection_data);
-    const userMission    = currentProgress?.completed === true;
-
-    // Use explore prompt when in explore context, day prompt otherwise
-    const systemPrompt = context === 'explore'
-      ? buildExploreSystemPrompt({ book, currentDay, activeSection })
-      : buildSystemPrompt({
-          book,
-          currentDay,
-          userReflection,
-          userMission,
-          learningPreferences,
-        });
-
-    const messages = [
-      { role: 'system', content: systemPrompt },
-      ...(conversationHistory || []).map(msg => ({
-        role:    msg.role,
-        content: msg.content
-      })),
-      { role: 'user', content: userMessage }
-    ];
-
-    let openAiStream;
-    try {
-      openAiStream = await openai.chat.completions.create({
-        model:      'gpt-4.1-mini',
-        messages,
-        max_tokens: 300,
-        stream:     true
-      });
-    } catch (openAiError) {
-      console.error('OpenAI API error:', openAiError);
-      return NextResponse.json({ error: `OpenAI error: ${openAiError.message}` }, { status: 500 });
-    }
-
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of openAiStream) {
-            const text = chunk.choices[0]?.delta?.content || '';
-            if (text) controller.enqueue(encoder.encode(text));
-          }
-        } catch (err) {
-          console.error('Stream error:', err);
-        } finally {
-          controller.close();
-        }
-      }
-    });
-
-    return new Response(readable, {
-      headers: {
-        'Content-Type':      'text/plain; charset=utf-8',
-        'Cache-Control':     'no-cache',
-        'X-Accel-Buffering': 'no',
-      }
-    });
-
-  } catch (error) {
-    console.error('Coach API error:', error);
-    return NextResponse.json({ error: error?.message || 'Something went wrong. Try again.' }, { status: 500 });
+    requestBody = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
   }
+
+  const {
+    bookId,
+    dayNum,
+    userId,
+    userMessage,
+    conversationHistory,
+    context           = 'day',
+    activeSection     = null,
+    interaction_type,                       // NEW — drives mode dispatch
+    milepostText,                           // for second_look mode
+  } = requestBody;
+
+  // Backwards compat: if interaction_type isn't provided, infer from context.
+  // Existing SummitCoach.jsx widget calls won't include it, and we want them to keep working.
+  const mode = interaction_type || (context === 'explore' ? 'explore' : 'chat');
+
+  // Validate required fields per mode
+  if (!bookId || !dayNum) {
+    return NextResponse.json({ error: 'Missing bookId or dayNum' }, { status: 400 });
+  }
+  if ((mode === 'chat' || mode === 'explore') && !userMessage) {
+    return NextResponse.json({ error: 'Missing userMessage for chat/explore mode' }, { status: 400 });
+  }
+  if (mode === 'second_look' && !milepostText) {
+    return NextResponse.json({ error: 'Missing milepostText for second_look mode' }, { status: 400 });
+  }
+
+  // Fetch shared context — book, current day, user progress, profile.
+  const [bookRes, currentDayRes, progressRes, profileRes] = await Promise.all([
+    supabase.from('books').select('*').eq('id', bookId).single(),
+    supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
+    userId
+      ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
+      : { data: [], error: null },
+    userId
+      ? supabase.from('profiles').select('learning_preferences').eq('id', userId).single()
+      : { data: null, error: null }
+  ]);
+
+  if (bookRes.error) {
+    console.error('Books query failed:', bookRes.error.message);
+    return NextResponse.json({ error: `Books query failed: ${bookRes.error.message}` }, { status: 500 });
+  }
+  if (currentDayRes.error) {
+    console.error('Current day query failed:', currentDayRes.error.message);
+    return NextResponse.json({ error: `Day query failed: ${currentDayRes.error.message}` }, { status: 500 });
+  }
+
+  const book                = bookRes.data;
+  const currentDay          = currentDayRes.data;
+  const learningPreferences = profileRes?.data?.learning_preferences || null;
+
+  if (!book || !currentDay) {
+    return NextResponse.json({ error: 'Book or day not found' }, { status: 404 });
+  }
+
+  // Build progress map for cross-day context lookups
+  const progressMap = {};
+  (progressRes.data || []).forEach(p => {
+    progressMap[p.day_number] = p;
+  });
+  const currentProgress = progressMap[dayNum];
+  const userReflection  = extractMilepostText(currentProgress?.reflection_data);
+  const userMission     = currentProgress?.completed === true;
+
+  // ── Mode dispatch ──────────────────────────────────────────────────────
+  let systemPrompt;
+  let promptUserMessage = userMessage;
+
+  switch (mode) {
+    case 'chat':
+      systemPrompt = buildChatSystemPrompt({
+        book,
+        currentDay,
+        userReflection,
+        userMission,
+        learningPreferences,
+      });
+      break;
+
+    case 'explore':
+      systemPrompt = buildExploreSystemPrompt({ book, currentDay, activeSection });
+      break;
+
+    case 'second_look': {
+      const previousMileposts = [];
+      for (let d = 1; d < dayNum; d++) {
+        const prev = progressMap[d];
+        const text = extractMilepostText(prev?.reflection_data);
+        if (text) previousMileposts.push({ day: d, milepost: text });
+      }
+      systemPrompt = buildSecondLookSystemPrompt({
+        book,
+        currentDay,
+        milepostText,
+        previousMileposts,
+      });
+      // For second_look, the "user message" is the milepost itself
+      promptUserMessage = `Here is my milepost for review: "${milepostText}"`;
+      break;
+    }
+
+    case 'opening': {
+      const yesterday = progressMap[dayNum - 1];
+      systemPrompt = buildOpeningSystemPrompt({
+        book,
+        currentDay,
+        yesterdayMilepost:    extractMilepostText(yesterday?.reflection_data),
+        yesterdayReflection:  yesterday?.evening_reflection || null,
+      });
+      promptUserMessage = userMessage || 'Generate the opening check-in for today.';
+      break;
+    }
+
+    case 'closing': {
+      systemPrompt = buildClosingSystemPrompt({
+        book,
+        currentDay,
+        todayMilepost: userReflection,
+      });
+      promptUserMessage = userMessage || 'Generate the closing reflection prompt for today.';
+      break;
+    }
+
+    case 'artifact':
+      systemPrompt = buildArtifactSystemPrompt({
+        book,
+        allDays:     [],          // Phase 4 will populate
+        allProgress: progressRes.data || [],
+      });
+      promptUserMessage = userMessage || 'Generate the Day 7 artifact for this user.';
+      break;
+
+    default:
+      return NextResponse.json({ error: `Unknown interaction_type: ${mode}` }, { status: 400 });
+  }
+
+  // ── OpenAI call ────────────────────────────────────────────────────────
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...(conversationHistory || []).map(msg => ({ role: msg.role, content: msg.content })),
+    { role: 'user', content: promptUserMessage },
+  ];
+
+  let openAiStream;
+  try {
+    openAiStream = await openai.chat.completions.create({
+      model:      'gpt-4.1-mini',
+      messages,
+      max_tokens: 300,
+      stream:     true,
+    });
+  } catch (openAiError) {
+    console.error('OpenAI API error:', openAiError);
+    return NextResponse.json({ error: `OpenAI error: ${openAiError.message}` }, { status: 500 });
+  }
+
+  // ── Stream the response, accumulate for logging ────────────────────────
+  const encoder = new TextEncoder();
+  let fullCoachOutput = '';
+
+  const readable = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const chunk of openAiStream) {
+          const text = chunk.choices[0]?.delta?.content || '';
+          if (text) {
+            fullCoachOutput += text;
+            controller.enqueue(encoder.encode(text));
+          }
+        }
+      } catch (err) {
+        console.error('Stream error:', err);
+      } finally {
+        controller.close();
+        // Fire-and-forget log AFTER stream closes — never blocks the user
+        logInteraction({
+          userId,
+          bookId,
+          dayNumber:       dayNum,
+          interactionType: mode,
+          userInput:       promptUserMessage,
+          coachOutput:     fullCoachOutput,
+          metadata: {
+            context,
+            active_section:        activeSection,
+            had_user_reflection:   Boolean(userReflection),
+            mission_completed:     userMission,
+            had_milepost_text:     Boolean(milepostText),
+          },
+        });
+      }
+    },
+  });
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type':      'text/plain; charset=utf-8',
+      'Cache-Control':     'no-cache',
+      'X-Accel-Buffering': 'no',
+    },
+  });
 }
