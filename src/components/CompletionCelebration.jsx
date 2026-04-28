@@ -16,32 +16,36 @@ export default function CompletionCelebration({
 
   useEffect(() => {
     if (isOpen && step === 1) {
-      const duration = 2000;
-      const end = Date.now() + duration;
+      // Confetti only on Day 7 — the sprint completion milestone.
+      // Days 1-6 are routine completions and don't need celebration animation.
+      if (dayNum === 7) {
+        const duration = 2000;
+        const end = Date.now() + duration;
 
-      const frame = () => {
-        confetti({
-          particleCount: 3,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0 },
-          colors: ['#00D9FF', '#0EA5E9', '#06B6D4']
-        });
-        confetti({
-          particleCount: 3,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1 },
-          colors: ['#00D9FF', '#0EA5E9', '#06B6D4']
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      };
-      frame();
+        const frame = () => {
+          confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#00D9FF', '#0EA5E9', '#06B6D4']
+          });
+          confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#00D9FF', '#0EA5E9', '#06B6D4']
+          });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        };
+        frame();
+      }
 
       const timer = setTimeout(() => setStep(2), 2500);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, step]);
+  }, [isOpen, step, dayNum]);
 
   if (!isOpen) return null;
 
