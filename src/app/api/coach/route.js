@@ -96,6 +96,28 @@ RULES:
 NEVER: assign new tasks beyond the stage content, mention you're an AI, end without a question.`;
 }
 
+// ── Helper: extract milepost text from reflection_data ────────────────────
+// reflection_data is a jsonb column. Historically it has been written as a
+// raw string from the page (which Postgres wraps as a JSON string), so the
+// value coming back from Supabase may be a string OR an object. This helper
+// normalizes both cases to a plain string for the coach prompt.
+function extractMilepostText(reflectionData) {
+  if (!reflectionData) return null;
+  if (typeof reflectionData === 'string') return reflectionData.trim() || null;
+  if (typeof reflectionData === 'object') {
+    // If a future version stores structured data, prefer a `text` field,
+    // otherwise stringify defensively.
+    if (reflectionData.text) return String(reflectionData.text).trim() || null;
+    try {
+      const stringified = JSON.stringify(reflectionData);
+      return stringified === '{}' ? null : stringified;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 export async function POST(request) {
   try {
     const { bookId, dayNum, userId, userMessage, conversationHistory, context = 'day', activeSection = null } = await request.json();
@@ -126,7 +148,7 @@ export async function POST(request) {
 
     const book                = bookRes.data;
     const learningPreferences = profileRes?.data?.learning_preferences || null;
-    const currentDay = currentDayRes.data;
+    const currentDay          = currentDayRes.data;
 
     if (!book || !currentDay) {
       return NextResponse.json({ error: 'Book or stage not found' }, { status: 404 });
@@ -139,14 +161,22 @@ export async function POST(request) {
 
     const currentProgress = progressMap[dayNum];
 
+    // ── FIELD NAME FIX ────────────────────────────────────────────────────
+    // The schema columns are `reflection_data` (jsonb) and `completed` (bool).
+    // Previous code read `reflection_text` and `mission_completed`, which do
+    // not exist — so the coach has been operating without the user's milepost
+    // for an unknown amount of time. Fixed below.
+    const userReflection = extractMilepostText(currentProgress?.reflection_data);
+    const userMission    = currentProgress?.completed === true;
+
     // Use explore prompt when in explore context, day prompt otherwise
     const systemPrompt = context === 'explore'
       ? buildExploreSystemPrompt({ book, currentDay, activeSection })
       : buildSystemPrompt({
           book,
           currentDay,
-          userReflection:      currentProgress?.reflection_text || null,
-          userMission:         currentProgress?.mission_completed || false,
+          userReflection,
+          userMission,
           learningPreferences,
         });
 

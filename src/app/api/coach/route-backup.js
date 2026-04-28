@@ -9,7 +9,7 @@ const supabase = createClient(
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-function buildSystemPrompt({ book, currentDay, userReflection, userMission }) {
+function buildSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
     ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s insight shows up in their current reality. Push awareness before action.'
@@ -31,6 +31,10 @@ User Reflection: ${userReflection || 'Not written yet — ask what stood out.'}
 Mission Status: ${userMission ? '✓ Done' : 'Not done'}
 
 Posture: ${stagePhaseGuidance}
+
+${learningPreferences ? `LEARNER PREFERENCES:
+${learningPreferences.context === 'individual_contributor' ? '- Context: Individual contributor. Frame examples through personal workflow and individual performance — not team leadership.' : ''}${learningPreferences.context === 'people_manager' ? '- Context: People manager. Frame examples through leading a team, 1:1s, direct reports, and management decisions.' : ''}${learningPreferences.context === 'business_owner' ? '- Context: Business owner or founder. Frame examples through organizational decisions, strategy, and leading at scale.' : ''}
+${learningPreferences.style === 'examples_first' ? '- Coaching style: Lead with a concrete real-world example before explaining the concept. Make it tangible first.' : ''}${learningPreferences.style === 'question_led' ? '- Coaching style: Guide through questions more than statements. Help them find the answer themselves.' : ''}${learningPreferences.style === 'action_first' ? '- Coaching style: Lead with a specific next action. Be direct. They will figure out the reasoning themselves.' : ''}${learningPreferences.style === 'reasoning_first' ? '- Coaching style: Explain the why before the what. They want to understand the mechanism before acting.' : ''}` : ''}
 
 RULES:
 - 1–3 sentences per response. 4 max.
@@ -54,20 +58,61 @@ QUESTIONS — visceral and specific:
 NORTH STAR: One concrete behavioral shift by Stage 7. One real change.`;
 }
 
+function buildExploreSystemPrompt({ book, currentDay, activeSection }) {
+  const sectionLabel = {
+    reading:     'Worth Knowing (extended reading)',
+    examples:    'In Practice (real examples)',
+    reflections: 'Think About This (reflection prompts)',
+    challenges:  'Try This (action challenges)',
+  }[activeSection] || 'Explore Further bonus content';
+
+  const sectionGuidance = {
+    reading:     'They are reading extended context. Help them connect it to their real situation. Push toward application, not comprehension.',
+    examples:    'They are reading real examples. Help them find the one that maps to their context. If none fit, help them adapt the closest one.',
+    reflections: 'They are working through reflection prompts. Help them get specific and honest. Push past the polished answer.',
+    challenges:  'They are looking at action challenges. Help them pick one and make it concrete enough to actually do. If too heavy, help them find a smaller version that still counts.',
+  }[activeSection] || 'They are exploring bonus content from this stage. Help them find what is most relevant to their situation.';
+
+  return `You are the Summit Coach for SummitSkills — a seasoned executive coach. Warm, direct, no flattery, no over-explaining.
+
+CONTEXT:
+Book: "${book.title}" by ${book.author}
+Stage ${currentDay.day_number} of 7: "${currentDay.title}"
+Section: ${sectionLabel}
+
+The user has already completed this stage's mission. They are now in the Explore Further section, going deeper on their own time.
+
+Your posture here: ${sectionGuidance}
+
+RULES:
+- 1–3 sentences per response. 4 max.
+- End every response with exactly ONE question. Never skip.
+- Stay grounded in this stage's content. If they go off-topic: "That's a bit outside what we're looking at here — what's coming up for you from this section?"
+- No bullet lists. No multi-step plans. Short paragraphs only.
+- No "Great question!" or fake enthusiasm.
+- If they want to apply something, get specific about their actual situation — not a hypothetical.
+- If they're stuck on a reflection prompt, help them draft an honest answer and check it with them.
+
+NEVER: assign new tasks beyond the stage content, mention you're an AI, end without a question.`;
+}
+
 export async function POST(request) {
   try {
-    const { bookId, dayNum, userId, userMessage, conversationHistory } = await request.json();
+    const { bookId, dayNum, userId, userMessage, conversationHistory, context = 'day', activeSection = null } = await request.json();
 
     if (!bookId || !dayNum || !userMessage) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const [bookRes, currentDayRes, progressRes] = await Promise.all([
+    const [bookRes, currentDayRes, progressRes, profileRes] = await Promise.all([
       supabase.from('books').select('*').eq('id', bookId).single(),
       supabase.from('summit_days').select('*').eq('book_id', bookId).eq('day_number', dayNum).single(),
       userId
         ? supabase.from('user_progress').select('*').eq('user_id', userId).eq('book_id', bookId).order('day_number')
-        : { data: [], error: null }
+        : { data: [], error: null },
+      userId
+        ? supabase.from('profiles').select('learning_preferences').eq('id', userId).single()
+        : { data: null, error: null }
     ]);
 
     if (bookRes.error) {
@@ -79,7 +124,8 @@ export async function POST(request) {
       return NextResponse.json({ error: `Stage query failed: ${currentDayRes.error.message}` }, { status: 500 });
     }
 
-    const book       = bookRes.data;
+    const book                = bookRes.data;
+    const learningPreferences = profileRes?.data?.learning_preferences || null;
     const currentDay = currentDayRes.data;
 
     if (!book || !currentDay) {
@@ -93,12 +139,16 @@ export async function POST(request) {
 
     const currentProgress = progressMap[dayNum];
 
-    const systemPrompt = buildSystemPrompt({
-      book,
-      currentDay,
-      userReflection: currentProgress?.reflection_text || null,
-      userMission:    currentProgress?.mission_completed || false
-    });
+    // Use explore prompt when in explore context, day prompt otherwise
+    const systemPrompt = context === 'explore'
+      ? buildExploreSystemPrompt({ book, currentDay, activeSection })
+      : buildSystemPrompt({
+          book,
+          currentDay,
+          userReflection:      currentProgress?.reflection_text || null,
+          userMission:         currentProgress?.mission_completed || false,
+          learningPreferences,
+        });
 
     const messages = [
       { role: 'system', content: systemPrompt },
