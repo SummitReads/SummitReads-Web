@@ -12,7 +12,7 @@ export default function CompletionCelebration({
   nextDayPreview,
   nextDayUrl,
 }) {
-  const [step, setStep] = useState(1); // 1: celebration, 2: preview / journey complete
+  const [step, setStep] = useState(1); // 1: celebration, 2: preview / sprint complete
 
   useEffect(() => {
     if (isOpen && step === 1) {
@@ -52,9 +52,7 @@ export default function CompletionCelebration({
         {/* Step 1: Celebration */}
         {step === 1 && (
           <div className="celebration-step fade-in">
-            <div className="celebration-icon">🎉</div>
-            <h2 className="celebration-title">Stage {dayNum} Complete!</h2>
-            <p className="celebration-subtitle">You're making incredible progress on</p>
+            <h2 className="celebration-title">Day {dayNum} complete.</h2>
             <p className="celebration-book">{bookTitle}</p>
             <div className="progress-circle">
               <svg viewBox="0 0 100 100">
@@ -81,11 +79,11 @@ export default function CompletionCelebration({
           </div>
         )}
 
-        {/* Step 2: Next Stage Preview (Days 1-6) */}
+        {/* Step 2: Next Day Preview (Days 1-6) */}
         {step === 2 && dayNum < 7 && (
           <div className="celebration-step fade-in">
             <div className="preview-badge">Up Next</div>
-            <h2 className="celebration-title">Stage {dayNum + 1}</h2>
+            <h2 className="celebration-title">Day {dayNum + 1}</h2>
             <h3 className="next-day-title">{nextDayTitle}</h3>
             <p className="next-day-preview">{nextDayPreview}</p>
 
@@ -98,8 +96,7 @@ export default function CompletionCelebration({
               textAlign: 'left'
             }}>
               <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
-                Stage {dayNum + 1} is ready when you are. Complete this stage's action challenge first —
-                your response unlocks what's next.
+                Day {dayNum + 1} is ready when you are. Complete today's mission to unlock it.
               </p>
             </div>
 
@@ -111,26 +108,46 @@ export default function CompletionCelebration({
                 onClick={() => { onClose(); window.location.href = nextDayUrl; }}
                 className="btn-primary-celebration"
               >
-                Go Take Action →
+                Continue →
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Journey Complete (Day 7) */}
+        {/* Step 2: Sprint Complete (Day 7) */}
         {step === 2 && dayNum === 7 && (
           <div className="celebration-step fade-in">
-            <div className="celebration-icon">🏆</div>
-            <h2 className="celebration-title">Journey Complete!</h2>
+            <div className="progress-circle">
+              <svg viewBox="0 0 100 100">
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#00D9FF" />
+                    <stop offset="100%" stopColor="#0EA5E9" />
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="45" className="progress-bg" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  className="progress-fill"
+                  style={{
+                    strokeDasharray: `283 283`,
+                    animation: 'progressFill 1s ease-out forwards'
+                  }}
+                />
+              </svg>
+              <div className="progress-text">100%</div>
+            </div>
+            <h2 className="celebration-title">Sprint Complete.</h2>
             <p className="celebration-subtitle">
-              You've completed all 7 stages of {bookTitle}
+              You've completed all 7 days of {bookTitle}.
             </p>
             <p className="completion-message">
-              You didn't just read — you acted. Seven stages, seven real steps forward.
-              Ready to start your next transformation?
+              Seven days, done.
             </p>
             <button onClick={onClose} className="btn-primary-celebration">
-              Explore More Books
+              Explore More Sprints
             </button>
           </div>
         )}

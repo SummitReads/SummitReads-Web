@@ -61,7 +61,7 @@ export default function DeepDivePage({ params }) {
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: 8 }}>Content not found</div>
-        <Link href={`/summit/${id}/day/${dayNum}`} style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>← Back to Stage {dayNum}</Link>
+        <Link href={`/summit/${id}/day/${dayNum}`} style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>← Back to Day {dayNum}</Link>
       </div>
     </div>
   );
@@ -166,7 +166,7 @@ export default function DeepDivePage({ params }) {
               gap: 6,
             }}
           >
-            ← Back to Stage {dayNum}
+            ← Back to Day {dayNum}
           </Link>
         </div>
 
@@ -180,7 +180,7 @@ export default function DeepDivePage({ params }) {
               letterSpacing: '0.1em',
               fontWeight: 700,
             }}>
-              Stage {dayNum} · Explore Further
+              Day {dayNum} · Explore Further
             </span>
           </div>
           <h1 style={{
@@ -213,7 +213,7 @@ export default function DeepDivePage({ params }) {
           color: 'rgba(255,255,255,0.6)',
           lineHeight: 1.6,
         }}>
-          This is optional. Finish the stage mission first — then come back here when you want more context, a real example, or something to think about.
+          This is optional. Finish the day's mission first. Come back when you want more context, a real example, or something to think about.
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -279,7 +279,7 @@ export default function DeepDivePage({ params }) {
             className="btn-outline"
             style={{ flex: 1, textAlign: 'center' }}
           >
-            ← Back to Stage {dayNum}
+            ← Back to Day {dayNum}
           </Link>
           {dayNum < 7 && (
             <Link
@@ -287,7 +287,7 @@ export default function DeepDivePage({ params }) {
               className="btn-primary"
               style={{ flex: 1, textAlign: 'center' }}
             >
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum + 1} →</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum + 1} →</span>
             </Link>
           )}
         </div>

@@ -94,7 +94,7 @@ export default function SummitDayPage({ params }) {
           }
         }
         if (bookError) setError('Book not found');
-        if (dayError)  setError('Stage content not found');
+        if (dayError)  setError('Day content not found');
         setBook(bookData);
         setDayData(currentDayData);
         setAllDays(daysData || []);
@@ -221,7 +221,7 @@ export default function SummitDayPage({ params }) {
                 bookTitle:      book?.title,
                 currentStage:   dayNum,
                 nextStage:      dayNum + 1,
-                nextStageTitle: nextDayData?.title || `Stage ${dayNum + 1}`,
+                nextStageTitle: nextDayData?.title || `Day ${dayNum + 1}`,
                 bookId:         id,
                 reflection:     reflectionText.trim() || null,
               }),
@@ -255,13 +255,8 @@ export default function SummitDayPage({ params }) {
   // ─── Loading / error states ──────────────────────────────────────────────
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
-          Loading
-        </div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', color: 'var(--text-muted)' }}>
-          Your journey…
-        </div>
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        Loading
       </div>
     </div>
   );
@@ -278,7 +273,7 @@ export default function SummitDayPage({ params }) {
   const progressPercent = Math.round(((dayNum - 1) / 7) * 100);
   const nextStagePreview = nextDayData?.ascent_content
     ? nextDayData.ascent_content.substring(0, 150) + '…'
-    : 'Continue your transformation journey.';
+    : 'Continue to the next day.';
 
   const hasMilepostText = reflectionText.trim().length > 0;
   const secondLookBusy  = secondLookLoading || secondLookStreaming;
@@ -311,7 +306,7 @@ export default function SummitDayPage({ params }) {
           <div style={{ marginBottom: 28 }}>
             <div className="tag-featured" style={{ marginBottom: 16 }}>
               <div className="pulse-dot" />
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum}</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum}</span>
               <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
               <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
               {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
@@ -332,7 +327,7 @@ export default function SummitDayPage({ params }) {
                 return (
                   <div
                     key={stage}
-                    title={skill ? `Stage ${stage}: ${skill}${isComplete ? ' ✓' : ''}` : undefined}
+                    title={skill ? `Day ${stage}: ${skill}` : undefined}
                     style={{
                       flex: 1,
                       height: 5,
@@ -350,7 +345,7 @@ export default function SummitDayPage({ params }) {
               })}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <span>Your journey</span>
+              <span>Progress</span>
               <span style={{ fontFamily: "'DM Mono', monospace", color: 'var(--brand-teal)', fontWeight: 600 }}>
                 {progressPercent}% complete
               </span>
@@ -370,7 +365,7 @@ export default function SummitDayPage({ params }) {
               {dayData.title}
             </h2>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
-              Stage {dayNum} of 7
+              Day {dayNum} of 7
             </p>
             {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
             {dayData.skill_focus && (
@@ -395,7 +390,7 @@ export default function SummitDayPage({ params }) {
           <div className="glass-panel" style={{ marginBottom: 24 }}>
             <div className="tag-featured">
               <div className="pulse-dot" />
-              Today's Ascent
+              Today's Lesson
             </div>
             <div style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
@@ -606,7 +601,7 @@ export default function SummitDayPage({ params }) {
           {/* Mission */}
           {dayData.summit_mission && (
             <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Stage Mission</div>
+              <div className="tag-featured">Today's Mission</div>
               <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.8, color: 'var(--text-main)' }}>
                 {dayData.summit_mission}
               </p>
@@ -617,11 +612,11 @@ export default function SummitDayPage({ params }) {
                 {missionComplete ? (
                   <>
                     <Check size={20} strokeWidth={2.5} />
-                    Stage Complete
+                    Day Complete
                   </>
                 ) : (
                   <>
-                    Complete This Stage
+                    Mark Day Complete
                     <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
                   </>
                 )}
@@ -668,12 +663,12 @@ export default function SummitDayPage({ params }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
           {dayNum > 1 && (
             <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Stage {dayNum - 1}</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day {dayNum - 1}</span>
             </Link>
           )}
           {dayNum < 7 && missionComplete && (
             <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum + 1} →</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum + 1} →</span>
             </Link>
           )}
         </div>
@@ -683,7 +678,7 @@ export default function SummitDayPage({ params }) {
         onClose={handleCloseCelebration}
         dayNum={dayNum}
         bookTitle={book.sprint_title || book.title}
-        nextDayTitle={nextDayData?.title || `Stage ${dayNum + 1}`}
+        nextDayTitle={nextDayData?.title || `Day ${dayNum + 1}`}
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
       />
