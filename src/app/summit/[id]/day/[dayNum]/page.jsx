@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { supabase } from '@/app/supabaseClient';
@@ -26,23 +26,28 @@ export default function SummitDayPage({ params }) {
   const [nextDayData,         setNextDayData]         = useState(null);
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
 
+  // ── Second-look state (Phase 2) ──────────────────────────────────────
+  const [coachObservation,     setCoachObservation]     = useState('');
+  const [secondLookLoading,    setSecondLookLoading]    = useState(false);
+  const [secondLookStreaming,  setSecondLookStreaming]  = useState(false);
+  const [showCoachPanel,       setShowCoachPanel]       = useState(false);
+  const [secondLookError,      setSecondLookError]      = useState(null);
+  const secondLookAbortRef = useRef(null);
+
   useEffect(() => {
     async function fetchData() {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         setUser(currentUser);
-
         if (!id || !dayNum) {
           setError('Missing parameters');
           setLoading(false);
           return;
         }
-
         const { data: bookData,       error: bookError } = await supabase.from('books').select('*').eq('id', id).single();
         // ── skill_focus added so progress dots can show the skill label on hover ──
         const { data: daysData }                          = await supabase.from('summit_days').select('day_number, title, skill_focus').eq('book_id', id).order('day_number', { ascending: true });
         const { data: currentDayData, error: dayError  } = await supabase.from('summit_days').select('*').eq('book_id', id).eq('day_number', dayNum).maybeSingle();
-
         if (dayNum < 7) {
           const { data: nextDay } = await supabase
             .from('summit_days')
@@ -52,7 +57,6 @@ export default function SummitDayPage({ params }) {
             .maybeSingle();
           setNextDayData(nextDay);
         }
-
         if (currentUser && dayNum > 1) {
           const { data: prevProgress } = await supabase
             .from('user_progress')
@@ -63,7 +67,6 @@ export default function SummitDayPage({ params }) {
             .maybeSingle();
           setPreviousDayProgress(prevProgress);
         }
-
         if (currentUser) {
           const { data: currentProgress } = await supabase
             .from('user_progress')
@@ -72,12 +75,15 @@ export default function SummitDayPage({ params }) {
             .eq('book_id', id)
             .eq('day_number', dayNum)
             .maybeSingle();
-
           if (currentProgress) {
             setReflectionText(currentProgress.reflection_data || '');
             setMissionComplete(currentProgress.completed || false);
+            // Restore any prior coach observation so it shows on revisit
+            if (currentProgress.coach_observation) {
+              setCoachObservation(currentProgress.coach_observation);
+              setShowCoachPanel(true);
+            }
           }
-
           // Mark onboarding complete the first time a user lands on any Day 1
           if (dayNum === 1) {
             supabase
@@ -87,10 +93,8 @@ export default function SummitDayPage({ params }) {
               .then(() => {});
           }
         }
-
         if (bookError) setError('Book not found');
         if (dayError)  setError('Stage content not found');
-
         setBook(bookData);
         setDayData(currentDayData);
         setAllDays(daysData || []);
@@ -102,6 +106,9 @@ export default function SummitDayPage({ params }) {
     }
     fetchData();
   }, [id, dayNum]);
+
+  // Cleanup any in-flight second-look request on unmount
+  useEffect(() => () => secondLookAbortRef.current?.abort(), []);
 
   async function saveReflection() {
     if (!user || !reflectionText.trim()) return;
@@ -115,11 +122,82 @@ export default function SummitDayPage({ params }) {
     } catch (err) { console.error('Error saving reflection:', err?.message ?? err); }
   }
 
+  // ── Second-look handler (Phase 2) ────────────────────────────────────
+  async function getSecondLook() {
+    if (!user) { alert('Please sign in to use the coach.'); return; }
+    if (!reflectionText.trim()) { return; }
+    if (secondLookLoading || secondLookStreaming) return;
+
+    // Make sure the milepost is saved before the coach reads it
+    await saveReflection();
+
+    setShowCoachPanel(true);
+    setCoachObservation('');
+    setSecondLookError(null);
+    setSecondLookLoading(true);
+
+    secondLookAbortRef.current = new AbortController();
+
+    try {
+      const res = await fetch('/api/coach', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal:  secondLookAbortRef.current.signal,
+        body: JSON.stringify({
+          bookId:           id,
+          dayNum,
+          userId:           user.id,
+          interaction_type: 'second_look',
+          milepostText:     reflectionText.trim(),
+          context:          'day',
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || 'Coach unavailable. Try again.');
+      }
+
+      setSecondLookLoading(false);
+      setSecondLookStreaming(true);
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        accumulated += chunk;
+        setCoachObservation(prev => prev + chunk);
+      }
+
+      setSecondLookStreaming(false);
+
+      // Persist the observation so it shows on revisit
+      try {
+        await supabase.from('user_progress').upsert({
+          user_id:           user.id,
+          book_id:           id,
+          day_number:        dayNum,
+          coach_observation: accumulated,
+        }, { onConflict: 'user_id,book_id,day_number' });
+      } catch (saveErr) {
+        console.error('Failed to persist coach observation:', saveErr?.message ?? saveErr);
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('Second-look error:', err);
+      setSecondLookError(err.message || 'Something went wrong. Try again.');
+      setSecondLookLoading(false);
+      setSecondLookStreaming(false);
+    }
+  }
+
   async function toggleMission() {
     if (!user) { alert('Please sign in to save progress.'); return; }
-
     const newState = !missionComplete;
-
     if (newState) {
       const now = new Date().toISOString();
       setMissionComplete(true);
@@ -131,9 +209,7 @@ export default function SummitDayPage({ params }) {
           completed:    true,
           completed_at: now,
         }, { onConflict: 'user_id,book_id,day_number' });
-
         if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(false); return; }
-
         // ── Fire stage-complete email (only if there's a next stage) ──
         if (dayNum < 7 && user?.email) {
           try {
@@ -154,7 +230,6 @@ export default function SummitDayPage({ params }) {
             console.error('Email send failed:', emailErr);
           }
         }
-
         setShowCelebration(true);
       } catch (err) { console.error('Critical error:', err?.message ?? err); setMissionComplete(false); }
     } else {
@@ -205,10 +280,12 @@ export default function SummitDayPage({ params }) {
     ? nextDayData.ascent_content.substring(0, 150) + '…'
     : 'Continue your transformation journey.';
 
+  const hasMilepostText = reflectionText.trim().length > 0;
+  const secondLookBusy  = secondLookLoading || secondLookStreaming;
+
   return (
     <>
       <div className="ambient-glow" />
-
       <nav className="glass-nav">
         <div className="nav-content">
           <Link href="/library" className="logo">
@@ -220,9 +297,7 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
       </nav>
-
       <main className="container" style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
-
         {/* Sprint header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ marginBottom: 28 }}>
@@ -238,7 +313,6 @@ export default function SummitDayPage({ params }) {
               {book.sprint_title || book.title}
             </p>
           </div>
-
           {/* Progress bar */}
           <div className="progress-bar-container">
             <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
@@ -247,7 +321,6 @@ export default function SummitDayPage({ params }) {
                 const isComplete = stage < dayNum;
                 const isCurrent  = stage === dayNum;
                 const skill      = stageData?.skill_focus;
-
                 return (
                   <div
                     key={stage}
@@ -276,7 +349,6 @@ export default function SummitDayPage({ params }) {
             </div>
           </div>
         </div>
-
         {/* Stage content — gated by DayGuard */}
         <DayGuard
           userId={user?.id}
@@ -311,7 +383,6 @@ export default function SummitDayPage({ params }) {
               </div>
             )}
           </div>
-
           {/* Today's insight */}
           <div className="glass-panel" style={{ marginBottom: 24 }}>
             <div className="tag-featured">
@@ -322,7 +393,6 @@ export default function SummitDayPage({ params }) {
               {dayData.ascent_content}
             </div>
           </div>
-
           {/* Milepost */}
           {dayData.milepost && (
             <div className="glass-panel" style={{
@@ -335,11 +405,9 @@ export default function SummitDayPage({ params }) {
               <div className="tag-featured">
                 {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
               </div>
-
               <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.7 }}>
                 {dayData.milepost}
               </p>
-
               {/* Hint line — the three ingredients */}
               <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
                 The best ones are specific. Include:{' '}
@@ -350,7 +418,6 @@ export default function SummitDayPage({ params }) {
                 <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
                 {' '}(on my second monitor)
               </p>
-
               <textarea
                 className="journal-input"
                 value={reflectionText}
@@ -368,11 +435,160 @@ export default function SummitDayPage({ params }) {
                 }}
               />
 
-              {/* Soft skip note — Days 1–6 only */}
-              {dayNum < 7 && (
-                <p style={{ fontSize: '0.75rem', color: 'rgba(25,190,227,0.6)', marginTop: 10, textAlign: 'right' }}>
-                  Writing it down helps it stick — but you can skip and continue below.
-                </p>
+              {/* ── Second-look button row (Phase 2) ──────────────────── */}
+              <div style={{
+                marginTop: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                flexWrap: 'wrap',
+              }}>
+                <button
+                  type="button"
+                  onClick={getSecondLook}
+                  disabled={!hasMilepostText || secondLookBusy}
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    padding: '9px 16px',
+                    borderRadius: 10,
+                    border: '1px solid rgba(25,190,227,0.35)',
+                    background: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.08)' : 'rgba(25,190,227,0.03)',
+                    color: hasMilepostText && !secondLookBusy ? 'var(--brand-teal)' : 'rgba(25,190,227,0.4)',
+                    cursor: hasMilepostText && !secondLookBusy ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                  onMouseEnter={e => {
+                    if (hasMilepostText && !secondLookBusy) {
+                      e.currentTarget.style.background    = 'rgba(25,190,227,0.14)';
+                      e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.55)';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (hasMilepostText && !secondLookBusy) {
+                      e.currentTarget.style.background    = 'rgba(25,190,227,0.08)';
+                      e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.35)';
+                    }
+                  }}
+                >
+                  {secondLookLoading
+                    ? 'Coach is reading...'
+                    : secondLookStreaming
+                    ? 'Coach is responding...'
+                    : coachObservation
+                    ? 'Get another look'
+                    : 'Get a second look'}
+                </button>
+
+                {/* Optional helper text on the right */}
+                <span style={{
+                  fontSize: '0.72rem',
+                  color: 'rgba(255,255,255,0.35)',
+                  fontFamily: 'var(--font-sans)',
+                }}>
+                  Optional. Your coach reads it and gives one observation.
+                </span>
+              </div>
+
+              {/* ── Coach observation panel ─────────────────────────────── */}
+              {showCoachPanel && (
+                <div style={{
+                  marginTop: 16,
+                  padding: '16px 18px',
+                  borderRadius: 12,
+                  background: 'rgba(25,190,227,0.05)',
+                  border: '1px solid rgba(25,190,227,0.18)',
+                  position: 'relative',
+                  animation: 'coachPanelFadeIn 0.25s ease',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 10,
+                  }}>
+                    <div style={{
+                      fontFamily: "'DM Mono', monospace",
+                      fontSize: '0.66rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: 'var(--brand-teal)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                    }}>
+                      <span className="pulse-dot" />
+                      Summit Coach
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowCoachPanel(false)}
+                      aria-label="Dismiss"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'rgba(255,255,255,0.35)',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                        padding: '2px 6px',
+                        lineHeight: 1,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {secondLookLoading && !coachObservation && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+                      {[0,1,2].map(i => (
+                        <span key={i} style={{
+                          width: 6, height: 6, borderRadius: '50%',
+                          background: 'var(--brand-teal)', opacity: 0.4,
+                          animation: `coachPanelPulse 1.2s ease ${i * 0.18}s infinite`,
+                        }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {coachObservation && (
+                    <div style={{
+                      fontSize: '0.95rem',
+                      lineHeight: 1.65,
+                      color: 'var(--text-main)',
+                      fontFamily: 'var(--font-sans)',
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {coachObservation}
+                      {secondLookStreaming && (
+                        <span style={{
+                          display: 'inline-block',
+                          width: 2,
+                          height: 14,
+                          background: 'var(--brand-teal)',
+                          marginLeft: 2,
+                          verticalAlign: 'middle',
+                          animation: 'coachPanelBlink 0.8s ease infinite',
+                        }} />
+                      )}
+                    </div>
+                  )}
+
+                  {secondLookError && (
+                    <div style={{
+                      fontSize: '0.85rem',
+                      color: '#f87171',
+                      marginTop: 4,
+                    }}>
+                      {secondLookError}
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Day 7 nudge */}
@@ -383,7 +599,6 @@ export default function SummitDayPage({ params }) {
               )}
             </div>
           )}
-
           {/* Mission */}
           {dayData.summit_mission && (
             <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
@@ -410,7 +625,6 @@ export default function SummitDayPage({ params }) {
             </div>
           )}
         </DayGuard>
-
         {/* Explore Further link — only shown once stage is complete */}
         {missionComplete && (
           <div style={{ textAlign: 'center', marginTop: 24 }}>
@@ -432,21 +646,20 @@ export default function SummitDayPage({ params }) {
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.color = 'var(--brand-teal)';
+                e.currentTarget.style.color       = 'var(--brand-teal)';
                 e.currentTarget.style.borderColor = 'rgba(25,190,227,0.35)';
-                e.currentTarget.style.background = 'rgba(25,190,227,0.05)';
+                e.currentTarget.style.background  = 'rgba(25,190,227,0.05)';
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.color = 'rgba(25,190,227,0.45)';
+                e.currentTarget.style.color       = 'rgba(25,190,227,0.45)';
                 e.currentTarget.style.borderColor = 'rgba(25,190,227,0.15)';
-                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.background  = 'transparent';
               }}
             >
               Explore Further →
             </Link>
           </div>
         )}
-
         {/* Stage navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
           {dayNum > 1 && (
@@ -460,9 +673,7 @@ export default function SummitDayPage({ params }) {
             </Link>
           )}
         </div>
-
       </main>
-
       <CompletionCelebration
         isOpen={showCelebration}
         onClose={handleCloseCelebration}
@@ -472,9 +683,7 @@ export default function SummitDayPage({ params }) {
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
       />
-
       <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
-
       {/* Pacing nudge — shown if user is rushing */}
       {!pacingDismissed && dayNum > 1 && (
         <PacingNudge
@@ -483,6 +692,22 @@ export default function SummitDayPage({ params }) {
           onContinue={() => setPacingDismissed(true)}
         />
       )}
+
+      {/* Animations for the second-look panel */}
+      <style>{`
+        @keyframes coachPanelFadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes coachPanelPulse {
+          0%, 100% { opacity: 0.4; transform: scale(1); }
+          50%      { opacity: 1;   transform: scale(1.25); }
+        }
+        @keyframes coachPanelBlink {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0; }
+        }
+      `}</style>
     </>
   );
 }
