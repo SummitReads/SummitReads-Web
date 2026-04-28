@@ -283,6 +283,14 @@ export default function SummitDayPage({ params }) {
   const hasMilepostText = reflectionText.trim().length > 0;
   const secondLookBusy  = secondLookLoading || secondLookStreaming;
 
+  // ── Per-category hint (replaces hardcoded habit-formation example) ───
+  // hints is a jsonb array on summit_days. Use the first hint if present.
+  // If hints is missing or empty, render no hint at all rather than a
+  // category-mismatched fallback.
+  const milepostHint = Array.isArray(dayData.hints) && dayData.hints.length > 0
+    ? String(dayData.hints[0])
+    : null;
+
   return (
     <>
       <div className="ambient-glow" />
@@ -408,16 +416,12 @@ export default function SummitDayPage({ params }) {
               <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.7 }}>
                 {dayData.milepost}
               </p>
-              {/* Hint line — the three ingredients */}
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
-                The best ones are specific. Include:{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
-                {' '}(after my 9am standup) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>what</span>
-                {' '}(I will open the tracker) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
-                {' '}(on my second monitor)
-              </p>
+              {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
+              {milepostHint && (
+                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
+                  {milepostHint}
+                </p>
+              )}
               <textarea
                 className="journal-input"
                 value={reflectionText}
