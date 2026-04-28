@@ -35,8 +35,27 @@ function getExploreChips() {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function SummitCoach({ bookId, dayNum, userId, context = 'day', activeSection = null }) {
-  const [isOpen,    setIsOpen]    = useState(false);
+export default function SummitCoach({
+  bookId,
+  dayNum,
+  userId,
+  context = 'day',
+  activeSection = null,
+  // Optional controlled-mode props. When both are provided, the parent owns
+  // open/closed state. Otherwise the component manages its own internal state.
+  isOpen: isOpenProp,
+  onOpenChange,
+}) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+
+  // Controlled mode is active when BOTH isOpen and onOpenChange are provided.
+  // Either alone falls back to uncontrolled mode for safety.
+  const isControlled = isOpenProp !== undefined && typeof onOpenChange === 'function';
+  const isOpen       = isControlled ? isOpenProp : internalIsOpen;
+  const setIsOpen    = isControlled
+    ? (next) => onOpenChange(typeof next === 'function' ? next(isOpenProp) : next)
+    : setInternalIsOpen;
+
   const [messages,  setMessages]  = useState([]);
   const [input,     setInput]     = useState('');
   const [loading,   setLoading]   = useState(false);

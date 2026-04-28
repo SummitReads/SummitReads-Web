@@ -25,6 +25,7 @@ export default function SummitDayPage({ params }) {
   const [showCelebration,     setShowCelebration]     = useState(false);
   const [nextDayData,         setNextDayData]         = useState(null);
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
+  const [coachOpen,           setCoachOpen]           = useState(false);
 
   // ── Second-look state (Phase 2) ──────────────────────────────────────
   const [coachObservation,     setCoachObservation]     = useState('');
@@ -434,6 +435,31 @@ export default function SummitDayPage({ params }) {
                 }}
               />
 
+              {/* Stuck hint — appears when the user has typed little or nothing.
+                  Clicking opens the Summit Coach widget. */}
+              {reflectionText.trim().length < 20 && (
+                <button
+                  type="button"
+                  onClick={() => setCoachOpen(true)}
+                  style={{
+                    margin: '10px 0 0 0',
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '0.78rem',
+                    color: 'rgba(255,255,255,0.4)',
+                    fontFamily: 'var(--font-sans)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'color 0.15s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                >
+                  Stuck? Ask your Summit Coach for a draft.
+                </button>
+              )}
+
               {/* ── Second-look button row (Phase 2) ──────────────────── */}
               <div style={{
                 marginTop: 14,
@@ -682,7 +708,13 @@ export default function SummitDayPage({ params }) {
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
       />
-      <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
+      <SummitCoach
+        bookId={id}
+        dayNum={dayNum}
+        userId={user?.id}
+        isOpen={coachOpen}
+        onOpenChange={setCoachOpen}
+      />
       {/* Pacing nudge — shown if user is rushing */}
       {!pacingDismissed && dayNum > 1 && (
         <PacingNudge
