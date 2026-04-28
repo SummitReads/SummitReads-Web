@@ -39,8 +39,14 @@ function LoadingSkeleton() {
 function SkillPassport({ userSkills }) {
   if (!userSkills || userSkills.length === 0) return null
 
-  const visibleSkills = userSkills.slice(0, 3)
-  const hasMore = userSkills.length > 3
+  // Only show sprints currently in progress. Completed sprints (Day 7 done)
+  // are excluded — they belong to a "Completed" view, not "Skills You're Building".
+  const activeSkills = userSkills.filter(skill => skill.daysCompleted < 7)
+
+  if (activeSkills.length === 0) return null
+
+  const visibleSkills = activeSkills.slice(0, 3)
+  const hasMore = activeSkills.length > 3
 
   return (
     <section style={{ marginBottom: '48px' }}>
