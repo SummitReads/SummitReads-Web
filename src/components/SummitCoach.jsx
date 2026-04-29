@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const INITIAL_GREETING = `I'm your Summit Coach for this journey. I'm here to help you think through today's insight, work through the mission, or just talk about what's coming up for you. What's on your mind?`;
+const INITIAL_GREETING = `I'm your Summit Coach. Here to help you think through today's move, work through the mission, or talk about what's coming up. What's on your mind?`;
 
 const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything about what you just read — how it applies to your situation, what to do with it, or what it connects to from earlier in the sprint.`;
 
@@ -11,11 +11,11 @@ const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything
 function getQuickChips(dayNum) {
   const day = Number(dayNum) || 1;
   const chips = [
-    { label: 'Help me get started',  prompt: "I just opened today's stage. Help me understand what I should be focusing on." },
-    { label: 'About the Ascent',     prompt: "Help me understand today's ascent — what's the core idea and why does it matter?" },
+    { label: 'Help me get started',  prompt: "I just opened today's day. Help me understand what I should be focusing on." },
+    { label: "About today's move",   prompt: "Help me understand today's move. What's the core idea and why does it matter?" },
     { label: 'Help with milepost',   prompt: "I'm not sure what to write for the milepost. Can you help me figure it out?" },
     { label: 'Help with mission',    prompt: "Help me make today's mission feel more concrete and doable." },
-    { label: "I'm stuck",            prompt: "I'm stuck on today's stage. Help me figure out what's getting in the way." },
+    { label: "I'm stuck",            prompt: "I'm stuck on today's mission. Help me figure out what's getting in the way." },
   ];
   if (day >= 3) chips.push({ label: 'I tried it',       prompt: "I tried today's mission. Here's what happened..." });
   if (day >= 5) chips.push({ label: 'What changed?',    prompt: "Help me name what's actually shifted for me across this sprint so far." });
@@ -163,7 +163,7 @@ export default function SummitCoach({
         // JSON
         const data = await res.json();
         setLoading(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: data?.message || "What feels most true for you about today's stage?" }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: data?.message || "What feels most true for you about today's move?" }]);
       }
 
     } catch (err) {
@@ -187,7 +187,7 @@ export default function SummitCoach({
     : activeSection === 'reflections' ? 'Think About This'
     : activeSection === 'challenges'  ? 'Try This'
     : 'Explore Further'
-    : `Stage ${dayNum} of 7`;
+    : `Day ${dayNum} of 7`;
 
   return (
     <>

@@ -391,7 +391,7 @@ export default function SummitDayPage({ params }) {
           <div className="glass-panel" style={{ marginBottom: 24 }}>
             <div className="tag-featured">
               <div className="pulse-dot" />
-              Today's Lesson
+              Today's Move
             </div>
             <div style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
@@ -447,16 +447,17 @@ export default function SummitDayPage({ params }) {
                     background: 'none',
                     border: 'none',
                     fontSize: '0.78rem',
-                    color: 'rgba(255,255,255,0.4)',
+                    color: 'rgba(25,190,227,0.7)',
                     fontFamily: 'var(--font-sans)',
+                    fontWeight: 500,
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'color 0.15s ease',
                   }}
                   onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(25,190,227,0.7)'}
                 >
-                  Stuck? Ask your Summit Coach for a draft.
+                  Stuck? Ask your Summit Coach for a draft. →
                 </button>
               )}
 
