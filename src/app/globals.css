@@ -211,14 +211,14 @@ nav {
   background: var(--brand-teal);
   color: var(--bg-dark);
   width: 100%;
-  padding: 24px;
+  padding: 16px;
   border-radius: 12px;
-  font-weight: 800;
-  font-size: 1.25rem;
+  font-weight: 700;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
   border: none;
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
@@ -706,6 +706,20 @@ a:hover .card .author { color: var(--text-muted) !important; }
   .lock-overlay    { padding: 40px 20px; }
 }
 
+/* ─── Day page: shift content when coach panel is open ───────────────────── */
+/* The coach panel is fixed at 360px wide, anchored bottom-right with 28px gap.
+   On desktop screens with room, shift the main content left so the panel
+   doesn't overlap the reading column. On smaller screens, let it overlay. */
+.day-main {
+  transition: transform 0.3s ease, max-width 0.3s ease;
+}
+
+@media (min-width: 1280px) {
+  .day-main-with-coach {
+    transform: translateX(-200px);
+  }
+}
+
 /* ─── Mobile responsive ───────────────────────────────────────────────────── */
 @media (max-width: 768px) {
 
@@ -807,8 +821,8 @@ a:hover .card .author { color: var(--text-muted) !important; }
 
   /* Sprint day page */
   .btn-primary-large {
-    padding: 18px;
-    font-size: 1.1rem;
+    padding: 14px;
+    font-size: 0.95rem;
   }
   .journal-input { font-size: 0.95rem; }
 

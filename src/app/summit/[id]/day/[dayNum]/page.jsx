@@ -301,7 +301,7 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
       </nav>
-      <main className="container" style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
+      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
         {/* Sprint header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ marginBottom: 28 }}>
