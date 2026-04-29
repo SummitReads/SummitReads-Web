@@ -51,13 +51,13 @@ const getFaqItems = sprintCountLabel => [
     q: 'How is this different from a course library or passive learning platform?',
     a: <>
       <p>Most learning platforms optimize for content consumption: watch a video, click through slides, mark complete. SummitSkills optimizes for behavior change.</p>
-      <p>The difference is the written reflection prompt. At every stage, the employee is asked to connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
-      <p>By Stage 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
+      <p>The difference is the written reflection prompt. At every day, the employee is asked to connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
+      <p>By Day 7, the employee has produced a real work deliverable, not a certificate or a score. Passive learning tells you what people watched. SummitSkills shows you what people actually engaged with.</p>
     </>,
   },
   {
     q: 'What does the written reflection actually look like?',
-    a: <p>Each prompt connects the stage's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
+    a: <p>Each prompt connects the day's concept to the employee's actual work. They're not asked to summarize the material. They're asked to apply it. Identify a real situation. Describe how they'd approach a challenge differently. Draft a tool they'll actually use. Managers can read every response in the dashboard. They reveal how team members actually think, not just whether they clicked through a course.</p>,
   },
 ]
 
@@ -562,7 +562,7 @@ export default function Home() {
               <div className="hw-dots">
                 <div className="hw-dot" /><div className="hw-dot" /><div className="hw-dot" />
               </div>
-              <div className="hw-title">Building Consistent Habits · Stage 3 of 7</div>
+              <div className="hw-title">Building Consistent Habits · Day 3 of 7</div>
             </div>
             <div className="hw-stages">
               <div className="hw-stage done"><span className="hw-stage-num">01</span><div className="hw-stage-label">Anchor</div></div>
@@ -574,13 +574,13 @@ export default function Home() {
               <div className="hw-stage"><span className="hw-stage-num">07</span><div className="hw-stage-label">Commit</div></div>
             </div>
             <div className="hw-body">
-              <div className="hw-body-label">Stage 3 · Small Start</div>
+              <div className="hw-body-label">Day 3 · Small Start</div>
               <div className="hw-body-heading">Connect it to your work</div>
               <div className="hw-body-text">You've worked through the concept. Now connect it to something real in your own day, your own team.</div>
               <div className="hw-gate">
                 <div className="hw-gate-label">Example response</div>
                 <div className="hw-gate-text">I'll write the first three bullet points of the report. Not the whole thing. Just enough to have something on the page.</div>
-                <div className="hw-gate-btn">Submit and continue to Stage 4 →</div>
+                <div className="hw-gate-btn">Submit and continue to Day 4 →</div>
               </div>
             </div>
             <div className="hw-footer">
@@ -612,22 +612,22 @@ export default function Home() {
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>One stage per day</h3>
-                  <p>Each stage delivers one applied concept. The next stage doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
+                  <h3>One concept per day</h3>
+                  <p>Each day delivers one applied concept. The next day doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
                   <p className="aside">✓ Async. No scheduling, no time zones.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
-                  <h3>Every stage includes a written reflection prompt.</h3>
+                  <h3>Every day includes a written reflection prompt.</h3>
                   <p>They connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">04</div>
                 <div>
-                  <h3>Stage 7 produces a real work deliverable.</h3>
+                  <h3>Day 7 produces a real work deliverable.</h3>
                   <p>Built from their own reflections across the sprint. A working tool for their actual job, not a certificate to file away.</p>
                 </div>
               </div>
@@ -639,18 +639,18 @@ export default function Home() {
       <section className="sprint-section">
         <div className="wrap">
           <div className="sprint-intro reveal">
-            <h2>Seven stages. One real output.</h2>
+            <h2>Seven days. One real output.</h2>
           </div>
           <div className="sprint-wrap reveal">
             <div className="sprint-chrome">
               <div className="sprint-chrome-left">
                 <div>
                   <div className="sprint-name">Building Consistent Habits</div>
-                  <div className="sprint-cat">Productivity &amp; Habits · 7-Stage Skill Sprint</div>
+                  <div className="sprint-cat">Productivity &amp; Habits · 7-Day Skill Sprint</div>
                 </div>
               </div>
               <div className="sprint-chrome-right">
-                <div className="sprint-stat"><strong>7</strong> stages</div>
+                <div className="sprint-stat"><strong>7</strong> days</div>
                 <div className="sprint-stat">Reflection-prompted</div>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function Home() {
               <a href="#pricing">See pricing →</a>
             </div>
             <div className="sprint-deliverable">
-              <div className="sprint-deliverable-label">Stage 7 Deliverable</div>
+              <div className="sprint-deliverable-label">Day 7 Deliverable</div>
               <div className="sprint-deliverable-title">A personal behavior framework</div>
               <div className="sprint-deliverable-desc">
                 Built from their own reflections across the sprint, including the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
@@ -684,7 +684,7 @@ export default function Home() {
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
             <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Stage-by-stage progress, every written response, and sprint assignment in one place. No manual reporting, no post-training survey.</p>
+            <p>Day-by-day progress, every written response, and sprint assignment in one place. No manual reporting, no post-training survey.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -710,15 +710,15 @@ export default function Home() {
             <div className="credibility-grid">
               <div className="credibility-item">
                 <div className="credibility-stat">Written.</div>
-                <div className="credibility-label">At every stage, employees connect the concept to something real in their work. No quiz, no multiple choice. Their actual thinking, in their own words.</div>
+                <div className="credibility-label">Every day, employees connect the concept to something real in their work. No quiz, no multiple choice. Their actual thinking, in their own words.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Logged.</div>
-                <div className="credibility-label">Every response goes to the manager dashboard. The writing, not a completion percentage. You see what your team actually thinks, stage by stage.</div>
+                <div className="credibility-label">Every response goes to the manager dashboard. The writing, not a completion percentage. You see what your team actually thinks, day by day.</div>
               </div>
               <div className="credibility-item">
                 <div className="credibility-stat">Delivered.</div>
-                <div className="credibility-label">Stage 7 ends with a real work output built from their own reflections. Not a certificate to file away. A tool they'll actually use.</div>
+                <div className="credibility-label">Day 7 ends with a real work output built from their own reflections. Not a certificate to file away. A tool they'll actually use.</div>
               </div>
             </div>
             <div className="credibility-pull">
@@ -747,7 +747,7 @@ export default function Home() {
                 <ul className="plan-features">
                   <li>Manager dashboard: progress tracking, reflection logs, sprint assignment</li>
                   <li>Built-in coach per seat, trained on each sprint</li>
-                  <li>Stage 7 work deliverable per sprint</li>
+                  <li>Day 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Self-serve setup, live in minutes</li>
                   <li>{typeof sprintCount === 'number' ? `${sprintCountLabel} sprints` : 'Sprints'} across leadership, sales, productivity, and more</li>
