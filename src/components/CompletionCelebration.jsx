@@ -85,34 +85,21 @@ export default function CompletionCelebration({
 
         {/* Step 2: Next Day Preview (Days 1-6) */}
         {step === 2 && dayNum < 7 && (
-          <div className="celebration-step fade-in">
-            <div className="preview-badge">Up Next</div>
-            <h2 className="celebration-title">Day {dayNum + 1}</h2>
-            <h3 className="next-day-title">{nextDayTitle}</h3>
-            <p className="next-day-preview">{nextDayPreview}</p>
+            <div className="celebration-step fade-in">
+              <div className="preview-badge">Up Next</div>
+              <h2 className="celebration-title">Day {dayNum + 1}</h2>
+              <h3 className="next-day-title">{nextDayTitle}</h3>
+              <p className="next-day-preview">{nextDayPreview}</p>
 
-            <div style={{
-              background: 'rgba(0, 217, 255, 0.05)',
-              border: '1px solid rgba(0, 217, 255, 0.2)',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '24px',
-              textAlign: 'left'
-            }}>
-              <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: 0, fontSize: '0.95rem', lineHeight: '1.5' }}>
-                Day {dayNum + 1} is ready when you are. Complete today's mission to unlock it.
-              </p>
-            </div>
-
-            <div className="button-group">
-              <button onClick={onClose} className="btn-ghost">
-                Back to Library
-              </button>
-              <button
-                onClick={() => { onClose(); window.location.href = nextDayUrl; }}
-                className="btn-primary-celebration"
-              >
-                Continue →
+              <div className="button-group">
+                <button onClick={onClose} className="btn-ghost">
+                  Back to Library
+                </button>
+                <button
+                  onClick={() => { onClose(); window.location.href = nextDayUrl; }}
+                  className="btn-primary-celebration"
+                >
+                  Continue →
               </button>
             </div>
           </div>
