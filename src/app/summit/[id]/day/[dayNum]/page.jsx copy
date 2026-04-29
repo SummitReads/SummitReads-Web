@@ -25,6 +25,7 @@ export default function SummitDayPage({ params }) {
   const [showCelebration,     setShowCelebration]     = useState(false);
   const [nextDayData,         setNextDayData]         = useState(null);
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
+  const [coachOpen,           setCoachOpen]           = useState(false);
 
   // ── Second-look state (Phase 2) ──────────────────────────────────────
   const [coachObservation,     setCoachObservation]     = useState('');
@@ -94,7 +95,7 @@ export default function SummitDayPage({ params }) {
           }
         }
         if (bookError) setError('Book not found');
-        if (dayError)  setError('Stage content not found');
+        if (dayError)  setError('Day content not found');
         setBook(bookData);
         setDayData(currentDayData);
         setAllDays(daysData || []);
@@ -221,7 +222,7 @@ export default function SummitDayPage({ params }) {
                 bookTitle:      book?.title,
                 currentStage:   dayNum,
                 nextStage:      dayNum + 1,
-                nextStageTitle: nextDayData?.title || `Stage ${dayNum + 1}`,
+                nextStageTitle: nextDayData?.title || `Day ${dayNum + 1}`,
                 bookId:         id,
                 reflection:     reflectionText.trim() || null,
               }),
@@ -255,13 +256,8 @@ export default function SummitDayPage({ params }) {
   // ─── Loading / error states ──────────────────────────────────────────────
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
-          Loading
-        </div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.2rem', color: 'var(--text-muted)' }}>
-          Your journey…
-        </div>
+      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        Loading
       </div>
     </div>
   );
@@ -278,10 +274,18 @@ export default function SummitDayPage({ params }) {
   const progressPercent = Math.round(((dayNum - 1) / 7) * 100);
   const nextStagePreview = nextDayData?.ascent_content
     ? nextDayData.ascent_content.substring(0, 150) + '…'
-    : 'Continue your transformation journey.';
+    : 'Continue to the next day.';
 
   const hasMilepostText = reflectionText.trim().length > 0;
   const secondLookBusy  = secondLookLoading || secondLookStreaming;
+
+  // ── Per-category hint (replaces hardcoded habit-formation example) ───
+  // hints is a jsonb array on summit_days. Use the first hint if present.
+  // If hints is missing or empty, render no hint at all rather than a
+  // category-mismatched fallback.
+  const milepostHint = Array.isArray(dayData.hints) && dayData.hints.length > 0
+    ? String(dayData.hints[0])
+    : null;
 
   return (
     <>
@@ -297,13 +301,13 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
       </nav>
-      <main className="container" style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
+      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
         {/* Sprint header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ marginBottom: 28 }}>
             <div className="tag-featured" style={{ marginBottom: 16 }}>
               <div className="pulse-dot" />
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum}</span>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum}</span>
               <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
               <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
               {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
@@ -324,7 +328,7 @@ export default function SummitDayPage({ params }) {
                 return (
                   <div
                     key={stage}
-                    title={skill ? `Stage ${stage}: ${skill}${isComplete ? ' ✓' : ''}` : undefined}
+                    title={skill ? `Day ${stage}: ${skill}` : undefined}
                     style={{
                       flex: 1,
                       height: 5,
@@ -342,7 +346,7 @@ export default function SummitDayPage({ params }) {
               })}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <span>Your journey</span>
+              <span>Progress</span>
               <span style={{ fontFamily: "'DM Mono', monospace", color: 'var(--brand-teal)', fontWeight: 600 }}>
                 {progressPercent}% complete
               </span>
@@ -362,7 +366,7 @@ export default function SummitDayPage({ params }) {
               {dayData.title}
             </h2>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
-              Stage {dayNum} of 7
+              Day {dayNum} of 7
             </p>
             {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
             {dayData.skill_focus && (
@@ -387,9 +391,9 @@ export default function SummitDayPage({ params }) {
           <div className="glass-panel" style={{ marginBottom: 24 }}>
             <div className="tag-featured">
               <div className="pulse-dot" />
-              Today's Ascent
+              Today's Move
             </div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
             </div>
           </div>
@@ -405,19 +409,15 @@ export default function SummitDayPage({ params }) {
               <div className="tag-featured">
                 {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
               </div>
-              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.7 }}>
+              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
                 {dayData.milepost}
               </p>
-              {/* Hint line — the three ingredients */}
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: 16, lineHeight: 1.5 }}>
-                The best ones are specific. Include:{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>when</span>
-                {' '}(after my 9am standup) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>what</span>
-                {' '}(I will open the tracker) +{' '}
-                <span style={{ color: 'rgba(255,255,255,0.55)' }}>where</span>
-                {' '}(on my second monitor)
-              </p>
+              {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
+              {milepostHint && (
+                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
+                  {milepostHint}
+                </p>
+              )}
               <textarea
                 className="journal-input"
                 value={reflectionText}
@@ -434,6 +434,32 @@ export default function SummitDayPage({ params }) {
                   ...(dayNum === 7 && { minHeight: '100px' })
                 }}
               />
+
+              {/* Stuck hint — appears when the user has typed little or nothing.
+                  Clicking opens the Summit Coach widget. */}
+              {reflectionText.trim().length < 20 && (
+                <button
+                  type="button"
+                  onClick={() => setCoachOpen(true)}
+                  style={{
+                    margin: '10px 0 0 0',
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '0.78rem',
+                    color: 'rgba(25,190,227,0.7)',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'color 0.15s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(25,190,227,0.7)'}
+                >
+                  Stuck? Ask your Summit Coach for a draft. →
+                </button>
+              )}
 
               {/* ── Second-look button row (Phase 2) ──────────────────── */}
               <div style={{
@@ -602,8 +628,8 @@ export default function SummitDayPage({ params }) {
           {/* Mission */}
           {dayData.summit_mission && (
             <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Stage Mission</div>
-              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.8, color: 'var(--text-main)' }}>
+              <div className="tag-featured">Today's Mission</div>
+              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
                 {dayData.summit_mission}
               </p>
               <button
@@ -613,11 +639,11 @@ export default function SummitDayPage({ params }) {
                 {missionComplete ? (
                   <>
                     <Check size={20} strokeWidth={2.5} />
-                    Stage Complete
+                    Day Complete
                   </>
                 ) : (
                   <>
-                    Complete This Stage
+                    Mark Day Complete
                     <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
                   </>
                 )}
@@ -662,14 +688,16 @@ export default function SummitDayPage({ params }) {
         )}
         {/* Stage navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
-          {dayNum > 1 && (
-            <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Stage {dayNum - 1}</span>
+          {dayNum > 1 ? (
+            <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ textAlign: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day {dayNum - 1}</span>
             </Link>
+          ) : (
+            <div /> /* Spacer on Day 1 so the Next button stays right-anchored */
           )}
           {dayNum < 7 && missionComplete && (
-            <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ flex: 1, textAlign: 'center' }}>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Stage {dayNum + 1} →</span>
+            <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ textAlign: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum + 1} →</span>
             </Link>
           )}
         </div>
@@ -679,11 +707,17 @@ export default function SummitDayPage({ params }) {
         onClose={handleCloseCelebration}
         dayNum={dayNum}
         bookTitle={book.sprint_title || book.title}
-        nextDayTitle={nextDayData?.title || `Stage ${dayNum + 1}`}
+        nextDayTitle={nextDayData?.title || `Day ${dayNum + 1}`}
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
       />
-      <SummitCoach bookId={id} dayNum={dayNum} userId={user?.id} />
+      <SummitCoach
+        bookId={id}
+        dayNum={dayNum}
+        userId={user?.id}
+        isOpen={coachOpen}
+        onOpenChange={setCoachOpen}
+      />
       {/* Pacing nudge — shown if user is rushing */}
       {!pacingDismissed && dayNum > 1 && (
         <PacingNudge
