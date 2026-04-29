@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { supabase } from '@/app/supabaseClient';
-import DayGuard from '@/components/DayGuard';
 import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
 import PacingNudge from '@/components/PacingNudge';
@@ -354,305 +353,299 @@ export default function SummitDayPage({ params }) {
             </div>
           </div>
         </div>
-        {/* Stage content — gated by DayGuard */}
-        <DayGuard
-          userId={user?.id}
-          bookId={id}
-          currentDay={dayNum}
-          previousDayProgress={previousDayProgress}
-        >
-          {/* Stage title */}
-          <div style={{ marginBottom: 40, textAlign: 'left' }}>
-            {/* ── Title font scaled down from 2.75rem to 2rem ── */}
-            <h2 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
-              {dayData.title}
-            </h2>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
-              Day {dayNum} of 7
-            </p>
-            {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
-            {dayData.skill_focus && (
-              <div style={{
-                display: 'inline-block',
-                marginTop: 12,
-                fontFamily: "'DM Mono', monospace",
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
-                color: 'rgba(25,190,227,0.55)',
-                border: '1px solid rgba(25,190,227,0.2)',
-                borderRadius: 20,
-                padding: '4px 14px',
-              }}>
-                {dayData.skill_focus}
-              </div>
-            )}
-          </div>
-          {/* Today's insight */}
-          <div className="glass-panel" style={{ marginBottom: 24 }}>
-            <div className="tag-featured">
-              <div className="pulse-dot" />
-              Today's Move
-            </div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
-              {dayData.ascent_content}
-            </div>
-          </div>
-          {/* Milepost */}
-          {dayData.milepost && (
-            <div className="glass-panel" style={{
-              marginBottom: 24,
-              ...(dayNum === 7 && {
-                borderColor: 'rgba(25,190,227,0.35)',
-                boxShadow: '0 0 24px rgba(25,190,227,0.08)',
-              })
+        
+        {/* Stage content */}
+        <div style={{ marginBottom: 40, textAlign: 'left' }}>
+          {/* ── Title font scaled down from 2.75rem to 2rem ── */}
+          <h2 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
+            {dayData.title}
+          </h2>
+          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
+            Day {dayNum} of 7
+          </p>
+          {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
+          {dayData.skill_focus && (
+            <div style={{
+              display: 'inline-block',
+              marginTop: 12,
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: 'rgba(25,190,227,0.55)',
+              border: '1px solid rgba(25,190,227,0.2)',
+              borderRadius: 20,
+              padding: '4px 14px',
             }}>
-              <div className="tag-featured">
-                {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
-              </div>
-              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
-                {dayData.milepost}
+              {dayData.skill_focus}
+            </div>
+          )}
+        </div>
+        {/* Today's insight */}
+        <div className="glass-panel" style={{ marginBottom: 24 }}>
+          <div className="tag-featured">
+            <div className="pulse-dot" />
+            Today's Move
+          </div>
+          <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            {dayData.ascent_content}
+          </div>
+        </div>
+        {/* Milepost */}
+        {dayData.milepost && (
+          <div className="glass-panel" style={{
+            marginBottom: 24,
+            ...(dayNum === 7 && {
+              borderColor: 'rgba(25,190,227,0.35)',
+              boxShadow: '0 0 24px rgba(25,190,227,0.08)',
+            })
+          }}>
+            <div className="tag-featured">
+              {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
+            </div>
+            <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
+              {dayData.milepost}
+            </p>
+            {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
+            {milepostHint && (
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
+                {milepostHint}
               </p>
-              {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
-              {milepostHint && (
-                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
-                  {milepostHint}
-                </p>
-              )}
-              <textarea
-                className="journal-input"
-                value={reflectionText}
-                onChange={e => setReflectionText(e.target.value)}
-                onBlur={saveReflection}
-                placeholder={
-                  dayData.madlib_template
-                    ? dayData.madlib_template
-                    : dayNum === 7
-                    ? 'For the next two weeks, I will check my habit tracker after I pour my morning coffee.'
-                    : 'After I close the 9am standup, I will open the budget sheet on my second monitor.'
-                }
+            )}
+            <textarea
+              className="journal-input"
+              value={reflectionText}
+              onChange={e => setReflectionText(e.target.value)}
+              onBlur={saveReflection}
+              placeholder={
+                dayData.madlib_template
+                  ? dayData.madlib_template
+                  : dayNum === 7
+                  ? 'For the next two weeks, I will check my habit tracker after I pour my morning coffee.'
+                  : 'After I close the 9am standup, I will open the budget sheet on my second monitor.'
+              }
+              style={{
+                ...(dayNum === 7 && { minHeight: '100px' })
+              }}
+            />
+
+            {/* Stuck hint — appears when the user has typed little or nothing.
+                Clicking opens the Summit Coach widget. */}
+            {reflectionText.trim().length < 20 && (
+              <button
+                type="button"
+                onClick={() => setCoachOpen(true)}
                 style={{
-                  ...(dayNum === 7 && { minHeight: '100px' })
-                }}
-              />
-
-              {/* Stuck hint — appears when the user has typed little or nothing.
-                  Clicking opens the Summit Coach widget. */}
-              {reflectionText.trim().length < 20 && (
-                <button
-                  type="button"
-                  onClick={() => setCoachOpen(true)}
-                  style={{
-                    margin: '10px 0 0 0',
-                    padding: 0,
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '0.78rem',
-                    color: 'rgba(25,190,227,0.7)',
-                    fontFamily: 'var(--font-sans)',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'color 0.15s ease',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
-                  onMouseLeave={e => e.currentTarget.style.color = 'rgba(25,190,227,0.7)'}
-                >
-                  Stuck? Ask your Summit Coach for a draft. →
-                </button>
-              )}
-
-              {/* ── Second-look button row (Phase 2) ──────────────────── */}
-              <div style={{
-                marginTop: 14,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-                flexWrap: 'wrap',
-              }}>
-                <button
-                  type="button"
-                  onClick={getSecondLook}
-                  disabled={!hasMilepostText || secondLookBusy}
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '0.82rem',
-                    fontWeight: 600,
-                    padding: '9px 16px',
-                    borderRadius: 10,
-                    border: '1px solid rgba(25,190,227,0.35)',
-                    background: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.08)' : 'rgba(25,190,227,0.03)',
-                    color: hasMilepostText && !secondLookBusy ? 'var(--brand-teal)' : 'rgba(25,190,227,0.4)',
-                    cursor: hasMilepostText && !secondLookBusy ? 'pointer' : 'not-allowed',
-                    transition: 'all 0.15s ease',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                  onMouseEnter={e => {
-                    if (hasMilepostText && !secondLookBusy) {
-                      e.currentTarget.style.background    = 'rgba(25,190,227,0.14)';
-                      e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.55)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (hasMilepostText && !secondLookBusy) {
-                      e.currentTarget.style.background    = 'rgba(25,190,227,0.08)';
-                      e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.35)';
-                    }
-                  }}
-                >
-                  {secondLookLoading
-                    ? 'Coach is reading...'
-                    : secondLookStreaming
-                    ? 'Coach is responding...'
-                    : coachObservation
-                    ? 'Get another look'
-                    : 'Get a second look'}
-                </button>
-
-                {/* Optional helper text on the right */}
-                <span style={{
-                  fontSize: '0.72rem',
-                  color: 'rgba(255,255,255,0.35)',
+                  margin: '10px 0 0 0',
+                  padding: 0,
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '0.78rem',
+                  color: 'rgba(25,190,227,0.7)',
                   fontFamily: 'var(--font-sans)',
-                }}>
-                  Optional. Your coach reads it and gives one observation.
-                </span>
-              </div>
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'color 0.15s ease',
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'rgba(25,190,227,0.7)'}
+              >
+                Stuck? Ask your Summit Coach for a draft. →
+              </button>
+            )}
 
-              {/* ── Coach observation panel ─────────────────────────────── */}
-              {showCoachPanel && (
+            {/* ── Second-look button row (Phase 2) ──────────────────── */}
+            <div style={{
+              marginTop: 14,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <button
+                type="button"
+                onClick={getSecondLook}
+                disabled={!hasMilepostText || secondLookBusy}
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  padding: '9px 16px',
+                  borderRadius: 10,
+                  border: '1px solid rgba(25,190,227,0.35)',
+                  background: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.08)' : 'rgba(25,190,227,0.03)',
+                  color: hasMilepostText && !secondLookBusy ? 'var(--brand-teal)' : 'rgba(25,190,227,0.4)',
+                  cursor: hasMilepostText && !secondLookBusy ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+                onMouseEnter={e => {
+                  if (hasMilepostText && !secondLookBusy) {
+                    e.currentTarget.style.background    = 'rgba(25,190,227,0.14)';
+                    e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.55)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (hasMilepostText && !secondLookBusy) {
+                    e.currentTarget.style.background    = 'rgba(25,190,227,0.08)';
+                    e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.35)';
+                  }
+                }}
+              >
+                {secondLookLoading
+                  ? 'Coach is reading...'
+                  : secondLookStreaming
+                  ? 'Coach is responding...'
+                  : coachObservation
+                  ? 'Get another look'
+                  : 'Get a second look'}
+              </button>
+
+              {/* Optional helper text on the right */}
+              <span style={{
+                fontSize: '0.72rem',
+                color: 'rgba(255,255,255,0.35)',
+                fontFamily: 'var(--font-sans)',
+              }}>
+                Optional. Your coach reads it and gives one observation.
+              </span>
+            </div>
+
+            {/* ── Coach observation panel ─────────────────────────────── */}
+            {showCoachPanel && (
+              <div style={{
+                marginTop: 16,
+                padding: '16px 18px',
+                borderRadius: 12,
+                background: 'rgba(25,190,227,0.05)',
+                border: '1px solid rgba(25,190,227,0.18)',
+                position: 'relative',
+                animation: 'coachPanelFadeIn 0.25s ease',
+              }}>
                 <div style={{
-                  marginTop: 16,
-                  padding: '16px 18px',
-                  borderRadius: 12,
-                  background: 'rgba(25,190,227,0.05)',
-                  border: '1px solid rgba(25,190,227,0.18)',
-                  position: 'relative',
-                  animation: 'coachPanelFadeIn 0.25s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 10,
                 }}>
                   <div style={{
-                    display: 'flex',
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '0.66rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'var(--brand-teal)',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: 10,
+                    gap: 6,
                   }}>
-                    <div style={{
-                      fontFamily: "'DM Mono', monospace",
-                      fontSize: '0.66rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: 'var(--brand-teal)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                    }}>
-                      <span className="pulse-dot" />
-                      Summit Coach
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowCoachPanel(false)}
-                      aria-label="Dismiss"
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'rgba(255,255,255,0.35)',
-                        cursor: 'pointer',
-                        fontSize: '1rem',
-                        padding: '2px 6px',
-                        lineHeight: 1,
-                      }}
-                    >
-                      ×
-                    </button>
+                    <span className="pulse-dot" />
+                    Summit Coach
                   </div>
-
-                  {secondLookLoading && !coachObservation && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
-                      {[0,1,2].map(i => (
-                        <span key={i} style={{
-                          width: 6, height: 6, borderRadius: '50%',
-                          background: 'var(--brand-teal)', opacity: 0.4,
-                          animation: `coachPanelPulse 1.2s ease ${i * 0.18}s infinite`,
-                        }} />
-                      ))}
-                    </div>
-                  )}
-
-                  {coachObservation && (
-                    <div style={{
-                      fontSize: '0.95rem',
-                      lineHeight: 1.65,
-                      color: 'var(--text-main)',
-                      fontFamily: 'var(--font-sans)',
-                      whiteSpace: 'pre-wrap',
-                    }}>
-                      {coachObservation}
-                      {secondLookStreaming && (
-                        <span style={{
-                          display: 'inline-block',
-                          width: 2,
-                          height: 14,
-                          background: 'var(--brand-teal)',
-                          marginLeft: 2,
-                          verticalAlign: 'middle',
-                          animation: 'coachPanelBlink 0.8s ease infinite',
-                        }} />
-                      )}
-                    </div>
-                  )}
-
-                  {secondLookError && (
-                    <div style={{
-                      fontSize: '0.85rem',
-                      color: '#f87171',
-                      marginTop: 4,
-                    }}>
-                      {secondLookError}
-                    </div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowCoachPanel(false)}
+                    aria-label="Dismiss"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.35)',
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      padding: '2px 6px',
+                      lineHeight: 1,
+                    }}
+                  >
+                    ×
+                  </button>
                 </div>
-              )}
 
-              {/* Day 7 nudge */}
-              {dayNum === 7 && (
-                <p style={{ fontSize: '0.78rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
-                  This is the one sentence that makes next week different. Take 60 seconds and write yours.
-                </p>
-              )}
-            </div>
-          )}
-          {/* Mission */}
-          {dayData.summit_mission && (
-            <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-              <div className="tag-featured">Today's Mission</div>
-              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
-                {dayData.summit_mission}
-              </p>
-              <button
-                onClick={toggleMission}
-                className="btn-primary-large"
-              >
-                {missionComplete ? (
-                  <>
-                    <Check size={20} strokeWidth={2.5} />
-                    Day Complete
-                  </>
-                ) : (
-                  <>
-                    Mark Day Complete
-                    <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
-                  </>
+                {secondLookLoading && !coachObservation && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
+                    {[0,1,2].map(i => (
+                      <span key={i} style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: 'var(--brand-teal)', opacity: 0.4,
+                        animation: `coachPanelPulse 1.2s ease ${i * 0.18}s infinite`,
+                      }} />
+                    ))}
+                  </div>
                 )}
-              </button>
-            </div>
-          )}
-        </DayGuard>
+
+                {coachObservation && (
+                  <div style={{
+                    fontSize: '0.95rem',
+                    lineHeight: 1.65,
+                    color: 'var(--text-main)',
+                    fontFamily: 'var(--font-sans)',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {coachObservation}
+                    {secondLookStreaming && (
+                      <span style={{
+                        display: 'inline-block',
+                        width: 2,
+                        height: 14,
+                        background: 'var(--brand-teal)',
+                        marginLeft: 2,
+                        verticalAlign: 'middle',
+                        animation: 'coachPanelBlink 0.8s ease infinite',
+                      }} />
+                    )}
+                  </div>
+                )}
+
+                {secondLookError && (
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: '#f87171',
+                    marginTop: 4,
+                  }}>
+                    {secondLookError}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Day 7 nudge */}
+            {dayNum === 7 && (
+              <p style={{ fontSize: '0.78rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
+                This is the one sentence that makes next week different. Take 60 seconds and write yours.
+              </p>
+            )}
+          </div>
+        )}
+        {/* Mission */}
+        {dayData.summit_mission && (
+          <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
+            <div className="tag-featured">Today's Mission</div>
+            <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
+              {dayData.summit_mission}
+            </p>
+            <button
+              onClick={toggleMission}
+              className="btn-primary-large"
+            >
+              {missionComplete ? (
+                <>
+                  <Check size={20} strokeWidth={2.5} />
+                  Day Complete
+                </>
+              ) : (
+                <>
+                  Mark Day Complete
+                  <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+        
         {/* Explore Further link — only shown once stage is complete */}
         {missionComplete && (
           <div style={{ textAlign: 'center', marginTop: 24 }}>
@@ -746,4 +739,4 @@ export default function SummitDayPage({ params }) {
       `}</style>
     </>
   );
-}
+} 
