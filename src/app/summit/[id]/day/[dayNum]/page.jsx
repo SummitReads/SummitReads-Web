@@ -688,13 +688,15 @@ export default function SummitDayPage({ params }) {
         )}
         {/* Stage navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 40 }}>
-          {dayNum > 1 && (
-            <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ flex: 1, textAlign: 'center' }}>
+          {dayNum > 1 ? (
+            <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ textAlign: 'center' }}>
               <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day {dayNum - 1}</span>
             </Link>
+          ) : (
+            <div /> /* Spacer on Day 1 so the Next button stays right-anchored */
           )}
           {dayNum < 7 && missionComplete && (
-            <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ flex: 1, textAlign: 'center' }}>
+            <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ textAlign: 'center' }}>
               <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum + 1} →</span>
             </Link>
           )}

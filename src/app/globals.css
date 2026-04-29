@@ -210,8 +210,9 @@ nav {
 .btn-primary-large {
   background: var(--brand-teal);
   color: var(--bg-dark);
-  width: 100%;
-  padding: 16px;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 16px 32px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 1rem;
@@ -821,6 +822,7 @@ a:hover .card .author { color: var(--text-muted) !important; }
 
   /* Sprint day page */
   .btn-primary-large {
+    width: 100%;
     padding: 14px;
     font-size: 0.95rem;
   }
