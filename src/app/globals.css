@@ -47,7 +47,7 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size: 4rem;
+  font-size: 3rem; /* Scaled down from 4rem */
   font-weight: 700;
   margin: 0 0 16px 0;
   line-height: 1.1;
@@ -76,7 +76,6 @@ h1 {
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ─── Ambient glow — very subtle, one per page ────────────────────────────── */
-/* Was 0.15 / 0.05 — reduced 4x to match admin portal */
 .ambient-glow {
   position: fixed;
   top: 0;
@@ -148,7 +147,6 @@ nav {
 .nav-link:hover { color: white; }
 
 /* ─── Buttons ─────────────────────────────────────────────────────────────── */
-/* Primary: ONE glow, only on this button — same rule as admin portal */
 .btn-primary {
   background: var(--brand-teal);
   color: #0F172A;
@@ -170,7 +168,6 @@ nav {
   font-size: 0.9rem;
 }
 
-/* Only the primary button gets a glow — nothing else */
 .btn-primary:hover:not(:disabled) {
   background: #15a8cc;
   box-shadow: 0 0 20px rgba(25, 190, 227, 0.35);
@@ -197,7 +194,6 @@ nav {
   font-size: 0.9rem;
 }
 
-/* Ghost hover — no glow, no lift */
 .btn-outline:hover {
   color: white;
   border-color: rgba(255, 255, 255, 0.2);
@@ -254,8 +250,6 @@ nav {
   font-weight: 600;
 }
 
-/* Badge is informational — no hover animation needed */
-
 .hero-sub {
   color: rgba(255,255,255,0.7);
   font-size: 1.2rem;
@@ -263,7 +257,7 @@ nav {
   line-height: 1.6;
 }
 
-/* ─── Pulse dot — live indicator ──────────────────────────────────────────── */
+/* ─── Pulse dot ───────────────────────────────────────────────────────────── */
 .pulse-dot {
   width: 6px;
   height: 6px;
@@ -336,7 +330,6 @@ input[type="text"]:focus {
   font-weight: 500;
 }
 
-/* No lift — just color change */
 .pill:hover, .pill.active {
   background: var(--brand-teal);
   color: var(--bg-dark);
@@ -382,23 +375,22 @@ input[type="text"]:focus {
   border: 1px solid var(--glass-border);
   border-radius: 20px;
   overflow: hidden;
-  padding: 48px;
-  margin-bottom: 48px;
+  padding: 32px; /* Scaled down from 48px */
+  margin-bottom: 32px; /* Scaled down from 48px */
 }
 
 /* Featured card manages its own padding */
 .glass-panel.featured-card {
-  padding: 56px 64px;
+  padding: 40px 48px; /* Scaled down from 56px 64px */
 }
 
-/* ─── Featured card — full-width, no right panel ──────────────── */
+/* ─── Featured card ───────────────────────────────────────────────────────── */
 .featured-card {
   display: block;
   position: relative;
-  padding: 56px 64px;
+  padding: 40px 48px; /* Scaled down from 56px 64px */
   transition: border-color 0.2s;
   border-top: 2px solid rgba(25, 190, 227, 0.3);
-  /* Override glass-panel default padding */
   margin-bottom: 0;
 }
 
@@ -421,7 +413,7 @@ input[type="text"]:focus {
 }
 
 .featured-card h2 {
-  font-size: 2.6rem;
+  font-size: 2rem; /* Scaled down from 2.6rem */
   margin: 0 0 16px 0;
   line-height: 1.15;
   color: white;
@@ -439,7 +431,7 @@ input[type="text"]:focus {
 @media (min-width: 768px) {
   .nav-hamburger { display: none; }
   .featured-card h2 {
-    font-size: 3rem;
+    font-size: 2.5rem; /* Scaled down from 3rem */
   }
 }
 
@@ -472,7 +464,6 @@ input[type="text"]:focus {
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  /* Cards lift on hover — this is the ONE place we keep the transform */
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   display: flex;
   flex-direction: column;
@@ -575,7 +566,6 @@ a:hover .card .author { color: var(--text-muted) !important; }
   font-weight: 600;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  /* No transition on tier pills — they don't need it */
 }
 
 .rating {
@@ -605,7 +595,6 @@ a:hover .card .author { color: var(--text-muted) !important; }
   margin-bottom: 20px;
 }
 
-/* Mono font on the countdown — precise, data-driven feel */
 .countdown-timer {
   font-size: 4rem;
   font-weight: 700;
@@ -708,9 +697,6 @@ a:hover .card .author { color: var(--text-muted) !important; }
 }
 
 /* ─── Day page: shift content when coach panel is open ───────────────────── */
-/* The coach panel is fixed at 360px wide, anchored bottom-right with 28px gap.
-   On desktop screens with room, shift the main content left so the panel
-   doesn't overlap the reading column. On smaller screens, let it overlay. */
 .day-main {
   transition: transform 0.3s ease, max-width 0.3s ease;
 }
@@ -724,9 +710,9 @@ a:hover .card .author { color: var(--text-muted) !important; }
 /* ─── Mobile responsive ───────────────────────────────────────────────────── */
 @media (max-width: 768px) {
 
-  /* Typography */
-  h1 { font-size: 2.6rem; }
-  h2 { font-size: 2rem; }
+  /* Typography scaled down slightly to match desktop reductions */
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.75rem; }
 
   /* Nav */
   .nav-content { padding: 12px 16px; }
@@ -796,7 +782,7 @@ a:hover .card .author { color: var(--text-muted) !important; }
 
   /* Hero */
   .hero { padding: 48px 16px 28px; }
-  .hero h1 { font-size: 2.4rem; }
+  .hero h1 { font-size: 2.2rem; }
   .hero-sub { font-size: 1rem; margin-bottom: 24px; }
 
   /* Library container */
@@ -808,9 +794,9 @@ a:hover .card .author { color: var(--text-muted) !important; }
     margin: 0 0 48px;
   }
   .glass-panel.featured-card {
-    padding: 32px 24px;
+    padding: 24px 20px;
   }
-  .featured-card h2 { font-size: 2rem; }
+  .featured-card h2 { font-size: 1.75rem; }
   .featured-desc { font-size: 0.95rem; }
 
   /* Glass panels on sprint day page */

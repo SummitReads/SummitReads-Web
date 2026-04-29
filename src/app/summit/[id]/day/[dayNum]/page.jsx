@@ -301,7 +301,8 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
       </nav>
-      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 900, paddingTop: 40, paddingBottom: 80 }}>
+      {/* ── maxWidth scaled down to standard blog width (768px) to reduce zoomed-in feel ── */}
+      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 768, paddingTop: 40, paddingBottom: 80 }}>
         {/* Sprint header */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ marginBottom: 28 }}>
@@ -362,7 +363,8 @@ export default function SummitDayPage({ params }) {
         >
           {/* Stage title */}
           <div style={{ marginBottom: 40, textAlign: 'left' }}>
-            <h2 className="text-gradient" style={{ fontSize: '2.75rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
+            {/* ── Title font scaled down from 2.75rem to 2rem ── */}
+            <h2 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
               {dayData.title}
             </h2>
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
@@ -693,7 +695,7 @@ export default function SummitDayPage({ params }) {
               <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day {dayNum - 1}</span>
             </Link>
           ) : (
-            <div /> /* Spacer on Day 1 so the Next button stays right-anchored */
+            <div /> /* ── Spacer on Day 1 so the Next button stays right-anchored ── */
           )}
           {dayNum < 7 && missionComplete && (
             <Link href={`/summit/${id}/day/${dayNum + 1}`} className="btn-primary" style={{ textAlign: 'center' }}>
