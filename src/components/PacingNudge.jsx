@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 
 // Triggers if:
-// 1. User completed 2+ stages today, OR
-// 2. Previous stage was completed less than 1 hour ago
+// 1. User completed 2+ days today, OR
+// 2. Previous day was completed less than 1 hour ago
 
 export default function PacingNudge({ dayNum, previousDayProgress, onContinue }) {
   const [show,     setShow]     = useState(false);
@@ -24,8 +24,8 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
       return;
     }
 
-    // Check: completed 2+ stages today
-    // We determine this by checking if prev stage was completed today
+    // Check: completed 2+ days today
+    // We determine this by checking if prev day was completed today
     const today     = new Date();
     const prevDate  = new Date(previousDayProgress.completed_at);
     const sameDay   =
@@ -33,7 +33,7 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
       prevDate.getMonth()    === today.getMonth()    &&
       prevDate.getDate()     === today.getDate();
 
-    // If they're on stage 3+ and previous was completed today, that's 2+ today
+    // If they're on day 3+ and previous was completed today, that's 2+ today
     if (sameDay && dayNum >= 3) {
       setReason('tooMany');
       setShow(true);
@@ -49,19 +49,28 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
     }, 300);
   }
 
+  function handleComeBackLater() {
+    setExiting(true);
+    setTimeout(() => {
+      setShow(false);
+      setExiting(false);
+      window.location.href = '/library';
+    }, 300);
+  }
+
   if (!show) return null;
 
   const messages = {
     tooFast: {
       headline: 'Your brain is still processing.',
-      body:     `You completed Stage ${dayNum - 1} less than an hour ago. The insight from that stage needs time to settle before new ones land properly. That's not a metaphor — it's how memory consolidation works. Come back in a bit and Stage ${dayNum} will hit harder.`,
+      body:     `You completed Day ${dayNum - 1} less than an hour ago. The insight from that day needs time to settle before new ones land properly. Come back in a bit and Day ${dayNum} will hit harder.`,
       cta:      'I\'ll come back later',
-      secondary: 'I understand — continue anyway',
+      secondary: 'I understand, continue anyway',
     },
     tooMany: {
       headline: 'You\'re moving fast.',
-      body:     `You've already completed multiple stages today. SummitSkills is designed for daily practice — not a single session. Each stage is meant to be tried in real life before the next one opens. If you rush, you'll finish the sprint but miss the point.`,
-      cta:      'Good point — I\'ll pace myself',
+      body:     `You've already completed multiple days today. SummitSkills is designed for daily practice, not a single session. Each day is meant to be tried in real life before the next one opens. If you rush, you'll finish the sprint but miss the point.`,
+      cta:      'Good point, I\'ll pace myself',
       secondary: 'Continue anyway',
     },
   };
@@ -107,11 +116,12 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
             display:        'flex',
             alignItems:     'center',
             justifyContent: 'center',
-            fontSize:       '20px',
             marginBottom:   '20px',
           }}
         >
-          🧠
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--brand-teal)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
         </div>
 
         {/* Tag */}
@@ -157,9 +167,9 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
           {msg.body}
         </p>
 
-        {/* Primary CTA — recommended action */}
+        {/* Primary CTA. Recommended action: actually go back to library */}
         <button
-          onClick={handleContinue}
+          onClick={handleComeBackLater}
           style={{
             width:        '100%',
             padding:      '13px',
@@ -180,7 +190,7 @@ export default function PacingNudge({ dayNum, previousDayProgress, onContinue })
           {msg.cta}
         </button>
 
-        {/* Secondary CTA — continue anyway */}
+        {/* Secondary CTA. Continue anyway */}
         <button
           onClick={handleContinue}
           style={{
