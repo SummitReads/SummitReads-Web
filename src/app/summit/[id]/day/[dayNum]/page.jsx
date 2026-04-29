@@ -393,7 +393,7 @@ export default function SummitDayPage({ params }) {
               <div className="pulse-dot" />
               Today's Move
             </div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.8, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {dayData.ascent_content}
             </div>
           </div>
@@ -409,7 +409,7 @@ export default function SummitDayPage({ params }) {
               <div className="tag-featured">
                 {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
               </div>
-              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.7 }}>
+              <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
                 {dayData.milepost}
               </p>
               {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
@@ -629,7 +629,7 @@ export default function SummitDayPage({ params }) {
           {dayData.summit_mission && (
             <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
               <div className="tag-featured">Today's Mission</div>
-              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.8, color: 'var(--text-main)' }}>
+              <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
                 {dayData.summit_mission}
               </p>
               <button
