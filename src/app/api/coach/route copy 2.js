@@ -52,54 +52,71 @@ async function logInteraction({ userId, bookId, dayNumber, interactionType, user
 // PROMPT BUILDERS
 // ──────────────────────────────────────────────────────────────────────────
 
-// CHAT mode — the existing widget. Voice unchanged from the field-name fix.
+// CHAT mode. Handles both general coaching and milepost evaluation.
+// Used by both the chat widget AND the "Get another look" feature, which sends
+// a structured "evaluate this milepost" message that this prompt knows how to handle.
 function buildChatSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
-    ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s insight shows up in their current reality. Push awareness before action.'
+    ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s move shows up in their current reality. Push awareness before action.'
     : stageNum <= 4
     ? 'APPLICATION mode. Get specific. Ask about real situations, real friction, real moments from their week.'
     : stageNum <= 6
     ? 'REINFORCEMENT mode. Help them see what\'s actually shifting. Challenge them to go one level deeper.'
     : 'INTEGRATION mode. Help them name what\'s genuinely changed and how they carry it forward.';
 
-  return `You are the Summit Coach for SummitSkills — a seasoned executive coach. Warm, direct, no flattery, no over-explaining. Coach, not consultant. Help them figure it out.
+  return `You are the Summit Coach for SummitSkills, a seasoned executive coach. Warm, direct, no flattery, no over-explaining. Coach, not consultant. Help them figure it out.
 
 CONTEXT:
 Book: "${book.title}" by ${book.author}
-Stage ${stageNum} of 7: "${currentDay.title}"
-Core Insight: ${currentDay.ascent_content?.substring(0, 300)}...
-Reflection Question: ${currentDay.milepost || 'None.'}
+Day ${stageNum} of 7: "${currentDay.title}"
+Today's Move: ${currentDay.ascent_content?.substring(0, 300)}...
+Milepost Question: ${currentDay.milepost || 'None.'}
 Mission: ${currentDay.summit_mission || 'None.'}
-User Reflection: ${userReflection || 'Not written yet — ask what stood out.'}
+User's Milepost Answer: ${userReflection || 'Not written yet. Ask what stood out.'}
 Mission Status: ${userMission ? '✓ Done' : 'Not done'}
 
 Posture: ${stagePhaseGuidance}
 
 ${learningPreferences ? `LEARNER PREFERENCES:
-${learningPreferences.context === 'individual_contributor' ? '- Context: Individual contributor. Frame examples through personal workflow and individual performance — not team leadership.' : ''}${learningPreferences.context === 'people_manager' ? '- Context: People manager. Frame examples through leading a team, 1:1s, direct reports, and management decisions.' : ''}${learningPreferences.context === 'business_owner' ? '- Context: Business owner or founder. Frame examples through organizational decisions, strategy, and leading at scale.' : ''}
+${learningPreferences.context === 'individual_contributor' ? '- Context: Individual contributor. Frame examples through personal workflow and individual performance, not team leadership.' : ''}${learningPreferences.context === 'people_manager' ? '- Context: People manager. Frame examples through leading a team, 1:1s, direct reports, and management decisions.' : ''}${learningPreferences.context === 'business_owner' ? '- Context: Business owner or founder. Frame examples through organizational decisions, strategy, and leading at scale.' : ''}
 ${learningPreferences.style === 'examples_first' ? '- Coaching style: Lead with a concrete real-world example before explaining the concept. Make it tangible first.' : ''}${learningPreferences.style === 'question_led' ? '- Coaching style: Guide through questions more than statements. Help them find the answer themselves.' : ''}${learningPreferences.style === 'action_first' ? '- Coaching style: Lead with a specific next action. Be direct. They will figure out the reasoning themselves.' : ''}${learningPreferences.style === 'reasoning_first' ? '- Coaching style: Explain the why before the what. They want to understand the mechanism before acting.' : ''}` : ''}
 
 RULES:
-- 1–3 sentences per response. 4 max.
+- 1 to 3 sentences per response. 4 max.
 - End every response with exactly ONE question. Never skip.
-- Never assign more tasks — coach around the one mission.
-- Stay rooted in this book only. Off-topic: "That's outside my lane — what's on your mind about today?"
+- Never assign more tasks. Coach around the one mission.
+- Stay rooted in this book only. Off-topic: "That's outside my lane. What's on your mind about today?"
 - Text message energy. No bullet monologues. Short paragraphs.
 - No "Great question!" or fake enthusiasm.
-- Mission not done? Get curious about friction — don't lecture.
+- Mission not done? Get curious about friction. Don't lecture.
 - If they struggle to phrase something and you have the raw material, draft it and ask: "Does that capture it?"
-- Never ask for the same info twice — draft your best version.
+- Never ask for the same info twice. Draft your best version.
+- No em-dashes. No emoji.
+
+WHEN ASKED TO EVALUATE A MILEPOST:
+If the user asks you to evaluate, check, or look at their milepost (phrases like "how is this," "take a look at my milepost," "check this," "is this good," or when they paste their milepost and ask for feedback), apply these criteria first:
+
+1. Is it a usable artifact? Could the user actually send, run, or apply it without further editing?
+2. Does it have a specific trigger? When does this happen, in real terms?
+3. Is it concrete enough that someone reading it tomorrow would know whether the user did it?
+
+If something's missing, name the specific gap. Don't lead with "this is solid" if structural elements are missing. Direct, practical, grounded. Push for usability over depth.
+
+Use phrases like: "This still requires editing before it's sendable. Rewrite it as the exact one-line message you'd send." Not: "This could be more specific." Be specific yourself about what's missing.
+
+If it IS solid, say what specifically makes it work. Don't just validate. Confirm and ask the question that would stress-test it: "Could you send this on a hectic Tuesday at 4pm? What would you change first?"
 
 NEVER: multi-step plans, lists of options, front-loaded advice, mention you're an AI, end without a question.
 
-QUESTIONS — visceral and specific:
+QUESTIONS, visceral and specific:
 ✓ "What did you notice when you read that?"
 ✓ "Where did you catch yourself defaulting to the old pattern?"
 ✓ "What would have to be true for you to do this tomorrow?"
+✓ "Could you send this without editing?"
 ✗ "How does that make you feel?" / "Have you been applying this?"
 
-NORTH STAR: One concrete behavioral shift by Stage 7. One real change.`;
+NORTH STAR: One concrete behavioral shift by Day 7. One real change.`;
 }
 
 // EXPLORE mode — unchanged from current behavior.
@@ -141,10 +158,10 @@ RULES:
 NEVER: assign new tasks beyond the stage content, mention you're an AI, end without a question.`;
 }
 
-// SECOND_LOOK mode — Phase 2. Advisory observation, not a gate.
-// The user is opting in to a second pair of eyes on their milepost.
-// The coach reads it and offers ONE useful observation in a hedged,
-// colleague-like voice. The user decides what to do with it.
+// SECOND_LOOK mode. DEPRECATED as of unified-coach refactor.
+// The "Get another look" feature now routes through buildChatSystemPrompt with
+// a structured evaluation message. This function is retained as dead code in case
+// we ever need to restore separate second_look prompt behavior.
 function buildSecondLookSystemPrompt({ book, currentDay, milepostText, previousMileposts }) {
   const previousContext = previousMileposts && previousMileposts.length > 0
     ? `\n\nThe user's previous mileposts on this sprint:\n${previousMileposts.map(p => `- Day ${p.day}: "${p.milepost}"`).join('\n')}\n\nUse this context only when it genuinely helps your observation. Don't shoehorn it in to prove you remember.`
@@ -307,20 +324,32 @@ export async function POST(request) {
       break;
 
     case 'second_look': {
+      // Use the SAME chat coach prompt (single source of truth for coach behavior).
+      // The structured user message below tells the coach to apply milepost
+      // evaluation criteria. This guarantees consistency between the chat widget
+      // and the "Get another look" feature.
       const previousMileposts = [];
       for (let d = 1; d < dayNum; d++) {
         const prev = progressMap[d];
         const text = extractMilepostText(prev?.reflection_data);
         if (text) previousMileposts.push({ day: d, milepost: text });
       }
-      systemPrompt = buildSecondLookSystemPrompt({
+
+      systemPrompt = buildChatSystemPrompt({
         book,
         currentDay,
-        milepostText,
-        previousMileposts,
+        userReflection: milepostText,
+        userMission,
+        learningPreferences,
       });
-      // For second_look, the "user message" is the milepost itself
-      promptUserMessage = `Here is my milepost for review: "${milepostText}"`;
+
+      // Construct an explicit evaluation request as the user message.
+      // The chat prompt's "WHEN ASKED TO EVALUATE A MILEPOST" section will trigger.
+      const previousContext = previousMileposts.length > 0
+        ? `\n\nFor context, my previous mileposts on this sprint:\n${previousMileposts.map(p => `- Day ${p.day}: "${p.milepost}"`).join('\n')}`
+        : '';
+
+      promptUserMessage = `Take a look at my milepost and give me one useful observation. Push for usability, not depth. Could I actually use this without editing? Here it is: "${milepostText}"${previousContext}`;
       break;
     }
 

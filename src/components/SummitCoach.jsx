@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const INITIAL_GREETING = `I'm your Summit Coach. Here to help you think through today's move, work through the mission, or talk about what's coming up. What's on your mind?`;
+const INITIAL_GREETING = `Summit Coach here. Drop the move you're working on, the milepost you're stuck on, or whatever's catching on you about today. I'll help you sharpen it.`;
 
 const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything about what you just read — how it applies to your situation, what to do with it, or what it connects to from earlier in the sprint.`;
 
