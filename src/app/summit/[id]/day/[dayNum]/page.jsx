@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 import { supabase } from '@/app/supabaseClient';
 import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
-import PacingNudge from '@/components/PacingNudge';
+// import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
 export default function SummitDayPage({ params }) {
   const unwrappedParams = React.use(params);
@@ -713,7 +713,7 @@ export default function SummitDayPage({ params }) {
         isOpen={coachOpen}
         onOpenChange={setCoachOpen}
       />
-      {/* Pacing nudge — shown if user is rushing */}
+      {/* Pacing nudge — disabled. Was creating friction for motivated users (gating Day 2 within an hour of Day 1). Re-enable if engagement data shows users binge through the sprint and don't return.
       {!pacingDismissed && dayNum > 1 && (
         <PacingNudge
           dayNum={dayNum}
@@ -721,6 +721,7 @@ export default function SummitDayPage({ params }) {
           onContinue={() => setPacingDismissed(true)}
         />
       )}
+      */}
 
       {/* Animations for the second-look panel */}
       <style>{`
