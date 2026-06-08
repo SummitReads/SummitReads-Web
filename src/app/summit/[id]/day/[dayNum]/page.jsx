@@ -51,7 +51,7 @@ export default function SummitDayPage({ params }) {
         if (dayNum < 7) {
           const { data: nextDay } = await supabase
             .from('summit_days')
-            .select('title, ascent_content')
+            .select('title, framework, demonstration, failure_mode, application')
             .eq('book_id', id)
             .eq('day_number', dayNum + 1)
             .maybeSingle();
@@ -271,20 +271,32 @@ export default function SummitDayPage({ params }) {
   );
 
   const progressPercent = Math.round(((dayNum - 1) / 7) * 100);
-  const nextStagePreview = nextDayData?.ascent_content
-    ? nextDayData.ascent_content.substring(0, 150) + '…'
+  // ── Next-day preview — assemble the same v2 components (space-joined for a
+  // short teaser) rather than the dropped v1 ascent_content field. ──
+  const nextStageText = ['framework', 'demonstration', 'failure_mode', 'application']
+    .map(k => nextDayData?.[k])
+    .filter(v => typeof v === 'string' && v.trim().length > 0)
+    .join(' ');
+  const nextStagePreview = nextStageText
+    ? nextStageText.substring(0, 150) + '…'
     : 'Continue to the next day.';
 
   const hasMilepostText = reflectionText.trim().length > 0;
   const secondLookBusy  = secondLookLoading || secondLookStreaming;
 
-  // ── Per-category hint (replaces hardcoded habit-formation example) ───
-  // hints is a jsonb array on summit_days. Use the first hint if present.
-  // If hints is missing or empty, render no hint at all rather than a
-  // category-mismatched fallback.
-  const milepostHint = Array.isArray(dayData.hints) && dayData.hints.length > 0
-    ? String(dayData.hints[0])
-    : null;
+  // ── "Today's Move" prose — assemble the four v2 teaching components in
+  // order, double-newline between, so the architect's paragraph breaks remain.
+  // (Replaces the dropped v1 single-blob ascent_content field.) ──
+  const todaysMove = ['framework', 'demonstration', 'failure_mode', 'application']
+    .map(k => dayData[k])
+    .filter(v => typeof v === 'string' && v.trim().length > 0)
+    .join('\n\n');
+
+  // ── Milepost hints, sourced from summit_days.hints (jsonb array). Render all
+  // of them; if the array is missing or empty, render nothing. ──
+  const milepostHints = Array.isArray(dayData.hints)
+    ? dayData.hints.map(h => String(h)).filter(h => h.trim().length > 0)
+    : [];
 
   return (
     <>
@@ -389,7 +401,7 @@ export default function SummitDayPage({ params }) {
             Today's Move
           </div>
           <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
-            {dayData.ascent_content}
+            {todaysMove}
           </div>
         </div>
         {/* Milepost */}
@@ -407,12 +419,12 @@ export default function SummitDayPage({ params }) {
             <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
               {dayData.milepost}
             </p>
-            {/* Per-category hint, sourced from summit_days.hints (jsonb array) */}
-            {milepostHint && (
-              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
-                {milepostHint}
+            {/* Milepost hints, sourced from summit_days.hints (jsonb array) */}
+            {milepostHints.map((hint, i) => (
+              <p key={i} style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
+                {hint}
               </p>
-            )}
+            ))}
             <textarea
               className="journal-input"
               value={reflectionText}
