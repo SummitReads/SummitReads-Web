@@ -245,7 +245,7 @@ export default function OnboardingModal({ assignedSprint = null, managerName = n
     if (step < STEPS.length - 1) { setStep(s => s + 1); }
     else {
       dismiss();
-      if (assignedSprint) router.push(`/summit/${assignedSprint.id}/day/1`);
+      if (assignedSprint) router.push(`/summit/${assignedSprint.id}/day/0`);
     }
   }
 

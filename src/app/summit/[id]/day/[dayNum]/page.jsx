@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Check } from 'lucide-react';
 import { supabase } from '@/app/supabaseClient';
 import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
+import Day0View from '@/components/Day0View';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
 // ── Phase 1: Practice-day layout ─────────────────────────────────────────────
@@ -60,15 +62,19 @@ const PRACTICE_BEATS = [
 ];
 
 export default function SummitDayPage({ params }) {
+  const router = useRouter();
   const unwrappedParams = React.use(params);
   const id      = unwrappedParams.id;
-  const dayNum  = parseInt(unwrappedParams.dayNum);
+  // parseInt('0') === 0 — do not treat 0 as missing (Day 0 orientation).
+  const dayNum  = parseInt(unwrappedParams.dayNum, 10);
+  const isDay0  = dayNum === 0;
 
   const [book,                setBook]                = useState(null);
   const [dayData,             setDayData]             = useState(null);
   const [allDays,             setAllDays]             = useState([]);
   const [loading,             setLoading]             = useState(true);
   const [error,               setError]               = useState(null);
+  const [day0Missing,         setDay0Missing]         = useState(false);
   const [reflectionText,      setReflectionText]      = useState('');
   const [missionComplete,     setMissionComplete]     = useState(false);
   const [user,                setUser]                = useState(null);
@@ -96,15 +102,63 @@ export default function SummitDayPage({ params }) {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         setUser(currentUser);
-        if (!id || !dayNum) {
+        if (!id || Number.isNaN(dayNum)) {
           setError('Missing parameters');
           setLoading(false);
           return;
         }
-        const { data: bookData,       error: bookError } = await supabase.from('books').select('*').eq('id', id).single();
-        // ── skill_focus added so progress dots can show the skill label on hover ──
-        const { data: daysData }                          = await supabase.from('summit_days').select('day_number, title, skill_focus').eq('book_id', id).order('day_number', { ascending: true });
-        const { data: currentDayData, error: dayError  } = await supabase.from('summit_days').select('*').eq('book_id', id).eq('day_number', dayNum).maybeSingle();
+
+        const { data: bookData, error: bookError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (bookError || !bookData) {
+          setError('Book not found');
+          setLoading(false);
+          return;
+        }
+        setBook(bookData);
+
+        // ── Day 0: orientation from books.sprint_intro (not summit_days) ──
+        if (isDay0) {
+          const intro = (bookData.sprint_intro || '').trim();
+          if (!intro) {
+            // No Day 0 generated for this book — fall through to Day 1
+            setDay0Missing(true);
+            setLoading(false);
+            return;
+          }
+          // Hydrate situation from Day 1 progress_notes (shared week field)
+          if (currentUser && RETURN_LOOP_V1) {
+            const { data: day1Progress } = await supabase
+              .from('user_progress')
+              .select('progress_notes')
+              .eq('user_id', currentUser.id)
+              .eq('book_id', id)
+              .eq('day_number', 1)
+              .maybeSingle();
+            if (day1Progress?.progress_notes) {
+              setSituationText(String(day1Progress.progress_notes).trim());
+            }
+          }
+          setLoading(false);
+          return;
+        }
+
+        // ── Days 1–7 ────────────────────────────────────────────────────
+        const { data: daysData } = await supabase
+          .from('summit_days')
+          .select('day_number, title, skill_focus')
+          .eq('book_id', id)
+          .order('day_number', { ascending: true });
+        const { data: currentDayData, error: dayError } = await supabase
+          .from('summit_days')
+          .select('*')
+          .eq('book_id', id)
+          .eq('day_number', dayNum)
+          .maybeSingle();
         if (dayNum < 7) {
           const { data: nextDay } = await supabase
             .from('summit_days')
@@ -141,17 +195,14 @@ export default function SummitDayPage({ params }) {
             if (currentProgress.action_commitment) {
               setMissionNote(String(currentProgress.action_commitment).trim());
             }
-            // Restore any prior coach observation so it shows on revisit
             if (currentProgress.coach_observation) {
               setCoachObservation(currentProgress.coach_observation);
               setShowCoachPanel(true);
             }
-            // Day 1 stores the week situation on this row
             if (dayNum === 1 && currentProgress.progress_notes) {
               setSituationText(String(currentProgress.progress_notes).trim());
             }
           }
-          // Sprint-wide situation lives on Day 1 progress_notes — load for Days 2–7
           if (RETURN_LOOP_V1 && dayNum > 1) {
             const { data: day1Progress } = await supabase
               .from('user_progress')
@@ -164,7 +215,6 @@ export default function SummitDayPage({ params }) {
               setSituationText(String(day1Progress.progress_notes).trim());
             }
           }
-          // Mark onboarding complete the first time a user lands on any Day 1
           if (dayNum === 1) {
             supabase
               .from('profiles')
@@ -173,9 +223,7 @@ export default function SummitDayPage({ params }) {
               .then(() => {});
           }
         }
-        if (bookError) setError('Book not found');
-        if (dayError)  setError('Day content not found');
-        setBook(bookData);
+        if (dayError) setError('Day content not found');
         setDayData(currentDayData);
         setAllDays(daysData || []);
         setLoading(false);
@@ -185,7 +233,7 @@ export default function SummitDayPage({ params }) {
       }
     }
     fetchData();
-  }, [id, dayNum]);
+  }, [id, dayNum, isDay0]);
 
   // Cleanup any in-flight second-look request on unmount
   useEffect(() => () => secondLookAbortRef.current?.abort(), []);
@@ -365,6 +413,13 @@ export default function SummitDayPage({ params }) {
     if (dayNum === 7) window.location.href = '/library';
   }
 
+  // Day 0 without intro → send learner to Day 1 (hook must stay above any return)
+  useEffect(() => {
+    if (!loading && isDay0 && day0Missing && book) {
+      router.replace(`/summit/${id}/day/1`);
+    }
+  }, [loading, isDay0, day0Missing, book, id, router]);
+
   // ─── Loading / error states ──────────────────────────────────────────────
   if (loading) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
@@ -373,6 +428,44 @@ export default function SummitDayPage({ params }) {
       </div>
     </div>
   );
+
+  if (isDay0 && day0Missing) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.75rem', color: 'var(--brand-teal)' }}>
+          Opening Day 1…
+        </div>
+      </div>
+    );
+  }
+
+  // ── Day 0 orientation ────────────────────────────────────────────────────
+  if (isDay0 && book?.sprint_intro) {
+    return (
+      <Day0View
+        book={book}
+        introMarkdown={book.sprint_intro}
+        bookId={id}
+        situationText={situationText}
+        showSituation={RETURN_LOOP_V1}
+        onSituationChange={setSituationText}
+        onSituationBlur={(text) => {
+          setSituationText(text);
+          // saveSituation reads situationText from state — write explicitly
+          if (!user || !RETURN_LOOP_V1) return;
+          const t = (text || '').trim();
+          supabase.from('user_progress').upsert({
+            user_id: user.id,
+            book_id: id,
+            day_number: 1,
+            progress_notes: t || null,
+          }, { onConflict: 'user_id,book_id,day_number' }).then(() => {}, (err) => {
+            console.error('Error saving situation from Day 0:', err?.message ?? err);
+          });
+        }}
+      />
+    );
+  }
 
   if (error || !book || !dayData) return (
     <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
@@ -966,6 +1059,10 @@ export default function SummitDayPage({ params }) {
           {dayNum > 1 ? (
             <Link href={`/summit/${id}/day/${dayNum - 1}`} className="btn-outline" style={{ textAlign: 'center' }}>
               <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day {dayNum - 1}</span>
+            </Link>
+          ) : dayNum === 1 && book?.sprint_intro ? (
+            <Link href={`/summit/${id}/day/0`} className="btn-outline" style={{ textAlign: 'center' }}>
+              <span style={{ fontFamily: "'DM Mono', monospace" }}>← Day 0</span>
             </Link>
           ) : (
             <div /> /* ── Spacer on Day 1 so the Next button stays right-anchored ── */

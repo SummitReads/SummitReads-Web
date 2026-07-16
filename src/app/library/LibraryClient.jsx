@@ -386,7 +386,7 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
                     <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>Inspired by</span>
                     <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>{featuredBook.title}</span>
                   </div>
-                  <Link href={`/summit/${featuredBook.id}/day/1`} className="btn-primary">Begin Sprint →</Link>
+                  <Link href={`/summit/${featuredBook.id}/day/0`} className="btn-primary">Begin Sprint →</Link>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: '700', color: 'var(--brand-teal)' }}>7 days</span>

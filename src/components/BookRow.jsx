@@ -168,7 +168,7 @@ function SprintCard({ book }) {
   const buttonFillColor = `${categoryColor}CC`; // 80% opacity so it's not so saturated
 
   return (
-    <Link href={`/summit/${book.id}/day/1`} style={{ textDecoration: 'none', display: 'flex', width: '100%' }}>
+    <Link href={`/summit/${book.id}/day/0`} style={{ textDecoration: 'none', display: 'flex', width: '100%' }}>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
