@@ -13,6 +13,15 @@ import SummitCoach from '@/components/SummitCoach';
 // Rollback: set to false and hard-refresh — no DB or API changes.
 const PRACTICE_DAY_V2 = true;
 
+// ── Phase 2 preview: return loop (continuity + proof) ────────────────────────
+// Two visible pieces so the "come back" vision is tangible:
+//   1) Your situation this week — saved on Day 1 (progress_notes), echoed Days 2–7
+//   2) What I did — optional mission proof (action_commitment), shown as
+//      "Yesterday you…" on the next day
+// Uses existing user_progress columns only. Still non-blocking for complete.
+// Rollback: set false.
+const RETURN_LOOP_V1 = true;
+
 // Beat labels + visual weight. Keys match summit_days v2 columns.
 const PRACTICE_BEATS = [
   {
@@ -69,6 +78,11 @@ export default function SummitDayPage({ params }) {
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
   const [coachOpen,           setCoachOpen]           = useState(false);
 
+  // ── Return loop (situation + mission proof) ─────────────────────────
+  const [situationText,       setSituationText]       = useState('');
+  const [missionNote,         setMissionNote]         = useState('');
+  const [yesterdayNote,       setYesterdayNote]       = useState('');
+
   // ── Second-look state (Phase 2) ──────────────────────────────────────
   const [coachObservation,     setCoachObservation]     = useState('');
   const [secondLookLoading,    setSecondLookLoading]    = useState(false);
@@ -109,6 +123,9 @@ export default function SummitDayPage({ params }) {
             .eq('day_number', dayNum - 1)
             .maybeSingle();
           setPreviousDayProgress(prevProgress);
+          if (prevProgress?.action_commitment) {
+            setYesterdayNote(String(prevProgress.action_commitment).trim());
+          }
         }
         if (currentUser) {
           const { data: currentProgress } = await supabase
@@ -121,10 +138,30 @@ export default function SummitDayPage({ params }) {
           if (currentProgress) {
             setReflectionText(currentProgress.reflection_data || '');
             setMissionComplete(currentProgress.completed || false);
+            if (currentProgress.action_commitment) {
+              setMissionNote(String(currentProgress.action_commitment).trim());
+            }
             // Restore any prior coach observation so it shows on revisit
             if (currentProgress.coach_observation) {
               setCoachObservation(currentProgress.coach_observation);
               setShowCoachPanel(true);
+            }
+            // Day 1 stores the week situation on this row
+            if (dayNum === 1 && currentProgress.progress_notes) {
+              setSituationText(String(currentProgress.progress_notes).trim());
+            }
+          }
+          // Sprint-wide situation lives on Day 1 progress_notes — load for Days 2–7
+          if (RETURN_LOOP_V1 && dayNum > 1) {
+            const { data: day1Progress } = await supabase
+              .from('user_progress')
+              .select('progress_notes')
+              .eq('user_id', currentUser.id)
+              .eq('book_id', id)
+              .eq('day_number', 1)
+              .maybeSingle();
+            if (day1Progress?.progress_notes) {
+              setSituationText(String(day1Progress.progress_notes).trim());
             }
           }
           // Mark onboarding complete the first time a user lands on any Day 1
@@ -163,6 +200,34 @@ export default function SummitDayPage({ params }) {
         reflection_data: reflectionText,
       }, { onConflict: 'user_id,book_id,day_number' });
     } catch (err) { console.error('Error saving reflection:', err?.message ?? err); }
+  }
+
+  // Week-long situation: always written to Day 1 so every day can read it back.
+  async function saveSituation() {
+    if (!user || !RETURN_LOOP_V1) return;
+    const text = situationText.trim();
+    try {
+      await supabase.from('user_progress').upsert({
+        user_id:         user.id,
+        book_id:         id,
+        day_number:      1,
+        progress_notes:  text || null,
+      }, { onConflict: 'user_id,book_id,day_number' });
+    } catch (err) { console.error('Error saving situation:', err?.message ?? err); }
+  }
+
+  // Mission proof: what they actually did on real work (optional).
+  async function saveMissionNote() {
+    if (!user || !RETURN_LOOP_V1) return;
+    const text = missionNote.trim();
+    try {
+      await supabase.from('user_progress').upsert({
+        user_id:            user.id,
+        book_id:            id,
+        day_number:         dayNum,
+        action_commitment:  text || null,
+      }, { onConflict: 'user_id,book_id,day_number' });
+    } catch (err) { console.error('Error saving mission note:', err?.message ?? err); }
   }
 
   // ── Second-look handler (Phase 2) ────────────────────────────────────
@@ -245,13 +310,18 @@ export default function SummitDayPage({ params }) {
       const now = new Date().toISOString();
       setMissionComplete(true);
       try {
-        const { error } = await supabase.from('user_progress').upsert({
+        const payload = {
           user_id:      user.id,
           book_id:      id,
           day_number:   dayNum,
           completed:    true,
           completed_at: now,
-        }, { onConflict: 'user_id,book_id,day_number' });
+        };
+        // Carry optional mission proof into the complete write so Day N+1 can show it.
+        if (RETURN_LOOP_V1 && missionNote.trim()) {
+          payload.action_commitment = missionNote.trim();
+        }
+        const { error } = await supabase.from('user_progress').upsert(payload, { onConflict: 'user_id,book_id,day_number' });
         if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(false); return; }
         // ── Fire stage-complete email (only if there's a next stage) ──
         if (dayNum < 7 && user?.email) {
@@ -446,6 +516,71 @@ export default function SummitDayPage({ params }) {
             </div>
           )}
         </div>
+
+        {/* ── Return loop: continuity strip (Days 2–7) ───────────────── */}
+        {RETURN_LOOP_V1 && dayNum > 1 && (situationText || yesterdayNote) && (
+          <div
+            className="glass-panel"
+            style={{
+              marginBottom: 20,
+              padding: '14px 18px',
+              borderColor: 'rgba(25,190,227,0.28)',
+              background: 'rgba(25,190,227,0.06)',
+            }}
+          >
+            <div style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '0.66rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.1em',
+              color: 'var(--brand-teal)',
+              marginBottom: 8,
+            }}>
+              Still your week
+            </div>
+            {situationText && (
+              <p style={{ margin: '0 0 6px 0', fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--text-main)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Working with: </span>
+                {situationText}
+              </p>
+            )}
+            {yesterdayNote && (
+              <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.5, color: 'rgba(238,242,247,0.75)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Yesterday you: </span>
+                {yesterdayNote}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Return loop: name the situation (Day 1) ─────────────────── */}
+        {RETURN_LOOP_V1 && dayNum === 1 && (
+          <div className="glass-panel" style={{ marginBottom: 20, padding: '18px 20px' }}>
+            <div className="tag-featured" style={{ marginBottom: 10 }}>
+              Your situation this week
+            </div>
+            <p style={{
+              fontSize: '0.88rem',
+              lineHeight: 1.5,
+              color: 'rgba(238,242,247,0.55)',
+              margin: '0 0 12px 0',
+            }}>
+              One person, habit, or thread you will keep in mind all seven days.
+              Days 2–7 will come back to this — so the week is about <em>your</em> work, not generic tips.
+            </p>
+            <textarea
+              className="journal-input"
+              value={situationText}
+              onChange={e => setSituationText(e.target.value)}
+              onBlur={saveSituation}
+              placeholder="e.g. Status updates from Jordan that never land before standup"
+              rows={2}
+              style={{ minHeight: 64, marginBottom: 0 }}
+            />
+          </div>
+        )}
+
         {/* Today's Move — Phase 1 practice layout (flag) or legacy single blob */}
         {usePracticeLayout ? (
           <div style={{ marginBottom: 24 }}>
@@ -734,10 +869,44 @@ export default function SummitDayPage({ params }) {
         {/* Mission */}
         {dayData.summit_mission && (
           <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-            <div className="tag-featured">Today's Mission</div>
-            <p style={{ fontSize: '1rem', marginBottom: 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
+            <div className="tag-featured">Today&apos;s Mission</div>
+            <p style={{ fontSize: '1rem', marginBottom: RETURN_LOOP_V1 ? 16 : 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
               {dayData.summit_mission}
             </p>
+            {/* Optional proof — still non-blocking. Tomorrow opens on this line. */}
+            {RETURN_LOOP_V1 && (
+              <div style={{ marginBottom: 20 }}>
+                <label style={{
+                  display: 'block',
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: '0.66rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'rgba(25,190,227,0.75)',
+                  marginBottom: 8,
+                }}>
+                  What I did <span style={{ fontWeight: 500, opacity: 0.7 }}>(optional — one line)</span>
+                </label>
+                <textarea
+                  className="journal-input"
+                  value={missionNote}
+                  onChange={e => setMissionNote(e.target.value)}
+                  onBlur={saveMissionNote}
+                  placeholder="e.g. Put the one-line routine at the top of Todoist before standup"
+                  rows={2}
+                  style={{ minHeight: 56, marginBottom: 6 }}
+                />
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.72rem',
+                  color: 'rgba(255,255,255,0.35)',
+                  lineHeight: 1.4,
+                }}>
+                  Write what you actually did on real work. Tomorrow will show this back to you.
+                </p>
+              </div>
+            )}
             <button
               onClick={toggleMission}
               className="btn-primary-large"
