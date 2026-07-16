@@ -12,6 +12,7 @@
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { type, t } from '@/lib/typeScale';
 
 // ── Parse sprint_intro markdown into structured sections ───────────────────
 
@@ -205,19 +206,10 @@ function parseDay0(md) {
   };
 }
 
-// ── UI pieces ──────────────────────────────────────────────────────────────
-
-const monoLabel = {
-  fontFamily: "'DM Mono', monospace",
-  fontSize: '0.66rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.1em',
-  color: 'var(--brand-teal)',
-};
+// ── UI pieces (semantic type scale — see lib/typeScale.js) ─────────────────
 
 function SectionLabel({ children, style }) {
-  return <div style={{ ...monoLabel, marginBottom: 12, ...style }}>{children}</div>;
+  return <div style={t('label', { marginBottom: 12, ...style })}>{children}</div>;
 }
 
 export default function Day0View({
@@ -268,52 +260,28 @@ export default function Day0View({
             <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>
             <span style={{ fontFamily: 'var(--font-sans)' }}>Orientation</span>
           </div>
-          <p
-            style={{
-              ...monoLabel,
-              margin: '0 0 6px 0',
-              color: 'rgba(25,190,227,0.7)',
-            }}
-          >
+          <p style={t('label', { margin: '0 0 6px 0', color: 'rgba(25,190,227,0.7)' })}>
             {book?.sprint_title || book?.title}
           </p>
-          <h1
-            className="text-gradient"
-            style={{
-              fontSize: '2.1rem',
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
-              margin: 0,
-              lineHeight: 1.15,
-            }}
-          >
+          <h1 className="text-gradient" style={t('display', { margin: 0 })}>
             {doc.title}
           </h1>
-          <p
-            style={{
-              margin: '10px 0 0 0',
-              fontSize: '0.88rem',
-              color: 'rgba(238,242,247,0.4)',
-              lineHeight: 1.4,
-            }}
-          >
+          <p style={t('caption', { margin: '10px 0 0 0', color: 'rgba(238,242,247,0.4)' })}>
             Read this once. Then Day 1 puts one idea on your real work.
           </p>
         </div>
 
-        {/* ── 1. HOOK ────────────────────────────────────────────────── */}
+        {/* ── 1. HOOK — same body size; first para emphasis via weight only ─ */}
         {doc.hookParagraphs.length > 0 && (
           <section style={{ marginBottom: 28 }}>
             {doc.hookParagraphs.map((p, idx) => (
               <p
                 key={idx}
-                style={{
-                  fontSize: idx === 0 ? '1.12rem' : '1.02rem',
-                  lineHeight: 1.72,
-                  color: idx === 0 ? 'var(--text-main)' : 'rgba(238,242,247,0.82)',
-                  fontWeight: idx === 0 ? 500 : 400,
-                  margin: idx === 0 ? '0 0 1.15rem 0' : '0 0 1rem 0',
-                }}
+                style={
+                  idx === 0
+                    ? t('bodyEmphasis', { margin: '0 0 1.15rem 0', lineHeight: 1.72 })
+                    : t('bodyMuted', { margin: '0 0 1rem 0', lineHeight: 1.72, color: 'rgba(238,242,247,0.82)' })
+                }
               >
                 {inlineBold(p, `hook${idx}`)}
               </p>
@@ -332,18 +300,10 @@ export default function Day0View({
               borderRadius: '0 12px 12px 0',
             }}
           >
-            <div style={{ ...monoLabel, marginBottom: 8, opacity: 0.9 }}>
+            <div style={t('label', { marginBottom: 8, opacity: 0.9 })}>
               This sprint&apos;s bet
             </div>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '1.05rem',
-                lineHeight: 1.6,
-                color: 'var(--text-main)',
-                fontWeight: 500,
-              }}
-            >
+            <p style={t('bodyEmphasis', { margin: 0, lineHeight: 1.6 })}>
               {inlineBold(doc.thesis, 'thesis')}
             </p>
           </div>
@@ -354,19 +314,12 @@ export default function Day0View({
           <section style={{ marginBottom: 32 }}>
             <SectionLabel>What you&apos;ll practice</SectionLabel>
             {doc.learnIntro && (
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  lineHeight: 1.55,
-                  color: 'rgba(238,242,247,0.5)',
-                  margin: '0 0 16px 0',
-                }}
-              >
+              <p style={t('caption', { margin: '0 0 16px 0', color: 'rgba(238,242,247,0.5)' })}>
                 {doc.learnIntro}
               </p>
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {doc.teachings.map((t, idx) => (
+              {doc.teachings.map((teach, idx) => (
                 <div
                   key={idx}
                   style={{
@@ -389,9 +342,7 @@ export default function Day0View({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontFamily: "'DM Mono', monospace",
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
+                      ...type.badge,
                       color: 'var(--brand-teal)',
                     }}
                   >
@@ -399,26 +350,17 @@ export default function Day0View({
                   </div>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: '0.95rem',
-                        color: 'var(--text-main)',
+                      style={t('bodyEmphasis', {
                         marginBottom: 4,
                         lineHeight: 1.35,
-                      }}
+                        fontWeight: 700,
+                      })}
                     >
-                      {t.title}
+                      {teach.title}
                     </div>
-                    {t.body && (
-                      <p
-                        style={{
-                          margin: 0,
-                          fontSize: '0.88rem',
-                          lineHeight: 1.55,
-                          color: 'rgba(238,242,247,0.62)',
-                        }}
-                      >
-                        {t.body}
+                    {teach.body && (
+                      <p style={t('body', { margin: 0, color: 'rgba(238,242,247,0.72)' })}>
+                        {teach.body}
                       </p>
                     )}
                   </div>
@@ -428,7 +370,7 @@ export default function Day0View({
           </section>
         )}
 
-        {/* ── 4. HOW IT WORKS — product chrome, quiet ─────────────────── */}
+        {/* ── 4. HOW IT WORKS — product chrome, quiet (same size, muted) ─ */}
         {doc.howItWorks && (
           <section
             style={{
@@ -442,22 +384,13 @@ export default function Day0View({
             <SectionLabel style={{ marginBottom: 8, color: 'rgba(255,255,255,0.35)' }}>
               How each day works
             </SectionLabel>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '0.86rem',
-                lineHeight: 1.55,
-                color: 'rgba(238,242,247,0.48)',
-              }}
-            >
+            <p style={t('bodyMuted', { margin: 0, color: 'rgba(238,242,247,0.48)' })}>
               {doc.howItWorks}
             </p>
           </section>
         )}
 
-        {/* ── 5–6. CLOSE: one personal ask + one handoff (no double copy) ─
-            Previously stacked product helper + generator "Before You Begin"
-            + Day 1 question — three competing voices. Now one spine + CTA. */}
+        {/* ── 5–6. CLOSE: one personal ask + one handoff ───────────────── */}
         {showSituation && (
           <section
             className="glass-panel"
@@ -469,14 +402,7 @@ export default function Day0View({
             }}
           >
             <SectionLabel>Your situation this week</SectionLabel>
-            <p
-              style={{
-                fontSize: '0.95rem',
-                lineHeight: 1.55,
-                color: 'rgba(238,242,247,0.72)',
-                margin: '0 0 14px 0',
-              }}
-            >
+            <p style={t('bodyMuted', { margin: '0 0 14px 0', color: 'rgba(238,242,247,0.72)' })}>
               Name one real thread you will practice on — a person, habit, or
               friction at work. Every day comes back to this.
             </p>
@@ -490,7 +416,7 @@ export default function Day0View({
               onBlur={() => onSituationBlur?.(localSituation)}
               placeholder="e.g. Status updates from Jordan that never land before standup"
               rows={2}
-              style={{ minHeight: 68, marginBottom: 0 }}
+              style={{ minHeight: 68, marginBottom: 0, fontSize: type.body.fontSize }}
             />
           </section>
         )}
@@ -500,30 +426,15 @@ export default function Day0View({
           className="glass-panel mission-panel highlighted"
           style={{ marginBottom: 24, padding: '22px 20px', textAlign: 'center' }}
         >
-          <div style={{ ...monoLabel, marginBottom: 10, justifyContent: 'center' }}>
+          <div style={t('label', { marginBottom: 10, justifyContent: 'center' })}>
             Day 1 starts here
           </div>
           {doc.day1Question ? (
-            <p
-              style={{
-                margin: '0 0 18px 0',
-                fontSize: '1.05rem',
-                lineHeight: 1.5,
-                color: 'var(--text-main)',
-                fontWeight: 500,
-              }}
-            >
+            <p style={t('bodyEmphasis', { margin: '0 0 18px 0', lineHeight: 1.5 })}>
               {doc.day1Question}
             </p>
           ) : (
-            <p
-              style={{
-                fontSize: '0.95rem',
-                color: 'rgba(238,242,247,0.65)',
-                margin: '0 0 18px 0',
-                lineHeight: 1.5,
-              }}
-            >
+            <p style={t('bodyMuted', { margin: '0 0 18px 0', color: 'rgba(238,242,247,0.65)' })}>
               Fifteen minutes. One move. On real work.
             </p>
           )}
@@ -542,11 +453,7 @@ export default function Day0View({
         <div style={{ textAlign: 'center' }}>
           <Link
             href="/library"
-            style={{
-              fontSize: '0.8rem',
-              color: 'rgba(255,255,255,0.35)',
-              textDecoration: 'none',
-            }}
+            style={t('caption', { color: 'rgba(255,255,255,0.35)', textDecoration: 'none' })}
           >
             ← Back to library
           </Link>

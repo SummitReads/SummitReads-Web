@@ -7,6 +7,7 @@ import { supabase } from '@/app/supabaseClient';
 import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
 import Day0View from '@/components/Day0View';
+import { type, t } from '@/lib/typeScale';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
 // ── Phase 1: Practice-day layout ─────────────────────────────────────────────
@@ -24,48 +25,14 @@ const PRACTICE_DAY_V2 = true;
 // Rollback: set false.
 const RETURN_LOOP_V1 = true;
 
-// Beat labels + visual weight. Keys match summit_days v2 columns.
-// Day 0-style hierarchy: numbered steps, scannable, unequal weight.
+// Beat labels. Hierarchy = number badge + label color + card chrome, NOT body size.
+// All practice prose uses type.body (SaaS type-scale rule).
 const PRACTICE_BEATS = [
-  {
-    key: 'framework',
-    label: 'The move',
-    num: 1,
-    // Claim of the day — strongest read weight
-    accent: 'teal',
-    bodyStyle: { fontSize: '1.06rem', lineHeight: 1.68, fontWeight: 500, color: 'var(--text-main)' },
-  },
-  {
-    key: 'demonstration',
-    label: 'Watch this',
-    num: 2,
-    accent: 'teal',
-    bodyStyle: { fontSize: '0.95rem', lineHeight: 1.65, color: 'rgba(238,242,247,0.82)' },
-  },
-  {
-    key: 'failure_mode',
-    label: 'Where it dies',
-    num: 3,
-    accent: 'amber',
-    bodyStyle: { fontSize: '0.92rem', lineHeight: 1.6, color: 'rgba(238,242,247,0.72)' },
-  },
-  {
-    key: 'application',
-    label: 'Your turn',
-    num: 4,
-    accent: 'teal',
-    bodyStyle: { fontSize: '0.98rem', lineHeight: 1.6, fontWeight: 500, color: 'var(--text-main)' },
-  },
+  { key: 'framework',     label: 'The move',      num: 1, accent: 'teal' },
+  { key: 'demonstration', label: 'Watch this',    num: 2, accent: 'teal' },
+  { key: 'failure_mode',  label: 'Where it dies', num: 3, accent: 'amber' },
+  { key: 'application',   label: 'Your turn',     num: 4, accent: 'teal' },
 ];
-
-const monoLabel = {
-  fontFamily: "'DM Mono', monospace",
-  fontSize: '0.66rem',
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.1em',
-  color: 'var(--brand-teal)',
-};
 
 export default function SummitDayPage({ params }) {
   const router = useRouter();
@@ -545,28 +512,17 @@ export default function SummitDayPage({ params }) {
             <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>
             <span style={{ fontFamily: 'var(--font-sans)' }}>Practice</span>
           </div>
-          <p style={{ ...monoLabel, margin: '0 0 6px 0', color: 'rgba(25,190,227,0.7)' }}>
+          <p style={t('label', { margin: '0 0 6px 0', color: 'rgba(25,190,227,0.7)' })}>
             {book.sprint_title || book.title}
           </p>
           <h1
             className="text-gradient"
-            style={{
-              fontSize: '2.05rem',
-              fontWeight: 800,
-              letterSpacing: '-0.03em',
-              margin: '0 0 10px 0',
-              lineHeight: 1.15,
-            }}
+            style={t('display', { margin: '0 0 10px 0' })}
           >
             {dayData.title}
           </h1>
           {dayData.skill_focus && (
-            <p style={{
-              margin: '0 0 16px 0',
-              fontSize: '0.92rem',
-              lineHeight: 1.45,
-              color: 'rgba(238,242,247,0.5)',
-            }}>
+            <p style={t('caption', { margin: '0 0 16px 0', color: 'rgba(238,242,247,0.5)' })}>
               {dayData.skill_focus}
             </p>
           )}
@@ -594,12 +550,12 @@ export default function SummitDayPage({ params }) {
               );
             })}
           </div>
-          <div style={{
+          <div style={t('caption', {
             fontFamily: "'DM Mono', monospace",
             fontSize: '0.65rem',
             color: 'rgba(255,255,255,0.28)',
             letterSpacing: '0.04em',
-          }}>
+          })}>
             {progressPercent}% through the sprint
           </div>
         </div>
@@ -615,17 +571,17 @@ export default function SummitDayPage({ params }) {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <div style={{ ...monoLabel, marginBottom: 8, color: 'rgba(255,255,255,0.35)' }}>
+            <div style={t('label', { marginBottom: 8, color: 'rgba(255,255,255,0.35)' })}>
               Still your week
             </div>
             {situationText && (
-              <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', lineHeight: 1.45, color: 'rgba(238,242,247,0.75)' }}>
+              <p style={t('bodyMuted', { margin: '0 0 4px 0', lineHeight: 1.45, color: 'rgba(238,242,247,0.75)' })}>
                 <span style={{ color: 'rgba(255,255,255,0.35)' }}>Working with · </span>
                 {situationText}
               </p>
             )}
             {yesterdayNote && (
-              <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.45, color: 'rgba(238,242,247,0.55)' }}>
+              <p style={t('caption', { margin: 0, color: 'rgba(238,242,247,0.55)' })}>
                 <span style={{ color: 'rgba(255,255,255,0.35)' }}>Yesterday · </span>
                 {yesterdayNote}
               </p>
@@ -644,13 +600,8 @@ export default function SummitDayPage({ params }) {
               background: 'rgba(25,190,227,0.05)',
             }}
           >
-            <div style={{ ...monoLabel, marginBottom: 10 }}>Your situation this week</div>
-            <p style={{
-              fontSize: '0.92rem',
-              lineHeight: 1.5,
-              color: 'rgba(238,242,247,0.65)',
-              margin: '0 0 12px 0',
-            }}>
+            <div style={t('label', { marginBottom: 10 })}>Your situation this week</div>
+            <p style={t('bodyMuted', { margin: '0 0 12px 0', color: 'rgba(238,242,247,0.72)' })}>
               Name one real thread you will practice on — a person, habit, or friction at work.
               Every day comes back to this.
             </p>
@@ -676,7 +627,7 @@ export default function SummitDayPage({ params }) {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <div style={{ ...monoLabel, marginBottom: 6, color: 'rgba(255,255,255,0.35)' }}>
+            <div style={t('label', { marginBottom: 6, color: 'rgba(255,255,255,0.35)' })}>
               Your situation this week
             </div>
             <textarea
@@ -693,7 +644,7 @@ export default function SummitDayPage({ params }) {
         {/* ── Today&apos;s practice — numbered beats (Day 0 card language) ─ */}
         {usePracticeLayout ? (
           <section style={{ marginBottom: 32 }}>
-            <div style={{ ...monoLabel, marginBottom: 14 }}>Today&apos;s practice</div>
+            <div style={t('label', { marginBottom: 14 })}>Today&apos;s practice</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {practiceBeats.map((beat) => {
                 const isFail = beat.accent === 'amber';
@@ -733,23 +684,21 @@ export default function SummitDayPage({ params }) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontFamily: "'DM Mono', monospace",
-                        fontSize: '0.72rem',
-                        fontWeight: 700,
+                        ...type.badge,
                         color: isFail ? 'rgba(251, 146, 60, 0.95)' : 'var(--brand-teal)',
                       }}
                     >
                       {beat.num}
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{
-                        ...monoLabel,
+                      <div style={t('label', {
                         marginBottom: 6,
                         color: isFail ? 'rgba(251, 146, 60, 0.85)' : 'var(--brand-teal)',
-                      }}>
+                      })}>
                         {beat.label}
                       </div>
-                      <div style={{ whiteSpace: 'pre-wrap', ...beat.bodyStyle }}>
+                      {/* Same body size for all four steps — hierarchy via badge/label/card */}
+                      <div style={t('body', { whiteSpace: 'pre-wrap' })}>
                         {beat.text}
                       </div>
                     </div>
@@ -760,8 +709,8 @@ export default function SummitDayPage({ params }) {
           </section>
         ) : (
           <div className="glass-panel" style={{ marginBottom: 24 }}>
-            <div style={{ ...monoLabel, marginBottom: 12 }}>Today&apos;s practice</div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            <div style={t('label', { marginBottom: 12 })}>Today&apos;s practice</div>
+            <div style={t('body', { whiteSpace: 'pre-wrap' })}>
               {todaysMove}
             </div>
           </div>
@@ -779,30 +728,18 @@ export default function SummitDayPage({ params }) {
               } : {}),
             }}
           >
-            <div style={{ ...monoLabel, marginBottom: 10 }}>
+            <div style={t('label', { marginBottom: 10 })}>
               {dayNum === 7 ? 'Your commitment' : 'Write it down'}
             </div>
-            <p style={{
-              fontSize: '1.02rem',
-              margin: '0 0 12px 0',
-              color: 'var(--text-main)',
-              lineHeight: 1.5,
-              fontWeight: 500,
-            }}>
+            <p style={t('bodyEmphasis', { margin: '0 0 12px 0', lineHeight: 1.5 })}>
               {dayData.milepost}
             </p>
             {primaryHint && (
-              <p style={{
-                fontSize: '0.8rem',
-                color: 'rgba(255,255,255,0.38)',
-                margin: '0 0 12px 0',
-                lineHeight: 1.45,
-              }}>
+              <p style={t('caption', { margin: '0 0 12px 0', color: 'rgba(255,255,255,0.38)' })}>
                 {primaryHint}
               </p>
             )}
-            {/* Full madlib stays — shown as a quiet shape guide above the field,
-                not as giant placeholder text inside the input. */}
+            {/* Full madlib as quiet shape guide — not a large input placeholder */}
             {dayData.madlib_template && (
               <div
                 style={{
@@ -813,21 +750,14 @@ export default function SummitDayPage({ params }) {
                   border: '1px solid rgba(255,255,255,0.06)',
                 }}
               >
-                <div style={{
-                  ...monoLabel,
+                <div style={t('label', {
                   marginBottom: 6,
                   color: 'rgba(255,255,255,0.32)',
                   fontSize: '0.6rem',
-                }}>
+                })}>
                   Shape guide
                 </div>
-                <p style={{
-                  margin: 0,
-                  fontSize: '0.84rem',
-                  lineHeight: 1.5,
-                  color: 'rgba(238,242,247,0.48)',
-                  fontFamily: 'var(--font-sans)',
-                }}>
+                <p style={t('caption', { margin: 0, color: 'rgba(238,242,247,0.48)' })}>
                   {dayData.madlib_template}
                 </p>
               </div>
@@ -845,7 +775,7 @@ export default function SummitDayPage({ params }) {
               style={{
                 minHeight: dayNum === 7 ? 100 : 72,
                 marginBottom: 0,
-                fontSize: '0.95rem',
+                fontSize: type.body.fontSize,
               }}
             />
 
@@ -866,7 +796,7 @@ export default function SummitDayPage({ params }) {
                     padding: 0,
                     background: 'none',
                     border: 'none',
-                    fontSize: '0.78rem',
+                    ...type.caption,
                     color: 'rgba(25,190,227,0.55)',
                     fontFamily: 'var(--font-sans)',
                     fontWeight: 500,
@@ -882,7 +812,7 @@ export default function SummitDayPage({ params }) {
                 disabled={!hasMilepostText || secondLookBusy}
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '0.78rem',
+                  fontSize: type.caption.fontSize,
                   fontWeight: 600,
                   padding: '7px 12px',
                   borderRadius: 8,
@@ -917,7 +847,7 @@ export default function SummitDayPage({ params }) {
                   justifyContent: 'space-between',
                   marginBottom: 8,
                 }}>
-                  <div style={{ ...monoLabel, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <div style={t('label', { display: 'inline-flex', alignItems: 'center', gap: 6 })}>
                     Coach
                   </div>
                   <button
@@ -949,12 +879,7 @@ export default function SummitDayPage({ params }) {
                   </div>
                 )}
                 {coachObservation && (
-                  <div style={{
-                    fontSize: '0.92rem',
-                    lineHeight: 1.6,
-                    color: 'var(--text-main)',
-                    whiteSpace: 'pre-wrap',
-                  }}>
+                  <div style={t('body', { whiteSpace: 'pre-wrap' })}>
                     {coachObservation}
                     {secondLookStreaming && (
                       <span style={{
@@ -970,7 +895,7 @@ export default function SummitDayPage({ params }) {
                   </div>
                 )}
                 {secondLookError && (
-                  <div style={{ fontSize: '0.85rem', color: '#f87171', marginTop: 4 }}>
+                  <div style={t('caption', { color: '#f87171', marginTop: 4 })}>
                     {secondLookError}
                   </div>
                 )}
@@ -985,24 +910,17 @@ export default function SummitDayPage({ params }) {
             className="glass-panel mission-panel highlighted"
             style={{ marginBottom: 28, padding: '20px 18px' }}
           >
-            <div style={{ ...monoLabel, marginBottom: 10 }}>Do it now</div>
-            <p style={{
-              fontSize: '1.05rem',
-              margin: '0 0 16px 0',
-              lineHeight: 1.55,
-              color: 'var(--text-main)',
-              fontWeight: 500,
-            }}>
+            <div style={t('label', { marginBottom: 10 })}>Do it now</div>
+            <p style={t('bodyEmphasis', { margin: '0 0 16px 0', lineHeight: 1.55 })}>
               {dayData.summit_mission}
             </p>
             {RETURN_LOOP_V1 && (
               <div style={{ marginBottom: 16 }}>
-                <label style={{
+                <label style={t('label', {
                   display: 'block',
-                  ...monoLabel,
                   marginBottom: 8,
                   color: 'rgba(25,190,227,0.7)',
-                }}>
+                })}>
                   What I did <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional)</span>
                 </label>
                 <textarea
