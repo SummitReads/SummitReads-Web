@@ -521,7 +521,24 @@ export default function SummitDayPage({ params }) {
           >
             {dayData.title}
           </h1>
-          {dayData.skill_focus && (
+          {/* Practice N of 6 when skill_focus is the bound teaching name (spine mode) */}
+          {dayData.skill_focus && dayNum >= 1 && dayNum <= 6 && (
+            <p style={t('bodyMuted', {
+              margin: '0 0 8px 0',
+              color: 'rgba(238,242,247,0.65)',
+              lineHeight: 1.4,
+            })}>
+              <span style={t('label', {
+                display: 'inline',
+                marginRight: 8,
+                color: 'var(--brand-teal)',
+              })}>
+                Practice {dayNum} of 6
+              </span>
+              {dayData.skill_focus}
+            </p>
+          )}
+          {dayData.skill_focus && dayNum === 7 && (
             <p style={t('caption', { margin: '0 0 16px 0', color: 'rgba(238,242,247,0.5)' })}>
               {dayData.skill_focus}
             </p>
