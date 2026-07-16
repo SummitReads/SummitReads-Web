@@ -801,21 +801,51 @@ export default function SummitDayPage({ params }) {
                 {primaryHint}
               </p>
             )}
+            {/* Full madlib stays — shown as a quiet shape guide above the field,
+                not as giant placeholder text inside the input. */}
+            {dayData.madlib_template && (
+              <div
+                style={{
+                  marginBottom: 10,
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                <div style={{
+                  ...monoLabel,
+                  marginBottom: 6,
+                  color: 'rgba(255,255,255,0.32)',
+                  fontSize: '0.6rem',
+                }}>
+                  Shape guide
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.84rem',
+                  lineHeight: 1.5,
+                  color: 'rgba(238,242,247,0.48)',
+                  fontFamily: 'var(--font-sans)',
+                }}>
+                  {dayData.madlib_template}
+                </p>
+              </div>
+            )}
             <textarea
               className="journal-input"
               value={reflectionText}
               onChange={e => setReflectionText(e.target.value)}
               onBlur={saveReflection}
               placeholder={
-                dayData.madlib_template
-                  ? dayData.madlib_template
-                  : dayNum === 7
-                  ? 'For the next two weeks, I will…'
-                  : 'Fill this in from your real work…'
+                dayNum === 7
+                  ? 'Write your commitment in one or two lines…'
+                  : 'Write yours from real work…'
               }
               style={{
                 minHeight: dayNum === 7 ? 100 : 72,
                 marginBottom: 0,
+                fontSize: '0.95rem',
               }}
             />
 

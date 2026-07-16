@@ -3,22 +3,23 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const INITIAL_GREETING = `Summit Coach here. Drop the move you're working on, the milepost you're stuck on, or whatever's catching on you about today. I'll help you sharpen it.`;
+// User-facing language matches the day UI: practice / write it down / do it now.
+const INITIAL_GREETING = `Summit Coach here. Stuck on today's practice, the write-it-down line, or the do-it-now action? Drop it here and I'll help you sharpen it.`;
 
-const EXPLORE_GREETING = `You're in the Explore Further section. Ask me anything about what you just read — how it applies to your situation, what to do with it, or what it connects to from earlier in the sprint.`;
+const EXPLORE_GREETING = `You're in Explore Further. Ask about what you just read — how it applies to your situation, what to do with it, or how it connects to earlier in the sprint.`;
 
-// Day view chips — unchanged
+// Day view chips — aligned with current day labels (not legacy milepost/mission)
 function getQuickChips(dayNum) {
   const day = Number(dayNum) || 1;
   const chips = [
-    { label: 'Help me get started',  prompt: "I just opened today's day. Help me understand what I should be focusing on." },
-    { label: "About today's move",   prompt: "Help me understand today's move. What's the core idea and why does it matter?" },
-    { label: 'Help with milepost',   prompt: "I'm not sure what to write for the milepost. Can you help me figure it out?" },
-    { label: 'Help with mission',    prompt: "Help me make today's mission feel more concrete and doable." },
-    { label: "I'm stuck",            prompt: "I'm stuck on today's mission. Help me figure out what's getting in the way." },
+    { label: 'Help me get started',   prompt: "I just opened today's practice. Help me understand what I should focus on." },
+    { label: "About today's practice", prompt: "Help me understand today's practice — the move, the example, and why it matters." },
+    { label: 'Help me write it down', prompt: "I'm not sure what to write in the Write it down section. Can you help me draft something from my real work?" },
+    { label: 'Help me do it now',     prompt: "Help me make the Do it now action feel concrete and doable on my real work." },
+    { label: "I'm stuck",             prompt: "I'm stuck on today's action. Help me figure out what's getting in the way." },
   ];
-  if (day >= 3) chips.push({ label: 'I tried it',       prompt: "I tried today's mission. Here's what happened..." });
-  if (day >= 5) chips.push({ label: 'What changed?',    prompt: "Help me name what's actually shifted for me across this sprint so far." });
+  if (day >= 3) chips.push({ label: 'I tried it',        prompt: "I tried today's do-it-now action. Here's what happened..." });
+  if (day >= 5) chips.push({ label: 'What changed?',     prompt: "Help me name what's actually shifted for me across this sprint so far." });
   if (day === 7) chips.push({ label: 'Carry it forward', prompt: "Help me figure out how to carry what I've learned beyond this sprint." });
   return chips;
 }
