@@ -126,20 +126,46 @@ export default function SummitDayPage({ params }) {
           .select('day_number, title, skill_focus')
           .eq('book_id', id)
           .order('day_number', { ascending: true });
-        const { data: currentDayData, error: dayError } = await supabase
+        // Prefer individual_contributor (canonical context); fall back to any row
+        // if an older/default context was written.
+        let dayQuery = await supabase
           .from('summit_days')
           .select('*')
           .eq('book_id', id)
           .eq('day_number', dayNum)
+          .eq('learner_context', 'individual_contributor')
           .maybeSingle();
+        let currentDayData = dayQuery.data;
+        let dayError = dayQuery.error;
+        if (!currentDayData && !dayError) {
+          dayQuery = await supabase
+            .from('summit_days')
+            .select('*')
+            .eq('book_id', id)
+            .eq('day_number', dayNum)
+            .limit(1)
+            .maybeSingle();
+          currentDayData = dayQuery.data;
+          dayError = dayQuery.error;
+        }
         if (dayNum < 7) {
-          const { data: nextDay } = await supabase
+          let nextQuery = await supabase
             .from('summit_days')
             .select('title, framework, demonstration, failure_mode, application')
             .eq('book_id', id)
             .eq('day_number', dayNum + 1)
+            .eq('learner_context', 'individual_contributor')
             .maybeSingle();
-          setNextDayData(nextDay);
+          if (!nextQuery.data) {
+            nextQuery = await supabase
+              .from('summit_days')
+              .select('title, framework, demonstration, failure_mode, application')
+              .eq('book_id', id)
+              .eq('day_number', dayNum + 1)
+              .limit(1)
+              .maybeSingle();
+          }
+          setNextDayData(nextQuery.data || null);
         }
         if (currentUser && dayNum > 1) {
           const { data: prevProgress } = await supabase
@@ -196,7 +222,14 @@ export default function SummitDayPage({ params }) {
               .then(() => {});
           }
         }
-        if (dayError) setError('Day content not found');
+        if (dayError) {
+          setError(`Day content not found (${dayError.message || 'query error'})`);
+        } else if (!currentDayData) {
+          setError(
+            `Day ${dayNum} is not loaded for this book yet. ` +
+            `Regenerate and run: python3 reload_sprints.py --books "Book Title" --apply`
+          );
+        }
         setDayData(currentDayData);
         setAllDays(daysData || []);
         setLoading(false);
@@ -440,11 +473,23 @@ export default function SummitDayPage({ params }) {
     );
   }
 
-  if (error || !book || !dayData) return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: 8 }}>Content not found</div>
-        <Link href="/library" style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>← Back to library</Link>
+  if (error || !book || (!isDay0 && !dayData)) return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-dark)', padding: 24 }}>
+      <div style={{ textAlign: 'center', maxWidth: 420 }}>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', color: 'var(--text-main)', marginBottom: 8 }}>
+          Content not found
+        </div>
+        <p style={{ fontSize: '0.9rem', color: 'rgba(238,242,247,0.55)', lineHeight: 1.5, marginBottom: 16 }}>
+          {error || (book ? `No Day ${dayNum} row in summit_days for this book.` : 'Book not found.')}
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {book?.sprint_intro && (
+            <Link href={`/summit/${id}/day/0`} style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>
+              Open Day 0 →
+            </Link>
+          )}
+          <Link href="/library" style={{ color: 'var(--brand-teal)', fontSize: '0.875rem' }}>← Back to library</Link>
+        </div>
       </div>
     </div>
   );
