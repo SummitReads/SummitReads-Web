@@ -455,12 +455,14 @@ export default function Day0View({
           </section>
         )}
 
-        {/* ── 5. PERSONAL SPINE — situation (strategic; this is the product) */}
+        {/* ── 5–6. CLOSE: one personal ask + one handoff (no double copy) ─
+            Previously stacked product helper + generator "Before You Begin"
+            + Day 1 question — three competing voices. Now one spine + CTA. */}
         {showSituation && (
           <section
             className="glass-panel"
             style={{
-              marginBottom: 20,
+              marginBottom: 16,
               padding: '20px 20px',
               borderColor: 'rgba(25,190,227,0.35)',
               background: 'rgba(25,190,227,0.06)',
@@ -469,31 +471,15 @@ export default function Day0View({
             <SectionLabel>Your situation this week</SectionLabel>
             <p
               style={{
-                fontSize: '0.9rem',
+                fontSize: '0.95rem',
                 lineHeight: 1.55,
-                color: 'rgba(238,242,247,0.55)',
+                color: 'rgba(238,242,247,0.72)',
                 margin: '0 0 14px 0',
               }}
             >
-              Pick one person, habit, or thread. Days 1–7 will keep coming back to it —
-              so you are practicing the book on <em>your</em> work, not a hypothetical.
+              Name one real thread you will practice on — a person, habit, or
+              friction at work. Every day comes back to this.
             </p>
-            {/* Light pull from generator "Before You Begin" if useful, not full dump */}
-            {doc.beforeYouBegin[0] && (
-              <p
-                style={{
-                  fontSize: '0.82rem',
-                  lineHeight: 1.5,
-                  color: 'rgba(238,242,247,0.38)',
-                  margin: '0 0 12px 0',
-                  fontStyle: 'italic',
-                }}
-              >
-                {doc.beforeYouBegin.length > 1
-                  ? doc.beforeYouBegin[doc.beforeYouBegin.length - 1]
-                  : doc.beforeYouBegin[0]}
-              </p>
-            )}
             <textarea
               className="journal-input"
               value={localSituation}
@@ -509,31 +495,27 @@ export default function Day0View({
           </section>
         )}
 
-        {/* ── 6. HANDOFF + CTA ───────────────────────────────────────── */}
+        {/* ── HANDOFF + CTA ──────────────────────────────────────────── */}
         <section
           className="glass-panel mission-panel highlighted"
           style={{ marginBottom: 24, padding: '22px 20px', textAlign: 'center' }}
         >
-          {doc.day1Question && (
-            <>
-              <div style={{ ...monoLabel, marginBottom: 10, justifyContent: 'center' }}>
-                Day 1 starts here
-              </div>
-              <p
-                style={{
-                  margin: '0 0 18px 0',
-                  fontSize: '1.08rem',
-                  lineHeight: 1.5,
-                  color: 'var(--text-main)',
-                  fontWeight: 500,
-                  fontStyle: 'italic',
-                }}
-              >
-                {doc.day1Question}
-              </p>
-            </>
-          )}
-          {!doc.day1Question && (
+          <div style={{ ...monoLabel, marginBottom: 10, justifyContent: 'center' }}>
+            Day 1 starts here
+          </div>
+          {doc.day1Question ? (
+            <p
+              style={{
+                margin: '0 0 18px 0',
+                fontSize: '1.05rem',
+                lineHeight: 1.5,
+                color: 'var(--text-main)',
+                fontWeight: 500,
+              }}
+            >
+              {doc.day1Question}
+            </p>
+          ) : (
             <p
               style={{
                 fontSize: '0.95rem',
