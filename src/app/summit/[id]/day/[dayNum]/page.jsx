@@ -7,6 +7,49 @@ import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
+// ── Phase 1: Practice-day layout ─────────────────────────────────────────────
+// When true, "Today's Move" renders as four labeled beats (drill script) instead
+// of one equal prose blob. Milepost / mission / coach / complete are unchanged.
+// Rollback: set to false and hard-refresh — no DB or API changes.
+const PRACTICE_DAY_V2 = true;
+
+// Beat labels + visual weight. Keys match summit_days v2 columns.
+const PRACTICE_BEATS = [
+  {
+    key: 'framework',
+    label: 'The move',
+    // Slightly stronger — this is the claim the day hangs on.
+    panelStyle: {},
+    bodyStyle: { fontSize: '1.05rem', lineHeight: 1.65, fontWeight: 500 },
+  },
+  {
+    key: 'demonstration',
+    label: 'Watch this',
+    panelStyle: { background: 'rgba(25,190,227,0.03)' },
+    bodyStyle: { fontSize: '1rem', lineHeight: 1.65 },
+  },
+  {
+    key: 'failure_mode',
+    label: 'Where it dies',
+    // Soft warning tint — post-mortem energy without alarm red.
+    panelStyle: {
+      borderColor: 'rgba(251, 146, 60, 0.22)',
+      background: 'rgba(251, 146, 60, 0.04)',
+    },
+    bodyStyle: { fontSize: '0.98rem', lineHeight: 1.6 },
+  },
+  {
+    key: 'application',
+    label: 'Your turn',
+    // Bridges into milepost/mission — slightly tighter, action-adjacent.
+    panelStyle: {
+      borderColor: 'rgba(25,190,227,0.28)',
+      background: 'rgba(25,190,227,0.05)',
+    },
+    bodyStyle: { fontSize: '1rem', lineHeight: 1.6, fontWeight: 500 },
+  },
+];
+
 export default function SummitDayPage({ params }) {
   const unwrappedParams = React.use(params);
   const id      = unwrappedParams.id;
@@ -284,13 +327,22 @@ export default function SummitDayPage({ params }) {
   const hasMilepostText = reflectionText.trim().length > 0;
   const secondLookBusy  = secondLookLoading || secondLookStreaming;
 
-  // ── "Today's Move" prose — assemble the four v2 teaching components in
-  // order, double-newline between, so the architect's paragraph breaks remain.
-  // (Replaces the dropped v1 single-blob ascent_content field.) ──
+  // ── "Today's Move" — v1 single blob (used when PRACTICE_DAY_V2 is false, or
+  // as fallback when no per-component fields are present). ──
   const todaysMove = ['framework', 'demonstration', 'failure_mode', 'application']
     .map(k => dayData[k])
     .filter(v => typeof v === 'string' && v.trim().length > 0)
     .join('\n\n');
+
+  // Phase 1 beats: only include components that have text so partial/legacy
+  // days don't show empty panels.
+  const practiceBeats = PRACTICE_BEATS
+    .map(beat => ({
+      ...beat,
+      text: typeof dayData[beat.key] === 'string' ? dayData[beat.key].trim() : '',
+    }))
+    .filter(beat => beat.text.length > 0);
+  const usePracticeLayout = PRACTICE_DAY_V2 && practiceBeats.length > 0;
 
   // ── Milepost hints, sourced from summit_days.hints (jsonb array). Render all
   // of them; if the array is missing or empty, render nothing. ──
@@ -394,16 +446,63 @@ export default function SummitDayPage({ params }) {
             </div>
           )}
         </div>
-        {/* Today's insight */}
-        <div className="glass-panel" style={{ marginBottom: 24 }}>
-          <div className="tag-featured">
-            <div className="pulse-dot" />
-            Today's Move
+        {/* Today's Move — Phase 1 practice layout (flag) or legacy single blob */}
+        {usePracticeLayout ? (
+          <div style={{ marginBottom: 24 }}>
+            <div className="tag-featured" style={{ marginBottom: 14 }}>
+              <div className="pulse-dot" />
+              Today&apos;s Move
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {practiceBeats.map((beat) => (
+                <div
+                  key={beat.key}
+                  className="glass-panel"
+                  style={{
+                    marginBottom: 0,
+                    padding: '18px 20px',
+                    ...beat.panelStyle,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "'DM Mono', monospace",
+                      fontSize: '0.66rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: beat.key === 'failure_mode'
+                        ? 'rgba(251, 146, 60, 0.85)'
+                        : 'var(--brand-teal)',
+                      marginBottom: 10,
+                    }}
+                  >
+                    {beat.label}
+                  </div>
+                  <div
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      color: 'var(--text-main)',
+                      ...beat.bodyStyle,
+                    }}
+                  >
+                    {beat.text}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
-            {todaysMove}
+        ) : (
+          <div className="glass-panel" style={{ marginBottom: 24 }}>
+            <div className="tag-featured">
+              <div className="pulse-dot" />
+              Today&apos;s Move
+            </div>
+            <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+              {todaysMove}
+            </div>
           </div>
-        </div>
+        )}
         {/* Milepost */}
         {dayData.milepost && (
           <div className="glass-panel" style={{

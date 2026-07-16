@@ -65,6 +65,15 @@ function buildChatSystemPrompt({ book, currentDay, userReflection, userMission, 
     ? 'REINFORCEMENT mode. Help them see what\'s actually shifting. Challenge them to go one level deeper.'
     : 'INTEGRATION mode. Help them name what\'s genuinely changed and how they carry it forward.';
 
+  // Today's Move — assemble the four v2 teaching components (framework,
+  // demonstration, failure_mode, application). Replaces the dropped v1
+  // ascent_content blob; trimmed to keep the system prompt lean.
+  const todaysMove = ['framework', 'demonstration', 'failure_mode', 'application']
+    .map(k => currentDay[k])
+    .filter(v => typeof v === 'string' && v.trim().length > 0)
+    .join('\n\n');
+  const todaysMoveBrief = todaysMove.length > 900 ? todaysMove.slice(0, 900) + '…' : todaysMove;
+
   return `You are the Summit Coach for SummitSkills.
 
 CHARACTER:
@@ -75,7 +84,7 @@ You are not the source of authority. The practice and the practitioners are. You
 CONTEXT:
 Book: "${book.title}" by ${book.author}
 Day ${stageNum} of 7: "${currentDay.title}"
-Today's Move: ${currentDay.ascent_content?.substring(0, 300)}...
+Today's Move: ${todaysMoveBrief || 'None.'}
 Milepost Question: ${currentDay.milepost || 'None.'}
 Mission: ${currentDay.summit_mission || 'None.'}
 User's Milepost Answer: ${userReflection || 'Not written yet. Ask what stood out.'}
