@@ -25,41 +25,47 @@ const PRACTICE_DAY_V2 = true;
 const RETURN_LOOP_V1 = true;
 
 // Beat labels + visual weight. Keys match summit_days v2 columns.
+// Day 0-style hierarchy: numbered steps, scannable, unequal weight.
 const PRACTICE_BEATS = [
   {
     key: 'framework',
     label: 'The move',
-    // Slightly stronger — this is the claim the day hangs on.
-    panelStyle: {},
-    bodyStyle: { fontSize: '1.05rem', lineHeight: 1.65, fontWeight: 500 },
+    num: 1,
+    // Claim of the day — strongest read weight
+    accent: 'teal',
+    bodyStyle: { fontSize: '1.06rem', lineHeight: 1.68, fontWeight: 500, color: 'var(--text-main)' },
   },
   {
     key: 'demonstration',
     label: 'Watch this',
-    panelStyle: { background: 'rgba(25,190,227,0.03)' },
-    bodyStyle: { fontSize: '1rem', lineHeight: 1.65 },
+    num: 2,
+    accent: 'teal',
+    bodyStyle: { fontSize: '0.95rem', lineHeight: 1.65, color: 'rgba(238,242,247,0.82)' },
   },
   {
     key: 'failure_mode',
     label: 'Where it dies',
-    // Soft warning tint — post-mortem energy without alarm red.
-    panelStyle: {
-      borderColor: 'rgba(251, 146, 60, 0.22)',
-      background: 'rgba(251, 146, 60, 0.04)',
-    },
-    bodyStyle: { fontSize: '0.98rem', lineHeight: 1.6 },
+    num: 3,
+    accent: 'amber',
+    bodyStyle: { fontSize: '0.92rem', lineHeight: 1.6, color: 'rgba(238,242,247,0.72)' },
   },
   {
     key: 'application',
     label: 'Your turn',
-    // Bridges into milepost/mission — slightly tighter, action-adjacent.
-    panelStyle: {
-      borderColor: 'rgba(25,190,227,0.28)',
-      background: 'rgba(25,190,227,0.05)',
-    },
-    bodyStyle: { fontSize: '1rem', lineHeight: 1.6, fontWeight: 500 },
+    num: 4,
+    accent: 'teal',
+    bodyStyle: { fontSize: '0.98rem', lineHeight: 1.6, fontWeight: 500, color: 'var(--text-main)' },
   },
 ];
+
+const monoLabel = {
+  fontFamily: "'DM Mono', monospace",
+  fontSize: '0.66rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'var(--brand-teal)',
+};
 
 export default function SummitDayPage({ params }) {
   const router = useRouter();
@@ -507,11 +513,11 @@ export default function SummitDayPage({ params }) {
     .filter(beat => beat.text.length > 0);
   const usePracticeLayout = PRACTICE_DAY_V2 && practiceBeats.length > 0;
 
-  // ── Milepost hints, sourced from summit_days.hints (jsonb array). Render all
-  // of them; if the array is missing or empty, render nothing. ──
+  // Milepost hints — show at most one quiet helper (not a rubric wall).
   const milepostHints = Array.isArray(dayData.hints)
     ? dayData.hints.map(h => String(h)).filter(h => h.trim().length > 0)
     : [];
+  const primaryHint = milepostHints[0] || '';
 
   return (
     <>
@@ -527,140 +533,126 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
       </nav>
-      {/* ── maxWidth scaled down to standard blog width (768px) to reduce zoomed-in feel ── */}
-      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 768, paddingTop: 40, paddingBottom: 80 }}>
-        {/* Sprint header */}
-        <div style={{ marginBottom: 48 }}>
-          <div style={{ marginBottom: 28 }}>
-            <div className="tag-featured" style={{ marginBottom: 16 }}>
-              <div className="pulse-dot" />
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum}</span>
-              <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
-              <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
-              {book.category && <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>}
-              {book.category && <span style={{ fontFamily: 'var(--font-sans)' }}>{book.category}</span>}
-            </div>
-            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: 0 }}>
-              {book.sprint_title || book.title}
-            </p>
+      {/* Day 0-aligned reading width */}
+      <main className={`container day-main ${coachOpen ? 'day-main-with-coach' : ''}`} style={{ maxWidth: 680, paddingTop: 40, paddingBottom: 100 }}>
+        {/* ── Header (matches Day 0 chrome) ──────────────────────────── */}
+        <div style={{ marginBottom: 28 }}>
+          <div className="tag-featured" style={{ marginBottom: 12 }}>
+            <div className="pulse-dot" />
+            <span style={{ fontFamily: "'DM Mono', monospace" }}>Day {dayNum}</span>
+            <span style={{ color: 'rgba(25,190,227,0.5)' }}>/</span>
+            <span style={{ fontFamily: "'DM Mono', monospace" }}>7</span>
+            <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>
+            <span style={{ fontFamily: 'var(--font-sans)' }}>Practice</span>
           </div>
-          {/* Progress bar */}
-          <div className="progress-bar-container">
-            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-              {[1,2,3,4,5,6,7].map(stage => {
-                const stageData  = allDays.find(d => d.day_number === stage);
-                const isComplete = stage < dayNum;
-                const isCurrent  = stage === dayNum;
-                const skill      = stageData?.skill_focus;
-                return (
-                  <div
-                    key={stage}
-                    title={skill ? `Day ${stage}: ${skill}` : undefined}
-                    style={{
-                      flex: 1,
-                      height: 5,
-                      borderRadius: 3,
-                      background: isComplete
-                        ? 'var(--brand-teal)'
-                        : isCurrent
-                        ? 'rgba(25,190,227,0.5)'
-                        : 'rgba(255,255,255,0.08)',
-                      transition: 'background 0.3s ease',
-                      cursor: skill ? 'default' : undefined,
-                    }}
-                  />
-                );
-              })}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <span>Progress</span>
-              <span style={{ fontFamily: "'DM Mono', monospace", color: 'var(--brand-teal)', fontWeight: 600 }}>
-                {progressPercent}% complete
-              </span>
-            </div>
-          </div>
-        </div>
-        
-        {/* Stage content */}
-        <div style={{ marginBottom: 40, textAlign: 'left' }}>
-          {/* ── Title font scaled down from 2.75rem to 2rem ── */}
-          <h2 className="text-gradient" style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>
-            {dayData.title}
-          </h2>
-          <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(25,190,227,0.5)', margin: 0 }}>
-            Day {dayNum} of 7
+          <p style={{ ...monoLabel, margin: '0 0 6px 0', color: 'rgba(25,190,227,0.7)' }}>
+            {book.sprint_title || book.title}
           </p>
-          {/* Skill focus tag — only renders once skill_focus is populated in the DB */}
-          {dayData.skill_focus && (
-            <div style={{
-              display: 'inline-block',
-              marginTop: 12,
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              color: 'rgba(25,190,227,0.55)',
-              border: '1px solid rgba(25,190,227,0.2)',
-              borderRadius: 20,
-              padding: '4px 14px',
-            }}>
-              {dayData.skill_focus}
-            </div>
-          )}
-        </div>
-
-        {/* ── Return loop: continuity strip (Days 2–7) ───────────────── */}
-        {RETURN_LOOP_V1 && dayNum > 1 && (situationText || yesterdayNote) && (
-          <div
-            className="glass-panel"
+          <h1
+            className="text-gradient"
             style={{
-              marginBottom: 20,
-              padding: '14px 18px',
-              borderColor: 'rgba(25,190,227,0.28)',
-              background: 'rgba(25,190,227,0.06)',
+              fontSize: '2.05rem',
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+              margin: '0 0 10px 0',
+              lineHeight: 1.15,
             }}
           >
-            <div style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '0.66rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              color: 'var(--brand-teal)',
-              marginBottom: 8,
+            {dayData.title}
+          </h1>
+          {dayData.skill_focus && (
+            <p style={{
+              margin: '0 0 16px 0',
+              fontSize: '0.92rem',
+              lineHeight: 1.45,
+              color: 'rgba(238,242,247,0.5)',
             }}>
+              {dayData.skill_focus}
+            </p>
+          )}
+          {/* Quiet progress — secondary to content */}
+          <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
+            {[1, 2, 3, 4, 5, 6, 7].map(stage => {
+              const stageData = allDays.find(d => d.day_number === stage);
+              const isComplete = stage < dayNum;
+              const isCurrent = stage === dayNum;
+              return (
+                <div
+                  key={stage}
+                  title={stageData?.skill_focus ? `Day ${stage}: ${stageData.skill_focus}` : `Day ${stage}`}
+                  style={{
+                    flex: 1,
+                    height: 3,
+                    borderRadius: 2,
+                    background: isComplete
+                      ? 'var(--brand-teal)'
+                      : isCurrent
+                      ? 'rgba(25,190,227,0.55)'
+                      : 'rgba(255,255,255,0.08)',
+                  }}
+                />
+              );
+            })}
+          </div>
+          <div style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '0.65rem',
+            color: 'rgba(255,255,255,0.28)',
+            letterSpacing: '0.04em',
+          }}>
+            {progressPercent}% through the sprint
+          </div>
+        </div>
+
+        {/* ── Continuity (Days 2–7) — quiet, like Day 0 chrome ───────── */}
+        {RETURN_LOOP_V1 && dayNum > 1 && (situationText || yesterdayNote) && (
+          <div
+            style={{
+              marginBottom: 24,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{ ...monoLabel, marginBottom: 8, color: 'rgba(255,255,255,0.35)' }}>
               Still your week
             </div>
             {situationText && (
-              <p style={{ margin: '0 0 6px 0', fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--text-main)' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Working with: </span>
+              <p style={{ margin: '0 0 4px 0', fontSize: '0.9rem', lineHeight: 1.45, color: 'rgba(238,242,247,0.75)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Working with · </span>
                 {situationText}
               </p>
             )}
             {yesterdayNote && (
-              <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.5, color: 'rgba(238,242,247,0.75)' }}>
-                <span style={{ color: 'rgba(255,255,255,0.45)' }}>Yesterday you: </span>
+              <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.45, color: 'rgba(238,242,247,0.55)' }}>
+                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Yesterday · </span>
                 {yesterdayNote}
               </p>
             )}
           </div>
         )}
 
-        {/* ── Return loop: name the situation (Day 1) ─────────────────── */}
-        {RETURN_LOOP_V1 && dayNum === 1 && (
-          <div className="glass-panel" style={{ marginBottom: 20, padding: '18px 20px' }}>
-            <div className="tag-featured" style={{ marginBottom: 10 }}>
-              Your situation this week
-            </div>
+        {/* ── Day 1 situation (same voice as Day 0) ──────────────────── */}
+        {RETURN_LOOP_V1 && dayNum === 1 && !situationText && (
+          <div
+            className="glass-panel"
+            style={{
+              marginBottom: 24,
+              padding: '18px 18px',
+              borderColor: 'rgba(25,190,227,0.3)',
+              background: 'rgba(25,190,227,0.05)',
+            }}
+          >
+            <div style={{ ...monoLabel, marginBottom: 10 }}>Your situation this week</div>
             <p style={{
-              fontSize: '0.88rem',
+              fontSize: '0.92rem',
               lineHeight: 1.5,
-              color: 'rgba(238,242,247,0.55)',
+              color: 'rgba(238,242,247,0.65)',
               margin: '0 0 12px 0',
             }}>
-              One person, habit, or thread you will keep in mind all seven days.
-              Days 2–7 will come back to this — so the week is about <em>your</em> work, not generic tips.
+              Name one real thread you will practice on — a person, habit, or friction at work.
+              Every day comes back to this.
             </p>
             <textarea
               className="journal-input"
@@ -673,85 +665,142 @@ export default function SummitDayPage({ params }) {
             />
           </div>
         )}
-
-        {/* Today's Move — Phase 1 practice layout (flag) or legacy single blob */}
-        {usePracticeLayout ? (
-          <div style={{ marginBottom: 24 }}>
-            <div className="tag-featured" style={{ marginBottom: 14 }}>
-              <div className="pulse-dot" />
-              Today&apos;s Move
+        {/* If already set on Day 0, show a quiet reminder they can edit */}
+        {RETURN_LOOP_V1 && dayNum === 1 && situationText && (
+          <div
+            style={{
+              marginBottom: 24,
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <div style={{ ...monoLabel, marginBottom: 6, color: 'rgba(255,255,255,0.35)' }}>
+              Your situation this week
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {practiceBeats.map((beat) => (
-                <div
-                  key={beat.key}
-                  className="glass-panel"
-                  style={{
-                    marginBottom: 0,
-                    padding: '18px 20px',
-                    ...beat.panelStyle,
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "'DM Mono', monospace",
-                      fontSize: '0.66rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.1em',
-                      color: beat.key === 'failure_mode'
-                        ? 'rgba(251, 146, 60, 0.85)'
-                        : 'var(--brand-teal)',
-                      marginBottom: 10,
-                    }}
-                  >
-                    {beat.label}
-                  </div>
-                  <div
-                    style={{
-                      whiteSpace: 'pre-wrap',
-                      color: 'var(--text-main)',
-                      ...beat.bodyStyle,
-                    }}
-                  >
-                    {beat.text}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <textarea
+              className="journal-input"
+              value={situationText}
+              onChange={e => setSituationText(e.target.value)}
+              onBlur={saveSituation}
+              rows={2}
+              style={{ minHeight: 52, marginBottom: 0, background: 'transparent' }}
+            />
           </div>
+        )}
+
+        {/* ── Today&apos;s practice — numbered beats (Day 0 card language) ─ */}
+        {usePracticeLayout ? (
+          <section style={{ marginBottom: 32 }}>
+            <div style={{ ...monoLabel, marginBottom: 14 }}>Today&apos;s practice</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {practiceBeats.map((beat) => {
+                const isFail = beat.accent === 'amber';
+                const isApp = beat.key === 'application';
+                return (
+                  <div
+                    key={beat.key}
+                    style={{
+                      display: 'flex',
+                      gap: 14,
+                      padding: isApp ? '16px 16px' : '14px 16px',
+                      borderRadius: 12,
+                      border: isFail
+                        ? '1px solid rgba(251, 146, 60, 0.22)'
+                        : isApp
+                        ? '1px solid rgba(25,190,227,0.28)'
+                        : '1px solid rgba(255,255,255,0.08)',
+                      background: isFail
+                        ? 'rgba(251, 146, 60, 0.04)'
+                        : isApp
+                        ? 'rgba(25,190,227,0.05)'
+                        : 'rgba(15, 23, 42, 0.55)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        width: 28,
+                        height: 28,
+                        borderRadius: 8,
+                        background: isFail
+                          ? 'rgba(251, 146, 60, 0.12)'
+                          : 'rgba(25,190,227,0.12)',
+                        border: isFail
+                          ? '1px solid rgba(251, 146, 60, 0.3)'
+                          : '1px solid rgba(25,190,227,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontFamily: "'DM Mono', monospace",
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        color: isFail ? 'rgba(251, 146, 60, 0.95)' : 'var(--brand-teal)',
+                      }}
+                    >
+                      {beat.num}
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{
+                        ...monoLabel,
+                        marginBottom: 6,
+                        color: isFail ? 'rgba(251, 146, 60, 0.85)' : 'var(--brand-teal)',
+                      }}>
+                        {beat.label}
+                      </div>
+                      <div style={{ whiteSpace: 'pre-wrap', ...beat.bodyStyle }}>
+                        {beat.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         ) : (
           <div className="glass-panel" style={{ marginBottom: 24 }}>
-            <div className="tag-featured">
-              <div className="pulse-dot" />
-              Today&apos;s Move
-            </div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.6, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
+            <div style={{ ...monoLabel, marginBottom: 12 }}>Today&apos;s practice</div>
+            <div style={{ fontSize: '1rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>
               {todaysMove}
             </div>
           </div>
         )}
-        {/* Milepost */}
+
+        {/* ── Write it down (milepost) — one prompt, one field ───────── */}
         {dayData.milepost && (
-          <div className="glass-panel" style={{
-            marginBottom: 24,
-            ...(dayNum === 7 && {
-              borderColor: 'rgba(25,190,227,0.35)',
-              boxShadow: '0 0 24px rgba(25,190,227,0.08)',
-            })
-          }}>
-            <div className="tag-featured">
-              {dayNum === 7 ? 'Your Commitment' : 'Milepost'}
+          <section
+            className="glass-panel"
+            style={{
+              marginBottom: 16,
+              padding: '18px 18px',
+              ...(dayNum === 7 ? {
+                borderColor: 'rgba(25,190,227,0.35)',
+              } : {}),
+            }}
+          >
+            <div style={{ ...monoLabel, marginBottom: 10 }}>
+              {dayNum === 7 ? 'Your commitment' : 'Write it down'}
             </div>
-            <p style={{ fontSize: '1rem', fontStyle: 'italic', marginBottom: 16, color: 'var(--text-main)', lineHeight: 1.5 }}>
+            <p style={{
+              fontSize: '1.02rem',
+              margin: '0 0 12px 0',
+              color: 'var(--text-main)',
+              lineHeight: 1.5,
+              fontWeight: 500,
+            }}>
               {dayData.milepost}
             </p>
-            {/* Milepost hints, sourced from summit_days.hints (jsonb array) */}
-            {milepostHints.map((hint, i) => (
-              <p key={i} style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', marginBottom: 16, lineHeight: 1.5 }}>
-                {hint}
+            {primaryHint && (
+              <p style={{
+                fontSize: '0.8rem',
+                color: 'rgba(255,255,255,0.38)',
+                margin: '0 0 12px 0',
+                lineHeight: 1.45,
+              }}>
+                {primaryHint}
               </p>
-            ))}
+            )}
             <textarea
               className="journal-input"
               value={reflectionText}
@@ -761,130 +810,85 @@ export default function SummitDayPage({ params }) {
                 dayData.madlib_template
                   ? dayData.madlib_template
                   : dayNum === 7
-                  ? 'For the next two weeks, I will check my habit tracker after I pour my morning coffee.'
-                  : 'After I close the 9am standup, I will open the budget sheet on my second monitor.'
+                  ? 'For the next two weeks, I will…'
+                  : 'Fill this in from your real work…'
               }
               style={{
-                ...(dayNum === 7 && { minHeight: '100px' })
+                minHeight: dayNum === 7 ? 100 : 72,
+                marginBottom: 0,
               }}
             />
 
-            {/* Stuck hint — appears when the user has typed little or nothing.
-                Clicking opens the Summit Coach widget. */}
-            {reflectionText.trim().length < 20 && (
-              <button
-                type="button"
-                onClick={() => setCoachOpen(true)}
-                style={{
-                  margin: '10px 0 0 0',
-                  padding: 0,
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '0.78rem',
-                  color: 'rgba(25,190,227,0.7)',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'color 0.15s ease',
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--brand-teal)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'rgba(25,190,227,0.7)'}
-              >
-                Stuck? Ask your Summit Coach for a draft. →
-              </button>
-            )}
-
-            {/* ── Second-look button row (Phase 2) ──────────────────── */}
+            {/* Coach — secondary, not competing with the practice */}
             <div style={{
-              marginTop: 14,
+              marginTop: 12,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 12,
+              gap: 14,
               flexWrap: 'wrap',
             }}>
+              {reflectionText.trim().length < 20 && (
+                <button
+                  type="button"
+                  onClick={() => setCoachOpen(true)}
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '0.78rem',
+                    color: 'rgba(25,190,227,0.55)',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Stuck? Ask coach →
+                </button>
+              )}
               <button
                 type="button"
                 onClick={getSecondLook}
                 disabled={!hasMilepostText || secondLookBusy}
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '0.82rem',
+                  fontSize: '0.78rem',
                   fontWeight: 600,
-                  padding: '9px 16px',
-                  borderRadius: 10,
-                  border: '1px solid rgba(25,190,227,0.35)',
-                  background: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.08)' : 'rgba(25,190,227,0.03)',
-                  color: hasMilepostText && !secondLookBusy ? 'var(--brand-teal)' : 'rgba(25,190,227,0.4)',
+                  padding: '7px 12px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(25,190,227,0.25)',
+                  background: 'transparent',
+                  color: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.85)' : 'rgba(25,190,227,0.35)',
                   cursor: hasMilepostText && !secondLookBusy ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.15s ease',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-                onMouseEnter={e => {
-                  if (hasMilepostText && !secondLookBusy) {
-                    e.currentTarget.style.background    = 'rgba(25,190,227,0.14)';
-                    e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.55)';
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (hasMilepostText && !secondLookBusy) {
-                    e.currentTarget.style.background    = 'rgba(25,190,227,0.08)';
-                    e.currentTarget.style.borderColor   = 'rgba(25,190,227,0.35)';
-                  }
                 }}
               >
                 {secondLookLoading
-                  ? 'Coach is reading...'
+                  ? 'Reading…'
                   : secondLookStreaming
-                  ? 'Coach is responding...'
+                  ? 'Responding…'
                   : coachObservation
-                  ? 'Get another look'
-                  : 'Get a second look'}
+                  ? 'Another look'
+                  : 'Second look'}
               </button>
-
-              {/* Optional helper text on the right */}
-              <span style={{
-                fontSize: '0.72rem',
-                color: 'rgba(255,255,255,0.35)',
-                fontFamily: 'var(--font-sans)',
-              }}>
-                Optional. Your coach reads it and gives one observation.
-              </span>
             </div>
 
-            {/* ── Coach observation panel ─────────────────────────────── */}
             {showCoachPanel && (
               <div style={{
-                marginTop: 16,
-                padding: '16px 18px',
+                marginTop: 14,
+                padding: '14px 16px',
                 borderRadius: 12,
                 background: 'rgba(25,190,227,0.05)',
-                border: '1px solid rgba(25,190,227,0.18)',
-                position: 'relative',
+                border: '1px solid rgba(25,190,227,0.15)',
                 animation: 'coachPanelFadeIn 0.25s ease',
               }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: 10,
+                  marginBottom: 8,
                 }}>
-                  <div style={{
-                    fontFamily: "'DM Mono', monospace",
-                    fontSize: '0.66rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    color: 'var(--brand-teal)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}>
-                    <span className="pulse-dot" />
-                    Summit Coach
+                  <div style={{ ...monoLabel, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    Coach
                   </div>
                   <button
                     type="button"
@@ -903,10 +907,9 @@ export default function SummitDayPage({ params }) {
                     ×
                   </button>
                 </div>
-
                 {secondLookLoading && !coachObservation && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0' }}>
-                    {[0,1,2].map(i => (
+                    {[0, 1, 2].map(i => (
                       <span key={i} style={{
                         width: 6, height: 6, borderRadius: '50%',
                         background: 'var(--brand-teal)', opacity: 0.4,
@@ -915,13 +918,11 @@ export default function SummitDayPage({ params }) {
                     ))}
                   </div>
                 )}
-
                 {coachObservation && (
                   <div style={{
-                    fontSize: '0.95rem',
-                    lineHeight: 1.65,
+                    fontSize: '0.92rem',
+                    lineHeight: 1.6,
                     color: 'var(--text-main)',
-                    fontFamily: 'var(--font-sans)',
                     whiteSpace: 'pre-wrap',
                   }}>
                     {coachObservation}
@@ -938,85 +939,71 @@ export default function SummitDayPage({ params }) {
                     )}
                   </div>
                 )}
-
                 {secondLookError && (
-                  <div style={{
-                    fontSize: '0.85rem',
-                    color: '#f87171',
-                    marginTop: 4,
-                  }}>
+                  <div style={{ fontSize: '0.85rem', color: '#f87171', marginTop: 4 }}>
                     {secondLookError}
                   </div>
                 )}
               </div>
             )}
-
-            {/* Day 7 nudge */}
-            {dayNum === 7 && (
-              <p style={{ fontSize: '0.78rem', color: 'rgba(25,190,227,0.6)', marginTop: 12, lineHeight: 1.5 }}>
-                This is the one sentence that makes next week different. Take 60 seconds and write yours.
-              </p>
-            )}
-          </div>
+          </section>
         )}
-        {/* Mission */}
+
+        {/* ── Do it + complete (Day 0 CTA energy) ────────────────────── */}
         {dayData.summit_mission && (
-          <div className="glass-panel mission-panel highlighted" style={{ marginBottom: 32 }}>
-            <div className="tag-featured">Today&apos;s Mission</div>
-            <p style={{ fontSize: '1rem', marginBottom: RETURN_LOOP_V1 ? 16 : 28, lineHeight: 1.6, color: 'var(--text-main)' }}>
+          <section
+            className="glass-panel mission-panel highlighted"
+            style={{ marginBottom: 28, padding: '20px 18px' }}
+          >
+            <div style={{ ...monoLabel, marginBottom: 10 }}>Do it now</div>
+            <p style={{
+              fontSize: '1.05rem',
+              margin: '0 0 16px 0',
+              lineHeight: 1.55,
+              color: 'var(--text-main)',
+              fontWeight: 500,
+            }}>
               {dayData.summit_mission}
             </p>
-            {/* Optional proof — still non-blocking. Tomorrow opens on this line. */}
             {RETURN_LOOP_V1 && (
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 16 }}>
                 <label style={{
                   display: 'block',
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: '0.66rem',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: 'rgba(25,190,227,0.75)',
+                  ...monoLabel,
                   marginBottom: 8,
+                  color: 'rgba(25,190,227,0.7)',
                 }}>
-                  What I did <span style={{ fontWeight: 500, opacity: 0.7 }}>(optional — one line)</span>
+                  What I did <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional)</span>
                 </label>
                 <textarea
                   className="journal-input"
                   value={missionNote}
                   onChange={e => setMissionNote(e.target.value)}
                   onBlur={saveMissionNote}
-                  placeholder="e.g. Put the one-line routine at the top of Todoist before standup"
+                  placeholder="One line on what you actually did…"
                   rows={2}
-                  style={{ minHeight: 56, marginBottom: 6 }}
+                  style={{ minHeight: 52, marginBottom: 0 }}
                 />
-                <p style={{
-                  margin: 0,
-                  fontSize: '0.72rem',
-                  color: 'rgba(255,255,255,0.35)',
-                  lineHeight: 1.4,
-                }}>
-                  Write what you actually did on real work. Tomorrow will show this back to you.
-                </p>
               </div>
             )}
             <button
               onClick={toggleMission}
               className="btn-primary-large"
+              style={{ width: '100%' }}
             >
               {missionComplete ? (
                 <>
                   <Check size={20} strokeWidth={2.5} />
-                  Day Complete
+                  Day complete
                 </>
               ) : (
                 <>
-                  Mark Day Complete
+                  Mark day complete
                   <span className="arrow" style={{ fontSize: '1.1em' }}>→</span>
                 </>
               )}
             </button>
-          </div>
+          </section>
         )}
         
         {/* Explore Further link — only shown once stage is complete */}
