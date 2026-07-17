@@ -471,22 +471,15 @@ function LibraryInner({
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link
-            href="/library"
-            className="logo"
-            style={{
-              gap: 10, // space only between icon and wordmark, not inside the name
-              color: '#FFFFFF',
-            }}
-          >
+          <Link href="/library" className="logo">
             <img
               src="/SummitSkills-Logo.png"
               alt=""
               className="logo-img"
               style={{ height: 26, width: 'auto' }}
             />
-            {/* One wordmark: SummitSkills (no space). Colors split; no gap between halves. */}
-            <span className="logo-wordmark" style={{ display: 'inline', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            {/* SummitSkills as one word — no space/gap between halves */}
+            <span className="logo-wordmark">
               <span style={{ color: '#FFFFFF' }}>Summit</span><span style={{ color: 'var(--brand-teal)' }}>Skills</span>
             </span>
           </Link>

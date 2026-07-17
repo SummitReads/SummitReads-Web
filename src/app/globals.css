@@ -123,16 +123,22 @@ nav {
   color: #ffffff;
   text-decoration: none;
   letter-spacing: -0.02em;
-  gap: 10px; /* icon ↔ wordmark only */
+  gap: 0; /* never gap between Summit and Skills halves */
 }
 
 /* Wordmark is one token: SummitSkills (no space between color halves) */
-.logo .logo-wordmark,
-.logo .logo-wordmark span {
+.logo .logo-wordmark {
   display: inline;
   white-space: nowrap;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
-.logo .logo-wordmark span:last-child {
+.logo .logo-wordmark span {
+  display: inline;
+}
+.logo .logo-wordmark span:last-child,
+.logo > span {
+  /* Skills half — teal (when using Summit<span>Skills</span> pattern) */
   color: var(--brand-teal);
 }
 
@@ -142,7 +148,7 @@ nav {
   display: block;
   object-fit: contain;
   opacity: 1;
-  margin-right: 0;
+  margin-right: 10px; /* space only between icon and wordmark */
 }
 
 .nav-link {
