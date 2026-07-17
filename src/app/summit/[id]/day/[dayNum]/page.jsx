@@ -573,9 +573,7 @@ export default function SummitDayPage({ params }) {
             <span style={{ color: 'rgba(25,190,227,0.5)', margin: '0 4px' }}>·</span>
             <span style={{ fontFamily: 'var(--font-sans)' }}>Practice</span>
           </div>
-          <p style={t('label', { margin: '0 0 6px 0', color: 'rgba(25,190,227,0.7)' })}>
-            {book.sprint_title || book.title}
-          </p>
+          {/* Book title stays on library cards ("Inspired by") only — not on practice days */}
           <h1
             className="text-gradient"
             style={t('display', { margin: '0 0 10px 0' })}
