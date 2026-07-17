@@ -120,14 +120,19 @@ nav {
   font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.1rem;
-  color: #ffffff; /* "Summit" and default text */
+  color: #ffffff;
   text-decoration: none;
   letter-spacing: -0.02em;
-  gap: 0; /* letters sit as one wordmark when Summit + Skills spans are adjacent */
+  gap: 10px; /* icon ↔ wordmark only */
 }
 
-/* Only the Skills half of the wordmark — not every nested span if mis-nested */
-.logo > span:last-of-type {
+/* Wordmark is one token: SummitSkills (no space between color halves) */
+.logo .logo-wordmark,
+.logo .logo-wordmark span {
+  display: inline;
+  white-space: nowrap;
+}
+.logo .logo-wordmark span:last-child {
   color: var(--brand-teal);
 }
 

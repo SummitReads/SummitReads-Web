@@ -475,8 +475,8 @@ function LibraryInner({
             href="/library"
             className="logo"
             style={{
-              gap: 10,
-              color: '#FFFFFF', // force: parent text is Summit white
+              gap: 10, // space only between icon and wordmark, not inside the name
+              color: '#FFFFFF',
             }}
           >
             <img
@@ -485,9 +485,10 @@ function LibraryInner({
               className="logo-img"
               style={{ height: 26, width: 'auto' }}
             />
-            {/* Explicit split so CSS can't paint the whole word teal */}
-            <span style={{ color: '#FFFFFF', fontWeight: 800 }}>Summit</span>
-            <span style={{ color: 'var(--brand-teal)', fontWeight: 800 }}>Skills</span>
+            {/* One wordmark: SummitSkills (no space). Colors split; no gap between halves. */}
+            <span className="logo-wordmark" style={{ display: 'inline', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              <span style={{ color: '#FFFFFF' }}>Summit</span><span style={{ color: 'var(--brand-teal)' }}>Skills</span>
+            </span>
           </Link>
           <div
             className="nav-actions"
