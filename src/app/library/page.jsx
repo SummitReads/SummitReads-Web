@@ -25,12 +25,15 @@ function buildUserSkills(progressData, booksData) {
   return Object.entries(daysByBook)
     .map(([bookId, daysCompleted]) => {
       const book = booksData.find((b) => b.id === bookId)
-      if (!book || !book.sprint_skill) return null
+      // Need a name for the row: prefer short sprint_title, never require the long skill blurb
+      if (!book) return null
       if (daysCompleted < 1) return null
+      if (!book.sprint_title && !book.sprint_skill) return null
       return {
         bookId,
-        bookTitle:   book.title,
-        sprintSkill: book.sprint_skill,
+        bookTitle:    book.title,
+        sprintTitle:  book.sprint_title || '',
+        sprintSkill:  book.sprint_skill || '',
         daysCompleted,
       }
     })

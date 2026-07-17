@@ -53,7 +53,7 @@ function SkillPassport({ userSkills }) {
     <section style={{ marginBottom: '48px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
         <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: 0 }}>
-          Skills You're Building
+          Skills You&apos;re Building
         </p>
         <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
         {hasMore && (
@@ -69,6 +69,11 @@ function SkillPassport({ userSkills }) {
           const isComplete  = skill.daysCompleted >= 7
           const progressPct = Math.round((skill.daysCompleted / 7) * 100)
           const resumeDay   = Math.min(skill.daysCompleted + 1, 7)
+          // Short course name — never the long sprint_skill paragraph
+          const label = displaySprintTitle({
+            sprint_title: skill.sprintTitle,
+            sprint_skill: skill.sprintSkill,
+          })
           return (
             <Link key={skill.bookId} href={`/summit/${skill.bookId}/day/${isComplete ? 7 : resumeDay}`} style={{ textDecoration: 'none' }}>
               <div
@@ -76,15 +81,25 @@ function SkillPassport({ userSkills }) {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(25,190,227,0.25)'; e.currentTarget.style.background = 'rgba(25,190,227,0.04)' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)' }}
               >
-                <div style={{ flex: '1 1 auto', minWidth: 0, fontFamily: 'var(--font-sans)', fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {skill.sprintSkill}
+                <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                  <div style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: 'var(--text-main)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {label}
+                  </div>
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: '1 1 120px', minWidth: 80, maxWidth: 220 }}>
                   <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: '2px', background: isComplete ? 'var(--brand-teal)' : 'linear-gradient(90deg, var(--brand-teal), rgba(25,190,227,0.6))', transition: 'width 0.4s ease' }} />
                   </div>
                 </div>
-                <div style={{ flex: '0 0 110px', textAlign: 'right', fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, color: isComplete ? 'var(--brand-teal)' : 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
+                <div style={{ flex: '0 0 auto', textAlign: 'right', fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, color: isComplete ? 'var(--brand-teal)' : 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
                   {isComplete ? 'Completed ✓' : `Day ${skill.daysCompleted} of 7`}
                 </div>
                 <div style={{ color: 'rgba(25,190,227,0.4)', fontSize: '0.85rem', flexShrink: 0 }}>→</div>
