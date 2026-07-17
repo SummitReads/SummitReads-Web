@@ -2,6 +2,7 @@
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useState, useRef } from 'react';
 import Link from 'next/link';
+import { displaySprintTitle } from '@/lib/sprintDisplay';
 
 const CATEGORY_RULES = [
   // Emerald — wealth, growth, financial confidence
@@ -200,7 +201,7 @@ function SprintCard({ book }) {
         {/* Card body */}
         <div style={{ padding: '18px 18px 14px', display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
 
-          {/* Tag — specific to this book, not the section header */}
+          {/* Category tag — not the book name, not a long skill paragraph */}
           <div style={{
             fontSize: '0.62rem',
             fontWeight: '800',
@@ -211,10 +212,10 @@ function SprintCard({ book }) {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
           }}>
-            {book.sprint_skill || categoryLabel}
+            {categoryLabel}
           </div>
 
-          {/* Sprint title */}
+          {/* Sprint title = skill outcome. Book name only under Inspired by. */}
           <h3 style={{
             fontSize: '1.08rem',
             fontWeight: '750',
@@ -224,7 +225,7 @@ function SprintCard({ book }) {
             lineHeight: 1.3,
             letterSpacing: '-0.01em',
           }}>
-            {book.sprint_title || book.title}
+            {displaySprintTitle(book)}
           </h3>
 
           {/* 7-Day Sprint */}

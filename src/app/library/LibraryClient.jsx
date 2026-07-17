@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/app/supabaseClient'
 import BookRow from '@/components/BookRow'
 import OnboardingModal from '@/components/OnboardingModal'
+import { displaySprintTitle } from '@/lib/sprintDisplay'
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 function LoadingSkeleton() {
@@ -378,7 +379,7 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
                   })(),
                 }}>
                   <span className="tag-featured"><span className="pulse-dot" />Featured Sprint</span>
-                  <h2>{featuredBook.sprint_title || featuredBook.title}</h2>
+                  <h2>{displaySprintTitle(featuredBook)}</h2>
                   <p className="featured-desc">
                     {featuredBook.brief_content || 'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
                   </p>

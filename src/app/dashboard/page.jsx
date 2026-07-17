@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { displaySprintTitle } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = 'var(--brand-teal)' }) {
@@ -233,7 +234,7 @@ export default function DashboardPage() {
                           Day {nextDay} of 7
                         </div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
-                        {book.sprint_title || book.title}
+                        {displaySprintTitle(book)}
                         </div>
                         {/* Progress bar */}
                         <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '4px', overflow: 'hidden' }}>
@@ -277,7 +278,7 @@ export default function DashboardPage() {
                         ✓ Completed
                       </div>
                       <div style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '4px' }}>
-                        {book.sprint_title || book.title}
+                        {displaySprintTitle(book)}
                       </div>
                     </div>
                   );
@@ -355,7 +356,7 @@ export default function DashboardPage() {
                       {/* Sprint header */}
                       <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-                        <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{book.sprint_title || book.title}</div>
+                        <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{displaySprintTitle(book)}</div>
                       </div>
                       {/* Reflection entries */}
                       {entries.map((entry, i) => (
