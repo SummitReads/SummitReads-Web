@@ -128,12 +128,12 @@ nav {
 .logo span { color: var(--brand-teal); }
 
 .logo-img {
-  width: 56px;
-  height: 56px;
+  width: 28px;
+  height: 28px;
   display: block;
   object-fit: contain;
   opacity: 1;
-  margin-right: -3px;
+  margin-right: 0;
 }
 
 .nav-link {

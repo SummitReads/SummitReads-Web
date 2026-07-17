@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/app/supabaseClient'
 import BookRow from '@/components/BookRow'
+import SprintCard from '@/components/SprintCard'
 import OnboardingModal from '@/components/OnboardingModal'
 import { displaySprintTitle } from '@/lib/sprintDisplay'
+
+const GRID_THRESHOLD = 8
 
 // ── Loading skeleton ──────────────────────────────────────────────────────────
 function LoadingSkeleton() {
@@ -13,96 +16,172 @@ function LoadingSkeleton() {
     <div style={{ animation: 'pulse 1.6s ease-in-out infinite' }}>
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        .skel { background: rgba(255,255,255,0.07); border-radius: 8px; }
+        .skel { background: rgba(255,255,255,0.06); border-radius: 10px; }
       `}</style>
-      <div className="glass-panel" style={{ marginBottom: '48px', padding: '40px' }}>
-        <div className="skel" style={{ width: '120px', height: '20px', marginBottom: '20px' }} />
-        <div className="skel" style={{ width: '65%', height: '32px', marginBottom: '12px' }} />
-        <div className="skel" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
-        <div className="skel" style={{ width: '75%', height: '16px', marginBottom: '28px' }} />
-        <div className="skel" style={{ width: '140px', height: '44px', borderRadius: '10px' }} />
+      <div
+        style={{
+          marginBottom: 40,
+          padding: 28,
+          borderRadius: 12,
+          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'rgba(17,24,39,0.9)',
+        }}
+      >
+        <div className="skel" style={{ width: 100, height: 14, marginBottom: 16 }} />
+        <div className="skel" style={{ width: '55%', height: 28, marginBottom: 12 }} />
+        <div className="skel" style={{ width: '80%', height: 14, marginBottom: 8 }} />
+        <div className="skel" style={{ width: 120, height: 40, marginTop: 20, borderRadius: 8 }} />
       </div>
-      {[1, 2, 3].map((i) => (
-        <div key={i} style={{ marginBottom: '48px' }}>
-          <div className="skel" style={{ width: '180px', height: '22px', marginBottom: '16px' }} />
-          <div style={{ display: 'flex', gap: '16px' }}>
-            {[1, 2, 3, 4].map((j) => (
-              <div key={j} className="skel" style={{ width: '200px', height: '260px', flexShrink: 0, borderRadius: '12px' }} />
-            ))}
-          </div>
-        </div>
-      ))}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gap: 16,
+        }}
+      >
+        {[1, 2, 3, 4].map((j) => (
+          <div key={j} className="skel" style={{ height: 248, borderRadius: 12 }} />
+        ))}
+      </div>
     </div>
   )
 }
 
-// ── Skill Passport ────────────────────────────────────────────────────────────
-function SkillPassport({ userSkills }) {
-  if (!userSkills || userSkills.length === 0) return null
+// ── Continue (in progress) ────────────────────────────────────────────────────
+function ContinueSection({ userSkills }) {
+  if (!userSkills?.length) return null
+  const active = userSkills.filter((s) => s.daysCompleted < 7)
+  if (!active.length) return null
 
-  // Only show sprints currently in progress. Completed sprints (Day 7 done)
-  // are excluded — they belong to a "Completed" view, not "Skills You're Building".
-  const activeSkills = userSkills.filter(skill => skill.daysCompleted < 7)
-
-  if (activeSkills.length === 0) return null
-
-  const visibleSkills = activeSkills.slice(0, 3)
-  const hasMore = activeSkills.length > 3
+  const visible = active.slice(0, 3)
+  const hasMore = active.length > 3
 
   return (
-    <section style={{ marginBottom: '48px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--brand-teal)', margin: 0 }}>
-          Skills You&apos;re Building
-        </p>
-        <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+    <section style={{ marginBottom: 40 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 14,
+          gap: 12,
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--brand-teal)',
+            margin: 0,
+          }}
+        >
+          Continue
+        </h2>
         {hasMore && (
-          <Link href="/dashboard" style={{ fontSize: '0.78rem', color: 'var(--brand-teal)', textDecoration: 'none', fontWeight: '600', flexShrink: 0, transition: 'opacity 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-            View all →
+          <Link
+            href="/dashboard"
+            style={{
+              fontSize: '0.78rem',
+              color: 'rgba(148,163,184,0.95)',
+              textDecoration: 'none',
+              fontWeight: 600,
+            }}
+          >
+            All in progress →
           </Link>
         )}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {visibleSkills.map((skill) => {
-          const isComplete  = skill.daysCompleted >= 7
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {visible.map((skill) => {
           const progressPct = Math.round((skill.daysCompleted / 7) * 100)
-          const resumeDay   = Math.min(skill.daysCompleted + 1, 7)
-          // Short course name — never the long sprint_skill paragraph
+          const resumeDay = Math.min(skill.daysCompleted + 1, 7)
           const label = displaySprintTitle({
             sprint_title: skill.sprintTitle,
             sprint_skill: skill.sprintSkill,
           })
           return (
-            <Link key={skill.bookId} href={`/summit/${skill.bookId}/day/${isComplete ? 7 : resumeDay}`} style={{ textDecoration: 'none' }}>
+            <Link
+              key={skill.bookId}
+              href={`/summit/${skill.bookId}/day/${resumeDay}`}
+              style={{ textDecoration: 'none' }}
+            >
               <div
-                style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 18px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', transition: 'all 0.2s ease', cursor: 'pointer' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(25,190,227,0.25)'; e.currentTarget.style.background = 'rgba(25,190,227,0.04)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(15, 23, 42, 0.6)' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  padding: '14px 16px',
+                  background: 'rgba(17, 24, 39, 0.95)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 10,
+                  transition: 'border-color 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(25,190,227,0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
+                }}
               >
-                <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-                  <div style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '0.95rem',
-                    fontWeight: 600,
-                    color: 'var(--text-main)',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}>
+                <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '0.95rem',
+                      fontWeight: 600,
+                      color: '#F8FAFC',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
                     {label}
                   </div>
                 </div>
-                <div style={{ flex: '1 1 120px', minWidth: 80, maxWidth: 220 }}>
-                  <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${progressPct}%`, borderRadius: '2px', background: isComplete ? 'var(--brand-teal)' : 'linear-gradient(90deg, var(--brand-teal), rgba(25,190,227,0.6))', transition: 'width 0.4s ease' }} />
+                <div style={{ flex: '1 1 100px', minWidth: 64, maxWidth: 180 }}>
+                  <div
+                    style={{
+                      height: 3,
+                      borderRadius: 2,
+                      background: 'rgba(255,255,255,0.08)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${progressPct}%`,
+                        borderRadius: 2,
+                        background: 'var(--brand-teal)',
+                      }}
+                    />
                   </div>
                 </div>
-                <div style={{ flex: '0 0 auto', textAlign: 'right', fontFamily: "'DM Mono', monospace", fontSize: '0.72rem', fontWeight: 600, color: isComplete ? 'var(--brand-teal)' : 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>
-                  {isComplete ? 'Completed ✓' : `Day ${skill.daysCompleted} of 7`}
+                <div
+                  style={{
+                    flex: '0 0 auto',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                    color: 'rgba(148,163,184,0.95)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Day {skill.daysCompleted} of 7
                 </div>
-                <div style={{ color: 'rgba(25,190,227,0.4)', fontSize: '0.85rem', flexShrink: 0 }}>→</div>
+                <div
+                  style={{
+                    color: 'var(--brand-teal)',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    flexShrink: 0,
+                  }}
+                >
+                  Continue →
+                </div>
               </div>
             </Link>
           )
@@ -112,16 +191,122 @@ function SkillPassport({ userSkills }) {
   )
 }
 
-// ── Featured placeholder ──────────────────────────────────────────────────────
-function FeaturedPlaceholder() {
+// ── Featured ──────────────────────────────────────────────────────────────────
+function FeaturedSprint({ book }) {
+  if (!book) return null
+  const desc = book.brief_content
+    ? book.brief_content.length > 160
+      ? book.brief_content.slice(0, 160).trimEnd() + '…'
+      : book.brief_content
+    : 'A focused 7-day sprint: learn one move, practice it on real work.'
+
   return (
-    <section className="featured-section">
-      <div className="featured-card glass-panel" style={{ display: 'block', minHeight: '290px', background: 'linear-gradient(135deg, rgba(25,190,227,0.06) 0%, transparent 60%)' }}>
-        <div style={{ width: '122px', height: '24px', borderRadius: '999px', background: 'rgba(255,255,255,0.07)', marginBottom: '18px' }} />
-        <div style={{ width: '52%', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.07)', marginBottom: '16px' }} />
-        <div style={{ width: '94%', height: '16px', borderRadius: '999px', background: 'rgba(255,255,255,0.07)', marginBottom: '10px' }} />
-        <div style={{ width: '82%', height: '16px', borderRadius: '999px', background: 'rgba(255,255,255,0.07)', marginBottom: '30px' }} />
-        <div style={{ width: '142px', height: '42px', borderRadius: '10px', background: 'rgba(255,255,255,0.07)' }} />
+    <section style={{ marginBottom: 48 }}>
+      <div
+        style={{
+          display: 'block',
+          padding: '28px 28px 24px',
+          borderRadius: 14,
+          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(17, 24, 39, 0.98)',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.65rem',
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--brand-teal)',
+            marginBottom: 14,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: 'var(--brand-teal)',
+              boxShadow: '0 0 0 3px rgba(25,190,227,0.2)',
+            }}
+          />
+          Featured
+        </div>
+        <h2
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'clamp(1.45rem, 3vw, 1.85rem)',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            color: '#F8FAFC',
+            margin: '0 0 12px',
+            lineHeight: 1.2,
+          }}
+        >
+          {displaySprintTitle(book)}
+        </h2>
+        <p
+          style={{
+            fontSize: '0.95rem',
+            lineHeight: 1.55,
+            color: 'rgba(148, 163, 184, 0.95)',
+            margin: '0 0 16px',
+            maxWidth: 520,
+          }}
+        >
+          {desc}
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 22,
+            flexWrap: 'wrap',
+          }}
+        >
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.62rem',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'rgba(148,163,184,0.75)',
+            }}
+          >
+            Inspired by
+          </span>
+          <span
+            style={{
+              fontSize: '0.9rem',
+              color: 'rgba(226,232,240,0.75)',
+              fontStyle: 'italic',
+            }}
+          >
+            {book.title}
+          </span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <Link href={`/summit/${book.id}/day/0`} className="btn-primary">
+            Start sprint →
+          </Link>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.72rem',
+              color: 'rgba(148,163,184,0.8)',
+              fontWeight: 500,
+            }}
+          >
+            7 days
+          </span>
+        </div>
       </div>
     </section>
   )
@@ -135,51 +320,45 @@ const categoryOrder = [
   'Sales, Persuasion & Negotiation',
   'Strategy & Innovation',
   'Marketing, Branding & Storytelling',
+  'Coaching & Development',
+  'Setting Direction & Priorities',
 ]
 
 function getCategoryShortName(category) {
   const shortNames = {
-    'Productivity & Habits':           'Productivity',
-    'Financial Intelligence':          'Finance',
-    'Leadership & People Management':  'Leadership',
+    'Productivity & Habits': 'Productivity',
+    'Financial Intelligence': 'Finance',
+    'Leadership & People Management': 'Leadership',
     'Sales, Persuasion & Negotiation': 'Sales',
-    'Strategy & Innovation':           'Strategy',
+    'Strategy & Innovation': 'Strategy',
     'Marketing, Branding & Storytelling': 'Marketing',
+    'Coaching & Development': 'Coaching',
+    'Setting Direction & Priorities': 'Priorities',
   }
-  return shortNames[category] || category
+  return shortNames[category] || category.split(/[&,]/)[0].trim()
 }
 
-function getCategoryPillColor(category) {
-  if (!category) return 'var(--brand-teal)'
-  const lower = category.toLowerCase()
-  if (['financial', 'investing', 'money', 'wealth'].some(k => lower.includes(k)))        return '#10B981'
-  if (['leadership', 'people management', 'management'].some(k => lower.includes(k)))    return '#6B8FD6'
-  if (['productivity', 'habits', 'performance', 'minimal'].some(k => lower.includes(k))) return '#06B6D4'
-  if (['marketing', 'branding', 'storytelling'].some(k => lower.includes(k)))            return '#84CC16'
-  if (['sales', 'persuasion', 'negotiation', 'influence'].some(k => lower.includes(k)))  return '#FB7185'
-  if (['strategy', 'innovation', 'business model'].some(k => lower.includes(k)))         return '#0EA5E9'
-  if (['communication', 'conversation', 'writing'].some(k => lower.includes(k)))         return '#F43F5E'
-  if (['mindset', 'psychology', 'mental', 'emotional'].some(k => lower.includes(k)))     return '#8B5CF6'
-  if (['entrepreneurship', 'startup', 'founder'].some(k => lower.includes(k)))           return '#EF4444'
-  if (['relationships', 'network', 'social'].some(k => lower.includes(k)))               return '#EAB308'
-  return 'var(--brand-teal)'
-}
-
-// ── Inner component (needs useSearchParams so wrapped in Suspense) ────────────
-function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills, initialSprintCount }) {
-  const router      = useRouter()
+// ── Inner component ───────────────────────────────────────────────────────────
+function LibraryInner({
+  initialBooks,
+  initialBooksByCategory,
+  initialUserSkills,
+  initialSprintCount,
+}) {
+  const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [books,            setBooks]            = useState(initialBooks)
-  const [booksByCategory,  setBooksByCategory]  = useState(initialBooksByCategory)
-  const [userSkills,       setUserSkills]       = useState(initialUserSkills)
-  const [sprintCount,      setSprintCount]      = useState(initialSprintCount)
-  const [searchQuery,      setSearchQuery]      = useState('')
-  const [selectedCategory,  setSelectedCategory]  = useState(searchParams?.get('category') ?? 'All')
+  const [books] = useState(initialBooks)
+  const [booksByCategory] = useState(initialBooksByCategory)
+  const [userSkills] = useState(initialUserSkills)
+  const [sprintCount] = useState(initialSprintCount)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState(
+    searchParams?.get('category') ?? 'All'
+  )
   const [onboardingChecked, setOnboardingChecked] = useState(false)
-  const [menuOpen,          setMenuOpen]          = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  // Sync with URL on back/forward navigation
   useEffect(() => {
     const cat = searchParams?.get('category')
     setSelectedCategory(cat ?? 'All')
@@ -197,227 +376,474 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   const filteredBooks = useMemo(() => {
     if (!searchQuery.trim()) return null
     const q = searchQuery.toLowerCase()
-    return books.filter(book =>
-      (book.sprint_title || '').toLowerCase().includes(q) ||
-      (book.title        || '').toLowerCase().includes(q) ||
-      (book.category     || '').toLowerCase().includes(q) ||
-      (book.brief_content|| '').toLowerCase().includes(q)
+    return books.filter(
+      (book) =>
+        (book.sprint_title || '').toLowerCase().includes(q) ||
+        (book.title || '').toLowerCase().includes(q) ||
+        (book.category || '').toLowerCase().includes(q) ||
+        (book.brief_content || '').toLowerCase().includes(q) ||
+        (book.sprint_skill || '').toLowerCase().includes(q)
     )
   }, [searchQuery, books])
 
   const isSearching = filteredBooks !== null
 
-  const categoriesToShow = useMemo(() => {
-    if (isSearching) {
-      const grouped = filteredBooks.reduce((acc, book) => {
-        const cat = book.category || 'Uncategorized'
-        if (!acc[cat]) acc[cat] = []
-        acc[cat].push(book)
-        return acc
-      }, {})
-      return Object.keys(grouped).sort((a, b) => {
-        const ia = categoryOrder.indexOf(a), ib = categoryOrder.indexOf(b)
-        if (ia !== -1 && ib !== -1) return ia - ib
-        return a.localeCompare(b)
-      }).map(cat => ({ category: cat, books: grouped[cat] }))
-    }
-    const cats = selectedCategory === 'All' ? sortedCategories : [selectedCategory]
-    return cats.map(cat => ({ category: cat, books: booksByCategory[cat] || [] }))
-  }, [isSearching, filteredBooks, selectedCategory, sortedCategories, booksByCategory])
+  const browseBooks = useMemo(() => {
+    if (isSearching) return filteredBooks || []
+    if (selectedCategory === 'All') return books
+    return booksByCategory[selectedCategory] || []
+  }, [isSearching, filteredBooks, selectedCategory, books, booksByCategory])
 
   const featuredBook = useMemo(() => {
-    if (!books.length) return null
-    const explicit = books.find(b => b.featured)
+    if (!books.length || isSearching) return null
+    // Don't feature a book the user is already mid-sprint on if we can avoid it
+    const inProgressIds = new Set(
+      (userSkills || [])
+        .filter((s) => s.daysCompleted < 7)
+        .map((s) => s.bookId)
+    )
+    const candidates = books.filter((b) => !inProgressIds.has(b.id))
+    const pool = candidates.length ? candidates : books
+    const explicit = pool.find((b) => b.featured)
     if (explicit) return explicit
-    const rich = books.find(b => b.sprint_title && b.brief_content)
-    return rich || books[0]
-  }, [books])
+    const rich = pool.find((b) => b.sprint_title && b.brief_content)
+    return rich || pool[0]
+  }, [books, userSkills, isSearching])
 
-  const sprintCountNumber = typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : ''
-  const sprintCountLabel  = typeof sprintCount === 'number' ? `Skill Sprint${sprintCount === 1 ? '' : 's'}` : 'Skill Sprints'
+  // Browse list excludes featured when showing "All" (avoid duplicate)
+  const browseWithoutFeatured = useMemo(() => {
+    if (isSearching || selectedCategory !== 'All' || !featuredBook) return browseBooks
+    return browseBooks.filter((b) => b.id !== featuredBook.id)
+  }, [browseBooks, featuredBook, isSearching, selectedCategory])
+
+  const useFlatGrid =
+    !isSearching &&
+    selectedCategory === 'All' &&
+    books.length < GRID_THRESHOLD
+
+  const sprintCountNumber =
+    typeof sprintCount === 'number' ? sprintCount.toLocaleString('en-US') : ''
+  const sprintCountLabel =
+    typeof sprintCount === 'number'
+      ? `sprint${sprintCount === 1 ? '' : 's'}`
+      : 'sprints'
 
   async function handleSignOut() {
     try {
       const { error } = await supabase.auth.signOut()
-      if (error) { alert('Error signing out: ' + error.message) }
-      else { router.replace('/') }
+      if (error) alert('Error signing out: ' + error.message)
+      else router.replace('/')
     } catch (err) {
       alert('Error: ' + err.message)
     }
   }
 
+  const catsWithBooks = categoryOrder.filter((cat) => booksByCategory[cat]?.length > 0)
+  // Also include categories not in order list
+  sortedCategories.forEach((c) => {
+    if (!catsWithBooks.includes(c) && booksByCategory[c]?.length) catsWithBooks.push(c)
+  })
+
   return (
     <>
       {!onboardingChecked && (
-        <div style={{ position: 'fixed', inset: 0, background: '#0D1520', zIndex: 999 }} />
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0D1520',
+            zIndex: 999,
+          }}
+        />
       )}
 
       <OnboardingModal
         onCheckComplete={() => setOnboardingChecked(true)}
         onCategorySelect={(cat) => {
-        setSelectedCategory(cat)
-        window.history.replaceState(null, '', `/library?category=${encodeURIComponent(cat)}`)
-      }} />
+          setSelectedCategory(cat)
+          window.history.replaceState(
+            null,
+            '',
+            `/library?category=${encodeURIComponent(cat)}`
+          )
+        }}
+      />
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
+          <Link href="/library" className="logo" style={{ gap: 10 }}>
+            <img
+              src="/SummitSkills-Logo.png"
+              alt=""
+              className="logo-img"
+              style={{ height: 26, width: 'auto' }}
+            />
+            <span style={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
+              Summit<span style={{ color: 'var(--brand-teal)' }}>Skills</span>
+            </span>
           </Link>
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={handleSignOut}>Sign Out</button>
-            {/* Hamburger — mobile only */}
+          <div
+            className="nav-actions"
+            style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}
+          >
+            <button
+              className="btn-outline small nav-btn-desktop"
+              onClick={() => router.push('/dashboard')}
+              type="button"
+            >
+              Dashboard
+            </button>
+            <button
+              className="btn-outline small nav-btn-desktop"
+              onClick={() => router.push('/settings')}
+              type="button"
+            >
+              Settings
+            </button>
+            <button
+              className="btn-outline small nav-btn-desktop"
+              onClick={handleSignOut}
+              type="button"
+            >
+              Sign out
+            </button>
             <button
               className="nav-hamburger"
-              onClick={() => setMenuOpen(o => !o)}
+              onClick={() => setMenuOpen((o) => !o)}
               aria-label="Menu"
+              type="button"
             >
-              <span /><span /><span />
+              <span />
+              <span />
+              <span />
             </button>
-            {/* Mobile dropdown */}
             {menuOpen && (
               <div className="nav-mobile-menu">
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
-                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign Out</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    router.push('/dashboard')
+                  }}
+                >
+                  Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    router.push('/settings')
+                  }}
+                >
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    handleSignOut()
+                  }}
+                >
+                  Sign out
+                </button>
               </div>
             )}
           </div>
         </div>
       </nav>
 
-      <header className="hero">
-        <div className="hero-badge" aria-live="polite" style={{ minHeight: '24px', visibility: 'visible', gap: '7px', paddingLeft: '16px', paddingRight: '16px' }}>
-          <span className="pulse-dot"></span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ display: 'inline-block', minWidth: '2ch', textAlign: 'right', opacity: sprintCountNumber ? 1 : 0, transition: 'opacity 120ms ease' }}>
-              {sprintCountNumber || '0'}
-            </span>
-            <span>{sprintCountLabel}</span>
-          </span>
+      {/* Tighter page header */}
+      <header
+        style={{
+          maxWidth: 1120,
+          margin: '0 auto',
+          padding: '36px 24px 8px',
+          textAlign: 'left',
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.68rem',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: 'rgba(148,163,184,0.9)',
+            marginBottom: 10,
+          }}
+        >
+          <span style={{ color: 'var(--brand-teal)', opacity: sprintCountNumber ? 1 : 0.5 }}>
+            {sprintCountNumber || '—'}
+          </span>{' '}
+          {sprintCountLabel}
         </div>
-        <h1>What do you want to <span className="text-gradient">work on?</span></h1>
-        <p className="hero-sub">Find your next sprint below, or search by skill, topic, or goal.</p>
-        <div className="search-wrapper">
-          <svg className="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+        <h1
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 'clamp(1.65rem, 3.5vw, 2.1rem)',
+            fontWeight: 700,
+            letterSpacing: '-0.03em',
+            color: '#F8FAFC',
+            margin: '0 0 8px',
+            lineHeight: 1.15,
+          }}
+        >
+          What do you want to work on?
+        </h1>
+        <p
+          style={{
+            fontSize: '0.95rem',
+            color: 'rgba(148,163,184,0.95)',
+            margin: '0 0 20px',
+            maxWidth: 480,
+            lineHeight: 1.5,
+          }}
+        >
+          Pick a 7-day skill sprint. Practice on real work — not just reading.
+        </p>
+        <div className="search-wrapper" style={{ maxWidth: 480, margin: 0 }}>
+          <svg
+            className="search-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
           </svg>
           <input
             type="text"
-            placeholder="Search sprints: habits, leadership, money..."
+            placeholder="Search skills or topics…"
             value={searchQuery}
-            onChange={e => {
+            onChange={(e) => {
               setSearchQuery(e.target.value)
               if (e.target.value) router.replace('/library', { scroll: false })
             }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery('')}
-              style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', fontSize: '1.1rem', lineHeight: 1, padding: '4px' }}
-              aria-label="Clear search">×</button>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute',
+                right: 14,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '1.1rem',
+                lineHeight: 1,
+                padding: 4,
+              }}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
           )}
         </div>
       </header>
 
-      {/* Category pills */}
-      <div className="category-scroll">
-        <button
-          className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
-          onClick={() => {
+      {/* Quiet category chips — teal only when active */}
+      {!isSearching && catsWithBooks.length > 1 && (
+        <div
+          className="category-scroll"
+          style={{
+            maxWidth: 1120,
+            margin: '0 auto',
+            paddingTop: 16,
+            paddingBottom: 8,
+          }}
+        >
+          <button
+            type="button"
+            className={`pill ${selectedCategory === 'All' ? 'active' : ''}`}
+            onClick={() => {
               setSearchQuery('')
               setSelectedCategory('All')
               window.history.replaceState(null, '', '/library')
             }}
-        >
-          All
-        </button>
-        {categoryOrder.filter(cat => booksByCategory[cat]?.length > 0).map(category => {
-          const isActive   = selectedCategory === category
-          const pillColor  = getCategoryPillColor(category)
-          return (
-            <button key={category} className="pill"
-              onClick={() => {
-                setSearchQuery('')
-                setSelectedCategory(category)
-                window.history.replaceState(null, '', `/library?category=${encodeURIComponent(category)}`)
-              }}
-              style={isActive ? { background: pillColor, borderColor: pillColor, color: '#0F172A', fontWeight: '700', boxShadow: `0 0 12px ${pillColor}55` } : {}}
-            >
-              {getCategoryShortName(category)}
-            </button>
-          )
-        })}
-      </div>
+            style={
+              selectedCategory === 'All'
+                ? {
+                    background: 'rgba(25,190,227,0.15)',
+                    borderColor: 'rgba(25,190,227,0.45)',
+                    color: 'var(--brand-teal)',
+                    fontWeight: 650,
+                    boxShadow: 'none',
+                  }
+                : undefined
+            }
+          >
+            All
+          </button>
+          {catsWithBooks.map((category) => {
+            const isActive = selectedCategory === category
+            return (
+              <button
+                key={category}
+                type="button"
+                className="pill"
+                onClick={() => {
+                  setSearchQuery('')
+                  setSelectedCategory(category)
+                  window.history.replaceState(
+                    null,
+                    '',
+                    `/library?category=${encodeURIComponent(category)}`
+                  )
+                }}
+                style={
+                  isActive
+                    ? {
+                        background: 'rgba(25,190,227,0.15)',
+                        borderColor: 'rgba(25,190,227,0.45)',
+                        color: 'var(--brand-teal)',
+                        fontWeight: 650,
+                        boxShadow: 'none',
+                      }
+                    : undefined
+                }
+              >
+                {getCategoryShortName(category)}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
-      <main className="container">
-
-        {/* Search results */}
+      <main className="container" style={{ maxWidth: 1120, paddingTop: 28, paddingBottom: 80 }}>
         {isSearching && (
           <>
-            <div style={{ marginBottom: '24px', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem' }}>
+            <div
+              style={{
+                marginBottom: 20,
+                color: 'rgba(148,163,184,0.95)',
+                fontSize: '0.85rem',
+              }}
+            >
               {filteredBooks.length > 0
-                ? `${filteredBooks.length} sprint${filteredBooks.length !== 1 ? 's' : ''} matching "${searchQuery}"`
-                : `No sprints found for "${searchQuery}"`}
+                ? `${filteredBooks.length} result${filteredBooks.length !== 1 ? 's' : ''} for “${searchQuery}”`
+                : `No sprints match “${searchQuery}”`}
             </div>
-            {filteredBooks.length === 0 && (
-              <div className="glass-panel" style={{ padding: '60px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
-                <div style={{ fontSize: '2rem', marginBottom: '12px' }}>🔍</div>
-                <p>Try a different keyword — like a skill, topic, or category.</p>
+            {filteredBooks.length === 0 ? (
+              <div
+                style={{
+                  padding: '48px 24px',
+                  textAlign: 'center',
+                  borderRadius: 12,
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: 'rgba(17,24,39,0.9)',
+                  color: 'rgba(148,163,184,0.95)',
+                }}
+              >
+                <p style={{ margin: '0 0 8px', fontWeight: 600, color: '#E2E8F0' }}>
+                  Nothing matched
+                </p>
+                <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                  Try a skill word — coaching, habits, priorities, feedback.
+                </p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                  gap: 16,
+                }}
+              >
+                {filteredBooks.map((book) => (
+                  <SprintCard key={book.id} book={book} />
+                ))}
               </div>
             )}
-            {categoriesToShow.map(({ category, books: catBooks }) => (
-              <BookRow key={category} title={category} description={`${catBooks.length} match${catBooks.length !== 1 ? 'es' : ''}`} books={catBooks} />
-            ))}
           </>
         )}
 
-        {/* Normal view */}
         {!isSearching && (
           <>
-            <SkillPassport userSkills={userSkills} />
+            {/* 1. Continue */}
+            <ContinueSection userSkills={userSkills} />
 
-            {featuredBook ? (
-              <section className="featured-section">
-                <div className="featured-card glass-panel" style={{
-                  display: 'block',
-                  background: (() => {
-                    const c = featuredBook.category?.toLowerCase() || ''
-                    if (c.includes('financial') || c.includes('money'))       return 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 60%)'
-                    if (c.includes('leadership') || c.includes('management')) return 'linear-gradient(135deg, rgba(107,143,214,0.08) 0%, transparent 60%)'
-                    if (c.includes('productivity') || c.includes('habit'))    return 'linear-gradient(135deg, rgba(6,182,212,0.10) 0%, transparent 60%)'
-                    if (c.includes('sales') || c.includes('negotiation'))     return 'linear-gradient(135deg, rgba(251,113,133,0.08) 0%, transparent 60%)'
-                    if (c.includes('strategy') || c.includes('innovation'))   return 'linear-gradient(135deg, rgba(14,165,233,0.08) 0%, transparent 60%)'
-                    return 'linear-gradient(135deg, rgba(25,190,227,0.08) 0%, transparent 60%)'
-                  })(),
-                }}>
-                  <span className="tag-featured"><span className="pulse-dot" />Featured Sprint</span>
-                  <h2>{displaySprintTitle(featuredBook)}</h2>
-                  <p className="featured-desc">
-                    {featuredBook.brief_content || 'A 7-day skill sprint that turns professional concepts into real behavior change, one focused action at a time.'}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '28px' }}>
-                    <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '700' }}>Inspired by</span>
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>{featuredBook.title}</span>
-                  </div>
-                  <Link href={`/summit/${featuredBook.id}/day/0`} className="btn-primary">Begin Sprint →</Link>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', fontWeight: '700', color: 'var(--brand-teal)' }}>7 days</span>
-                      <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: '600' }}>total</span>
-                    </div>
-                  </div>
+            {/* 2. Featured */}
+            {selectedCategory === 'All' && <FeaturedSprint book={featuredBook} />}
+
+            {/* 3. Browse */}
+            <section>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: 'space-between',
+                  marginBottom: 16,
+                }}
+              >
+                <h2
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'rgba(148,163,184,0.9)',
+                    margin: 0,
+                  }}
+                >
+                  {selectedCategory === 'All'
+                    ? 'Browse'
+                    : getCategoryShortName(selectedCategory)}
+                </h2>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.7rem',
+                    color: 'rgba(148,163,184,0.7)',
+                  }}
+                >
+                  {browseWithoutFeatured.length} available
+                </span>
+              </div>
+
+              {browseWithoutFeatured.length === 0 ? (
+                <p style={{ color: 'rgba(148,163,184,0.8)', fontSize: '0.9rem' }}>
+                  No sprints in this category yet.
+                </p>
+              ) : useFlatGrid || selectedCategory !== 'All' ? (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                    gap: 16,
+                  }}
+                >
+                  {browseWithoutFeatured.map((book) => (
+                    <SprintCard key={book.id} book={book} />
+                  ))}
                 </div>
-              </section>
-            ) : (
-              <FeaturedPlaceholder />
-            )}
-
-            {categoriesToShow.map(({ category, books: catBooks }) => (
-              <BookRow key={category} title={category} description={`${catBooks.length} skill sprints`} books={catBooks} />
-            ))}
+              ) : (
+                // Many sprints: group by category shelves
+                sortedCategories
+                  .filter((cat) => (booksByCategory[cat] || []).length > 0)
+                  .map((cat) => {
+                    const list = (booksByCategory[cat] || []).filter(
+                      (b) => !featuredBook || b.id !== featuredBook.id
+                    )
+                    if (!list.length) return null
+                    return (
+                      <BookRow
+                        key={cat}
+                        title={getCategoryShortName(cat)}
+                        description={`${list.length} sprint${list.length !== 1 ? 's' : ''}`}
+                        books={list}
+                      />
+                    )
+                  })
+              )}
+            </section>
           </>
         )}
       </main>
@@ -425,7 +851,6 @@ function LibraryInner({ initialBooks, initialBooksByCategory, initialUserSkills,
   )
 }
 
-// ── Export — wrapped in Suspense for useSearchParams ─────────────────────────
 export default function LibraryClient(props) {
   return (
     <Suspense fallback={<LoadingSkeleton />}>
