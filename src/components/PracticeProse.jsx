@@ -3,11 +3,11 @@
 import { type, t } from '@/lib/typeScale';
 
 /**
- * Turn flat teaching prose into glanceable structure for practice days.
- *
- * - Takeaway = the skill (not a problem hook or 3-word fragment)
- * - Numbered / First–Second–Third steps as a real HOW list
- * - Support stays as short paragraphs, not one bullet per sentence
+ * Glanceable teaching structure for practice days.
+ * Target shape (Atomic Habits Day 1):
+ *   Takeaway (skill)
+ *   1–2 support lines
+ *   How → 1 / 2 / 3
  */
 
 function splitSentences(text) {
@@ -27,45 +27,57 @@ const ORDINAL_TO_N = {
 
 const BRIDGE_RE =
   /^(here is how|how to apply|the steps?|do this|apply that to your own)/i;
+
 const PROBLEM_HOOK_RE =
   /^(most |the hard part|willpower is not|the problem|you already know|routines fail)/i;
+
+// Negation / antithesis — never the takeaway
+const NEGATION_TAKEAWAY_RE =
+  /\bis not\b|\bisn't\b|\bnot a technique\b|\bnot about\b|\bnot the\b/i;
+
+// Doable skill language
 const SKILLISH_RE =
-  /\b(attach|place|name |change |pause|count |put |arrange|set |build|make the|the skill is|decision rule|default)\b/i;
+  /\b(before you|ask one|ask what|attach|place|name |change |count |put |arrange|set |build|make the|the skill is|decision rule|instead of|stop before|write |pick |choose |decline |hold )\b/i;
 
 /**
- * Pick a takeaway that names the skill, not a hook or fragment.
+ * Pick a takeaway that names the skill.
  */
 function pickTakeaway(sentences) {
-  const usable = sentences.filter((s) => s.length >= 28 && !BRIDGE_RE.test(s));
-  if (!usable.length) return sentences[0] || '';
-
-  // Prefer an explicit skill sentence
-  const skillish = usable.filter((s) => SKILLISH_RE.test(s) && !PROBLEM_HOOK_RE.test(s));
-  if (skillish.length) {
-    // Prefer shorter, punchy skill lines among skillish
-    return skillish.sort((a, b) => a.length - b.length)[0];
+  const usable = sentences.filter(
+    (s) =>
+      s.length >= 28 &&
+      !BRIDGE_RE.test(s) &&
+      !NEGATION_TAKEAWAY_RE.test(s)
+  );
+  if (!usable.length) {
+    // last resort: first long sentence even if imperfect
+    return sentences.find((s) => s.length >= 28) || sentences[0] || '';
   }
 
-  // Prefer a closing definition-style line ("You are building…")
-  const closing = usable.find((s) => /^you are\b/i.test(s));
-  if (closing) return closing;
+  // Prefer first skillish sentence (often the real skill claim)
+  const firstSkillish = usable.find(
+    (s) => SKILLISH_RE.test(s) && !PROBLEM_HOOK_RE.test(s)
+  );
+  if (firstSkillish) return firstSkillish;
 
-  // Skip problem hooks for the callout
+  // Prefer opening sentence if it's not a hook
+  if (!PROBLEM_HOOK_RE.test(usable[0])) return usable[0];
+
   const nonHook = usable.find((s) => !PROBLEM_HOOK_RE.test(s));
   return nonHook || usable[0];
 }
 
 /**
- * Extract "1. …" / "2. …" line-style steps.
+ * Line-start numbered steps: "1. …" on its own line.
  */
-function extractDigitSteps(text) {
+function extractLineDigitSteps(text) {
   const stepLineRe = /^\s*(\d+)\.\s+(.+?)\s*$/gm;
   const steps = [];
   let m;
   while ((m = stepLineRe.exec(text)) !== null) {
     steps.push({ n: m[1], text: m[2].trim(), index: m.index });
   }
-  if (steps.length < 2) return { steps: [], prose: text };
+  if (steps.length < 2) return null;
   const firstIdx = steps[0].index;
   let prose = text.slice(0, firstIdx).trim();
   prose = prose
@@ -74,15 +86,70 @@ function extractDigitSteps(text) {
   return {
     steps: steps.map(({ n, text: stepText }) => ({ n, text: stepText })),
     prose,
+    after: '',
   };
 }
 
 /**
- * Extract "First, … Second, … Third, …" inline steps (common writer pattern).
+ * Inline numbered steps in one paragraph:
+ * "... Every time. 1. Stop. 2. Ask. 3. Wait."
+ * (Common writer output; line-start regex misses these.)
+ */
+function extractInlineDigitSteps(text) {
+  // Find "1. " then capture through sequential 2. 3. ...
+  const start = text.search(/(?:^|[.!?]\s+|\n)\s*1\.\s+\S/);
+  if (start < 0) return null;
+
+  // Normalize start to the digit
+  const digitStart = text.indexOf('1.', start);
+  if (digitStart < 0) return null;
+
+  const tail = text.slice(digitStart);
+  const re = /(\d+)\.\s+([\s\S]*?)(?=\s+\d+\.\s+|$)/g;
+  const steps = [];
+  let m;
+  while ((m = re.exec(tail)) !== null) {
+    const n = m[1];
+    let body = m[2].trim();
+    // stop if numbering jumps or we got noise
+    if (steps.length && parseInt(n, 10) !== steps.length + 1) break;
+    if (parseInt(n, 10) !== steps.length + 1 && steps.length === 0 && n !== '1') break;
+    // trim trailing sentence that belongs after steps (heuristic: if very long and has "You are")
+    body = body.replace(/\s+$/, '');
+    if (!body) continue;
+    steps.push({ n, text: body.replace(/\.+$/, '') + (body.endsWith('.') ? '' : '.') });
+    if (steps.length >= 5) break;
+  }
+
+  if (steps.length < 2) return null;
+
+  // Clean step text: only keep first sentence if step blob absorbed later prose
+  const cleanSteps = steps.map((st, i) => {
+    let t = st.text.trim();
+    // If last step ate trailing commentary, keep first 1–2 sentences
+    if (i === steps.length - 1) {
+      const sents = splitSentences(t);
+      if (sents.length > 2) t = sents.slice(0, 2).join(' ');
+    }
+    // Single sentence preferred
+    const one = splitSentences(t)[0] || t;
+    return { n: st.n, text: one };
+  });
+
+  let prose = text.slice(0, digitStart).trim();
+  // Drop trailing "Here is how" / "Every time."
+  prose = prose
+    .replace(/\s*(?:Here is how(?: to apply[^.]*)?|How to apply[^.]*)\.?\s*$/i, '')
+    .trim();
+
+  return { steps: cleanSteps, prose, after: '' };
+}
+
+/**
+ * First, … Second, … Third, …
  */
 function extractOrdinalSteps(text) {
-  const re =
-    /\b(First|Second|Third|Fourth|Fifth),\s+([^.!?]+[.!?]?)/gi;
+  const re = /\b(First|Second|Third|Fourth|Fifth),\s+([^.!?]+[.!?]?)/gi;
   const steps = [];
   let m;
   let firstIndex = -1;
@@ -90,19 +157,19 @@ function extractOrdinalSteps(text) {
     if (firstIndex < 0) firstIndex = m.index;
     const n = ORDINAL_TO_N[m[1].toLowerCase()];
     if (!n) continue;
-    steps.push({ n, text: m[2].trim().replace(/\.+$/, '') + '.', index: m.index, end: m.index + m[0].length });
+    steps.push({
+      n,
+      text: m[2].trim().replace(/\.+$/, '') + '.',
+      index: m.index,
+      end: m.index + m[0].length,
+    });
   }
-  if (steps.length < 2) return { steps: [], prose: text, after: '' };
-
-  // Require ascending 1,2,3… roughly in order
-  const nums = steps.map((s) => parseInt(s.n, 10));
-  if (nums[0] !== 1) return { steps: [], prose: text, after: '' };
+  if (steps.length < 2) return null;
+  if (parseInt(steps[0].n, 10) !== 1) return null;
 
   const last = steps[steps.length - 1];
   let before = text.slice(0, firstIndex).trim();
   const after = text.slice(last.end).trim();
-
-  // Strip bridge before First
   before = before
     .replace(
       /\s*(?:Here is how(?: to apply that to your own work)?|How to apply that to your own work|The steps?|Do this)\.?\s*:?\s*$/i,
@@ -117,6 +184,18 @@ function extractOrdinalSteps(text) {
   };
 }
 
+function extractSteps(text) {
+  return (
+    extractLineDigitSteps(text) ||
+    extractInlineDigitSteps(text) ||
+    extractOrdinalSteps(text) || {
+      steps: [],
+      prose: text,
+      after: '',
+    }
+  );
+}
+
 /**
  * @returns {{ lead: string, support: string[], steps: { n: string, text: string }[], bridge: string }}
  */
@@ -129,75 +208,108 @@ export function parsePracticeProse(raw) {
     return { lead: '', support: [], steps: [], bridge: '' };
   }
 
-  // Prefer digit steps; else First/Second/Third
-  let digit = extractDigitSteps(text);
-  let steps = digit.steps;
-  let prose = digit.prose;
-  let afterSteps = '';
+  const extracted = extractSteps(text);
+  let { steps, prose, after: afterSteps } = extracted;
+  afterSteps = afterSteps || '';
 
-  if (steps.length < 2) {
-    const ord = extractOrdinalSteps(text);
-    if (ord.steps.length >= 2) {
-      steps = ord.steps;
-      prose = ord.prose;
-      afterSteps = ord.after || '';
-    }
-  }
-
-  // Flatten prose to sentences for lead + support
-  const flatProse = prose.replace(/\n+/g, ' ').trim();
-  const sentences = splitSentences(flatProse);
+  const sentences = splitSentences(prose.replace(/\n+/g, ' ').trim());
   const afterSentences = splitSentences(afterSteps.replace(/\n+/g, ' ').trim());
 
   const lead = pickTakeaway(
-    sentences.length ? [...sentences, ...afterSentences] : afterSentences
+    sentences.length ? sentences : afterSentences
   );
 
   function keepSupport(s) {
     if (!s || s === lead) return false;
     if (BRIDGE_RE.test(s)) return false;
-    if (s.length < 36) return false; // drop fragments: "The setup is."
+    if (NEGATION_TAKEAWAY_RE.test(s) && s.length < 90) return false;
+    if (s.length < 36) return false;
     if (PROBLEM_HOOK_RE.test(s) && s.length < 50) return false;
     return true;
   }
 
+  // Cap support so skill block stays scannable (takeaway + ≤2 lines + how)
   const support = [];
   for (const s of sentences) {
-    if (keepSupport(s)) support.push(s);
+    if (keepSupport(s) && support.length < 2) support.push(s);
   }
   for (const s of afterSentences) {
-    if (keepSupport(s)) support.push(s);
+    if (keepSupport(s) && support.length < 2) support.push(s);
   }
 
-  // Capitalize step starts ("name one…" → "Name one…")
   const cleanSteps = steps.map((st) => ({
     n: st.n,
-    text: st.text.replace(/^[a-z]/, (c) => c.toUpperCase()),
+    text: st.text.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/\.\.+$/, '.'),
   }));
-
-  const supportDedup = support.filter((s, i, arr) => arr.indexOf(s) === i);
 
   return {
     lead,
-    support: supportDedup,
+    support: support.filter((s, i, arr) => arr.indexOf(s) === i),
     steps: cleanSteps,
     bridge: cleanSteps.length ? 'How' : '',
   };
 }
 
 /**
+ * Demo / miss: light structure — lead + short body, not a bullet wall.
+ */
+function parseLooseProse(raw) {
+  const text = String(raw || '').replace(/\r\n/g, '\n').trim();
+  if (!text) return { lead: '', body: '' };
+  const sentences = splitSentences(text.replace(/\n+/g, ' '));
+  if (sentences.length <= 1) return { lead: text, body: '' };
+  const lead = sentences[0];
+  const body = sentences.slice(1).join(' ');
+  return { lead, body };
+}
+
+/**
  * @param {{ text: string, variant?: 'skill' | 'demo' | 'fail' | 'default' }} props
  */
 export default function PracticeProse({ text, variant = 'default' }) {
-  const { lead, support, steps, bridge } = parsePracticeProse(text);
   const isSkill = variant === 'skill';
   const isFail = variant === 'fail';
+  const isDemo = variant === 'demo';
 
   const bodyColor = isFail
     ? 'rgba(238,242,247,0.82)'
     : 'var(--text-main)';
 
-  // Fallback: nothing parsed usefully
+  // Demo + common miss: tighter prose, not sentence bullets
+  if (isDemo || isFail || variant === 'default') {
+    if (!isSkill) {
+      const { lead, body } = parseLooseProse(text);
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {lead && (
+            <p
+              style={t('bodyEmphasis', {
+                margin: 0,
+                lineHeight: 1.55,
+                color: isFail ? 'rgba(251, 196, 140, 0.95)' : bodyColor,
+              })}
+            >
+              {lead}
+            </p>
+          )}
+          {body && (
+            <p
+              style={t('body', {
+                margin: 0,
+                lineHeight: 1.6,
+                color: 'rgba(238,242,247,0.72)',
+              })}
+            >
+              {body}
+            </p>
+          )}
+        </div>
+      );
+    }
+  }
+
+  const { lead, support, steps, bridge } = parsePracticeProse(text);
+
   if (!lead && support.length === 0 && steps.length === 0) {
     return (
       <div style={t('body', { whiteSpace: 'pre-wrap', color: bodyColor })}>
@@ -207,9 +319,8 @@ export default function PracticeProse({ text, variant = 'default' }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isSkill ? 12 : 10 }}>
-      {/* Lead takeaway — strongest on the skill block */}
-      {lead && isSkill && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {lead && (
         <div
           style={{
             padding: '10px 12px',
@@ -239,19 +350,6 @@ export default function PracticeProse({ text, variant = 'default' }) {
         </div>
       )}
 
-      {lead && !isSkill && (
-        <p
-          style={t('bodyEmphasis', {
-            margin: 0,
-            lineHeight: 1.55,
-            color: isFail ? 'rgba(251, 196, 140, 0.95)' : bodyColor,
-          })}
-        >
-          {lead}
-        </p>
-      )}
-
-      {/* Support as short paragraphs — not one bullet per sentence */}
       {support.map((para, i) => (
         <p
           key={`p-${i}`}
@@ -265,81 +363,65 @@ export default function PracticeProse({ text, variant = 'default' }) {
         </p>
       ))}
 
-      {(bridge || steps.length > 0) && (
-        <div style={{ marginTop: support.length || lead ? 2 : 0 }}>
-          {(bridge || (isSkill && steps.length > 0)) && (
-            <div
-              style={t('label', {
-                marginBottom: 8,
-                color: isFail
-                  ? 'rgba(251, 146, 60, 0.7)'
-                  : 'rgba(25,190,227,0.55)',
-                fontSize: '0.58rem',
-              })}
-            >
-              {bridge || 'How'}
-            </div>
-          )}
-          {steps.length > 0 && (
-            <ol
-              style={{
-                margin: 0,
-                padding: 0,
-                listStyle: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              {steps.map((step) => (
-                <li
-                  key={step.n}
+      {steps.length > 0 && (
+        <div>
+          <div
+            style={t('label', {
+              marginBottom: 8,
+              color: 'rgba(25,190,227,0.55)',
+              fontSize: '0.58rem',
+            })}
+          >
+            {bridge || 'How'}
+          </div>
+          <ol
+            style={{
+              margin: 0,
+              padding: 0,
+              listStyle: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+            }}
+          >
+            {steps.map((step) => (
+              <li
+                key={step.n}
+                style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}
+              >
+                <span
                   style={{
+                    flexShrink: 0,
+                    width: 22,
+                    height: 22,
+                    borderRadius: 6,
                     display: 'flex',
-                    gap: 10,
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: 1,
+                    background: 'rgba(25,190,227,0.12)',
+                    border: '1px solid rgba(25,190,227,0.22)',
+                    ...type.badge,
+                    fontSize: '0.65rem',
+                    color: 'var(--brand-teal)',
                   }}
                 >
-                  <span
-                    style={{
-                      flexShrink: 0,
-                      width: 22,
-                      height: 22,
-                      borderRadius: 6,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginTop: 1,
-                      background: isFail
-                        ? 'rgba(251, 146, 60, 0.12)'
-                        : 'rgba(25,190,227,0.12)',
-                      border: isFail
-                        ? '1px solid rgba(251, 146, 60, 0.28)'
-                        : '1px solid rgba(25,190,227,0.22)',
-                      ...type.badge,
-                      fontSize: '0.65rem',
-                      color: isFail
-                        ? 'rgba(251, 146, 60, 0.95)'
-                        : 'var(--brand-teal)',
-                    }}
-                  >
-                    {step.n}
-                  </span>
-                  <span
-                    style={t('body', {
-                      margin: 0,
-                      lineHeight: 1.5,
-                      color: bodyColor,
-                      flex: 1,
-                      minWidth: 0,
-                    })}
-                  >
-                    {step.text}
-                  </span>
-                </li>
-              ))}
-            </ol>
-          )}
+                  {step.n}
+                </span>
+                <span
+                  style={t('body', {
+                    margin: 0,
+                    lineHeight: 1.5,
+                    color: bodyColor,
+                    flex: 1,
+                    minWidth: 0,
+                  })}
+                >
+                  {step.text}
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       )}
     </div>
