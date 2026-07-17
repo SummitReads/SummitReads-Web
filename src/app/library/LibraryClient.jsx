@@ -471,15 +471,23 @@ function LibraryInner({
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo" style={{ gap: 10 }}>
+          <Link
+            href="/library"
+            className="logo"
+            style={{
+              gap: 10,
+              color: '#FFFFFF', // force: parent text is Summit white
+            }}
+          >
             <img
               src="/SummitSkills-Logo.png"
               alt=""
               className="logo-img"
               style={{ height: 26, width: 'auto' }}
             />
-            {/* Summit = white (from .logo); Skills = teal (from .logo span) — do not wrap both in a span */}
-            Summit<span>Skills</span>
+            {/* Explicit split so CSS can't paint the whole word teal */}
+            <span style={{ color: '#FFFFFF', fontWeight: 800 }}>Summit</span>
+            <span style={{ color: 'var(--brand-teal)', fontWeight: 800 }}>Skills</span>
           </Link>
           <div
             className="nav-actions"
