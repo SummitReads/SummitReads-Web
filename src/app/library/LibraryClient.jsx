@@ -478,9 +478,8 @@ function LibraryInner({
               className="logo-img"
               style={{ height: 26, width: 'auto' }}
             />
-            <span style={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
-              Summit<span style={{ color: 'var(--brand-teal)' }}>Skills</span>
-            </span>
+            {/* Summit = white (from .logo); Skills = teal (from .logo span) — do not wrap both in a span */}
+            Summit<span>Skills</span>
           </Link>
           <div
             className="nav-actions"
