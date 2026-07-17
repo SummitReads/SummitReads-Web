@@ -7,14 +7,21 @@ import { supabase } from '@/app/supabaseClient';
 import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
 import Day0View from '@/components/Day0View';
+import PracticeProse from '@/components/PracticeProse';
 import { type, t } from '@/lib/typeScale';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
 // ── Phase 1: Practice-day layout ─────────────────────────────────────────────
-// When true, "Today's Move" renders as four labeled beats (drill script) instead
-// of one equal prose blob. Milepost / mission / coach / complete are unchanged.
+// When true, "Today's Move" renders as labeled beats instead of one prose blob.
 // Rollback: set to false and hard-refresh — no DB or API changes.
 const PRACTICE_DAY_V2 = true;
+
+// ── Lean day loop ────────────────────────────────────────────────────────────
+// One teach path: skill → example → common miss → write once → do once → done.
+// Hides the redundant "application" beat (overlaps Write it down / Do it now),
+// shows only one of hint OR shape guide, and bridges mission to the milepost line.
+// Rollback: set false.
+const LEAN_DAY_V1 = true;
 
 // ── Phase 2 preview: return loop (continuity + proof) ────────────────────────
 // Two visible pieces so the "come back" vision is tangible:
@@ -27,11 +34,12 @@ const RETURN_LOOP_V1 = true;
 
 // Beat labels. Hierarchy = number badge + label color + card chrome, NOT body size.
 // All practice prose uses type.body (SaaS type-scale rule).
+// Lean mode shows only the first three (application is folded into Write / Do).
 const PRACTICE_BEATS = [
-  { key: 'framework',     label: 'The move',      num: 1, accent: 'teal' },
-  { key: 'demonstration', label: 'Watch this',    num: 2, accent: 'teal' },
-  { key: 'failure_mode',  label: 'Where it dies', num: 3, accent: 'amber' },
-  { key: 'application',   label: 'Your turn',     num: 4, accent: 'teal' },
+  { key: 'framework',     label: 'The skill',    num: 1, accent: 'teal' },
+  { key: 'demonstration', label: 'In practice',  num: 2, accent: 'teal' },
+  { key: 'failure_mode',  label: 'Common miss',  num: 3, accent: 'amber' },
+  { key: 'application',   label: 'Apply it',     num: 4, accent: 'teal' },
 ];
 
 export default function SummitDayPage({ params }) {
@@ -516,20 +524,28 @@ export default function SummitDayPage({ params }) {
     .join('\n\n');
 
   // Phase 1 beats: only include components that have text so partial/legacy
-  // days don't show empty panels.
+  // days don't show empty panels. Lean mode drops application (covered by
+  // Write it down + Do it now) and renumbers 1..n.
   const practiceBeats = PRACTICE_BEATS
+    .filter(beat => !(LEAN_DAY_V1 && beat.key === 'application'))
     .map(beat => ({
       ...beat,
       text: typeof dayData[beat.key] === 'string' ? dayData[beat.key].trim() : '',
     }))
-    .filter(beat => beat.text.length > 0);
+    .filter(beat => beat.text.length > 0)
+    .map((beat, i) => ({ ...beat, num: i + 1 }));
   const usePracticeLayout = PRACTICE_DAY_V2 && practiceBeats.length > 0;
 
-  // Milepost hints — show at most one quiet helper (not a rubric wall).
+  // Milepost helpers — lean: ONE of hint OR shape guide, never both.
   const milepostHints = Array.isArray(dayData.hints)
     ? dayData.hints.map(h => String(h)).filter(h => h.trim().length > 0)
     : [];
   const primaryHint = milepostHints[0] || '';
+  const madlibShape = typeof dayData.madlib_template === 'string'
+    ? dayData.madlib_template.trim()
+    : '';
+  const showHint = Boolean(primaryHint);
+  const showShapeGuide = Boolean(madlibShape) && !(LEAN_DAY_V1 && showHint);
 
   return (
     <>
@@ -703,31 +719,26 @@ export default function SummitDayPage({ params }) {
           </div>
         )}
 
-        {/* ── Today&apos;s practice — numbered beats (Day 0 card language) ─ */}
+        {/* ── Today&apos;s practice — numbered beats ─────────────────── */}
         {usePracticeLayout ? (
-          <section style={{ marginBottom: 32 }}>
+          <section style={{ marginBottom: LEAN_DAY_V1 ? 24 : 32 }}>
             <div style={t('label', { marginBottom: 14 })}>Today&apos;s practice</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {practiceBeats.map((beat) => {
                 const isFail = beat.accent === 'amber';
-                const isApp = beat.key === 'application';
                 return (
                   <div
                     key={beat.key}
                     style={{
                       display: 'flex',
                       gap: 14,
-                      padding: isApp ? '16px 16px' : '14px 16px',
+                      padding: '14px 16px',
                       borderRadius: 12,
                       border: isFail
                         ? '1px solid rgba(251, 146, 60, 0.22)'
-                        : isApp
-                        ? '1px solid rgba(25,190,227,0.28)'
                         : '1px solid rgba(255,255,255,0.08)',
                       background: isFail
                         ? 'rgba(251, 146, 60, 0.04)'
-                        : isApp
-                        ? 'rgba(25,190,227,0.05)'
                         : 'rgba(15, 23, 42, 0.55)',
                     }}
                   >
@@ -754,15 +765,23 @@ export default function SummitDayPage({ params }) {
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={t('label', {
-                        marginBottom: 6,
+                        marginBottom: 10,
                         color: isFail ? 'rgba(251, 146, 60, 0.85)' : 'var(--brand-teal)',
                       })}>
                         {beat.label}
                       </div>
-                      {/* Same body size for all four steps — hierarchy via badge/label/card */}
-                      <div style={t('body', { whiteSpace: 'pre-wrap' })}>
-                        {beat.text}
-                      </div>
+                      <PracticeProse
+                        text={beat.text}
+                        variant={
+                          beat.key === 'framework'
+                            ? 'skill'
+                            : beat.key === 'failure_mode'
+                            ? 'fail'
+                            : beat.key === 'demonstration'
+                            ? 'demo'
+                            : 'default'
+                        }
+                      />
                     </div>
                   </div>
                 );
@@ -796,13 +815,13 @@ export default function SummitDayPage({ params }) {
             <p style={t('bodyEmphasis', { margin: '0 0 12px 0', lineHeight: 1.5 })}>
               {dayData.milepost}
             </p>
-            {primaryHint && (
+            {/* Lean: one helper only — prefer hint; else shape guide */}
+            {showHint && (
               <p style={t('caption', { margin: '0 0 12px 0', color: 'rgba(255,255,255,0.38)' })}>
                 {primaryHint}
               </p>
             )}
-            {/* Full madlib as quiet shape guide — not a large input placeholder */}
-            {dayData.madlib_template && (
+            {showShapeGuide && (
               <div
                 style={{
                   marginBottom: 10,
@@ -820,7 +839,7 @@ export default function SummitDayPage({ params }) {
                   Shape guide
                 </div>
                 <p style={t('caption', { margin: 0, color: 'rgba(238,242,247,0.48)' })}>
-                  {dayData.madlib_template}
+                  {madlibShape}
                 </p>
               </div>
             )}
@@ -841,7 +860,7 @@ export default function SummitDayPage({ params }) {
               }}
             />
 
-            {/* Coach — secondary, not competing with the practice */}
+            {/* Help — quiet, only when empty or after they write (second look) */}
             <div style={{
               marginTop: 12,
               display: 'flex',
@@ -868,30 +887,32 @@ export default function SummitDayPage({ params }) {
                   Stuck? Ask coach →
                 </button>
               )}
-              <button
-                type="button"
-                onClick={getSecondLook}
-                disabled={!hasMilepostText || secondLookBusy}
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: type.caption.fontSize,
-                  fontWeight: 600,
-                  padding: '7px 12px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(25,190,227,0.25)',
-                  background: 'transparent',
-                  color: hasMilepostText && !secondLookBusy ? 'rgba(25,190,227,0.85)' : 'rgba(25,190,227,0.35)',
-                  cursor: hasMilepostText && !secondLookBusy ? 'pointer' : 'not-allowed',
-                }}
-              >
-                {secondLookLoading
-                  ? 'Reading…'
-                  : secondLookStreaming
-                  ? 'Responding…'
-                  : coachObservation
-                  ? 'Another look'
-                  : 'Second look'}
-              </button>
+              {hasMilepostText && (
+                <button
+                  type="button"
+                  onClick={getSecondLook}
+                  disabled={secondLookBusy}
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    background: 'none',
+                    border: 'none',
+                    ...type.caption,
+                    color: secondLookBusy ? 'rgba(25,190,227,0.35)' : 'rgba(25,190,227,0.55)',
+                    fontFamily: 'var(--font-sans)',
+                    fontWeight: 500,
+                    cursor: secondLookBusy ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {secondLookLoading
+                    ? 'Reading…'
+                    : secondLookStreaming
+                    ? 'Responding…'
+                    : coachObservation
+                    ? 'Another look →'
+                    : 'Second look →'}
+                </button>
+              )}
             </div>
 
             {showCoachPanel && (
@@ -966,22 +987,59 @@ export default function SummitDayPage({ params }) {
           </section>
         )}
 
-        {/* ── Do it + complete (Day 0 CTA energy) ────────────────────── */}
+        {/* ── Do it + complete ───────────────────────────────────────── */}
         {dayData.summit_mission && (
           <section
             className="glass-panel mission-panel highlighted"
             style={{ marginBottom: 28, padding: '20px 18px' }}
           >
             <div style={t('label', { marginBottom: 10 })}>Do it now</div>
-            <p style={t('bodyEmphasis', { margin: '0 0 16px 0', lineHeight: 1.55 })}>
+            <p style={t('bodyEmphasis', { margin: '0 0 10px 0', lineHeight: 1.55 })}>
               {dayData.summit_mission}
             </p>
+            {LEAN_DAY_V1 && (
+              <p style={t('caption', {
+                margin: '0 0 14px 0',
+                color: 'rgba(238,242,247,0.45)',
+                lineHeight: 1.45,
+              })}>
+                {hasMilepostText
+                  ? 'Use the line you just wrote — put it where this asks. No need to rewrite it.'
+                  : 'Write your line above first, then place that same line where this asks.'}
+              </p>
+            )}
+            {LEAN_DAY_V1 && hasMilepostText && (
+              <div
+                style={{
+                  marginBottom: 14,
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  background: 'rgba(25,190,227,0.06)',
+                  border: '1px solid rgba(25,190,227,0.18)',
+                }}
+              >
+                <div style={t('label', {
+                  marginBottom: 6,
+                  color: 'rgba(25,190,227,0.7)',
+                  fontSize: '0.6rem',
+                })}>
+                  Your line
+                </div>
+                <p style={t('caption', {
+                  margin: 0,
+                  color: 'rgba(238,242,247,0.75)',
+                  whiteSpace: 'pre-wrap',
+                })}>
+                  {reflectionText.trim()}
+                </p>
+              </div>
+            )}
             {RETURN_LOOP_V1 && (
               <div style={{ marginBottom: 16 }}>
                 <label style={t('label', {
                   display: 'block',
                   marginBottom: 8,
-                  color: 'rgba(25,190,227,0.7)',
+                  color: 'rgba(255,255,255,0.35)',
                 })}>
                   What I did <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional)</span>
                 </label>
@@ -992,7 +1050,7 @@ export default function SummitDayPage({ params }) {
                   onBlur={saveMissionNote}
                   placeholder="One line on what you actually did…"
                   rows={2}
-                  style={{ minHeight: 52, marginBottom: 0 }}
+                  style={{ minHeight: 48, marginBottom: 0 }}
                 />
               </div>
             )}
