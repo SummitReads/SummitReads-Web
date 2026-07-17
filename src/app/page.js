@@ -63,14 +63,11 @@ const getFaqItems = sprintCountLabel => [
 
 // ── Stage data ────────────────────────────────────────────────────────────────
 
-const STAGES = [
-  { n: '01', type: 'Anchor',      desc: 'Attach the behavior to one existing moment that already happens',              cls: 'is-done'   },
-  { n: '02', type: 'Environment', desc: 'Design your space so the cue is visible before you can drift past it',         cls: 'is-done'   },
-  { n: '03', type: 'Small Start', desc: 'Write the smallest version of the behavior that still counts',                 cls: 'is-active' },
-  { n: '04', type: 'Specify',     desc: 'Lock in the exact day, time, place, and action so there is no room for drift', cls: ''          },
-  { n: '05', type: 'Track',       desc: 'Create a simple mark-right-after loop so finished work stays visible',         cls: ''          },
-  { n: '06', type: 'Adjust',      desc: 'Review what actually happened and tighten the plan based on reality',          cls: ''          },
-  { n: '07', type: 'Commit',      desc: 'Choose one repeatable next-week move based on what the week produced',         cls: ''          },
+// Hero mock mirrors current product (skill → how → write), not old stage labels
+const HERO_HOW = [
+  'Name one specific behavior you want to do consistently.',
+  'Identify the physical or digital condition that blocks it.',
+  'Change that condition now, before tomorrow morning.',
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -524,111 +521,156 @@ export default function Home() {
       `}</style>
       <nav>
         <a href="#" className="logo">
-          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" onError={e => { e.target.style.display = 'none' }} />Summit<span>Skills</span>
+          <img src="/SummitSkills-Logo.png" alt="" className="logo-img" onError={e => { e.target.style.display = 'none' }} />
+          Summit<span>Skills</span>
         </a>
         <div className="nav-links">
           <a href="#how" className="nav-link">How it works</a>
-          <a href="#team-pricing" className="nav-link nav-link-teams">For Managers</a>
           <a href="#pricing" className="nav-link">Pricing</a>
           <a href="#faq" className="nav-link">FAQ</a>
           <a href="/auth/login" className="nav-login">Log in</a>
-          <button onClick={handleFreeTrialSignup} className="nav-cta">Start Team Pilot</button>
+          <button type="button" onClick={handleFreeTrialSignup} className="nav-cta">Start team pilot</button>
         </div>
       </nav>
 
       <div className="hero">
         <div className="hero-left">
-          <div className="hero-stats-row">
-            <div className="hero-stat-pill">
-              <strong><span style={{display:'inline-block',minWidth:'2ch',textAlign:'right'}}>{sprintCountLabel}</span></strong> sprints
-            </div>
-            <div className="hero-stat-pill"><strong>Written</strong> reflection</div>
-            <div className="hero-stat-pill"><strong>Manager</strong> dashboard</div>
+          <div className="hero-eyebrow">
+            <span className="hero-eyebrow-dot" />
+            7-day skill sprints for managers &amp; teams
           </div>
-          <h1>Real skills take<br />more than watching.<br /><em>This is the work.</em></h1>
+          <h1>
+            Real skills take more than watching.
+            <br />
+            <em>This is the practice.</em>
+          </h1>
           <p className="hero-sub">
-            Skill development that produces real behavior change. Managers assign sprints, track progress by individual, and read every written response. Teams are live in minutes.
+            Assign a sprint. One skill a day. Write it down on real work, then do it.
+            You see progress and every written response — not a completion percentage.
           </p>
           <div className="hero-actions">
-            <button onClick={handleFreeTrialSignup} className="btn-primary">Start Your Team's First Sprint →</button>
-            <a href="#team-pricing" className="btn-ghost">See Pricing →</a>
+            <button type="button" onClick={handleFreeTrialSignup} className="btn-primary">
+              Start team pilot →
+            </button>
+            <a href="#how" className="btn-ghost">How it works</a>
           </div>
-          <p className="hero-footnote">14-day team pilot · No charge until day 15</p>
+          <p className="hero-footnote">
+            14-day pilot · No charge until day 15 ·{' '}
+            <span style={{ opacity: 0.9 }}>
+              {sprintCountLabel !== '—' ? `${sprintCountLabel} sprints` : 'Skill sprints'} live
+            </span>
+          </p>
+          <div className="hero-trust">
+            <div className="hero-trust-item">No LMS</div>
+            <div className="hero-trust-item">Async by design</div>
+            <div className="hero-trust-item">Live in minutes</div>
+          </div>
         </div>
 
         <div className="hero-right">
-          <div className="hero-widget">
+          <div className="hero-widget hero-widget-v2">
             <div className="hw-chrome">
               <div className="hw-dots">
                 <div className="hw-dot" /><div className="hw-dot" /><div className="hw-dot" />
               </div>
-              <div className="hw-title">Building Consistent Habits · Day 3 of 7</div>
+              <div className="hw-title">Make Good Work Automatic · Day 1 of 7</div>
             </div>
-            <div className="hw-stages">
-              <div className="hw-stage done"><span className="hw-stage-num">01</span><div className="hw-stage-label">Anchor</div></div>
-              <div className="hw-stage done"><span className="hw-stage-num">02</span><div className="hw-stage-label">Environment</div></div>
-              <div className="hw-stage active"><span className="hw-stage-num">03</span><div className="hw-stage-label">Small Start</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">04</span><div className="hw-stage-label">Specify</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">05</span><div className="hw-stage-label">Track</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">06</span><div className="hw-stage-label">Adjust</div></div>
-              <div className="hw-stage"><span className="hw-stage-num">07</span><div className="hw-stage-label">Commit</div></div>
+            <div className="hw-progress">
+              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
+                <div
+                  key={d}
+                  className={`hw-prog-seg${d === 1 ? ' is-current' : ''}${d < 1 ? ' is-done' : ''}`}
+                />
+              ))}
             </div>
-            <div className="hw-body">
-              <div className="hw-body-label">Day 3 · Small Start</div>
-              <div className="hw-body-heading">Connect it to your work</div>
-              <div className="hw-body-text">You've worked through the concept. Now connect it to something real in your own day, your own team.</div>
-              <div className="hw-gate">
-                <div className="hw-gate-label">Example response</div>
-                <div className="hw-gate-text">I'll write the first three bullet points of the report. Not the whole thing. Just enough to have something on the page.</div>
-                <div className="hw-gate-btn">Submit and continue to Day 4 →</div>
+            <div className="hw-body hw-body-v2">
+              <div className="hw-meta">Day 1 · Practice</div>
+              <div className="hw-day-title">Design Beats Discipline</div>
+
+              <div className="hw-beat">
+                <div className="hw-beat-label">The skill</div>
+                <div className="hw-takeaway">
+                  <span className="hw-takeaway-kicker">Takeaway</span>
+                  You are building a setup that makes the right move the default one.
+                </div>
+                <div className="hw-how-label">How</div>
+                <ol className="hw-how">
+                  {HERO_HOW.map((step, i) => (
+                    <li key={i}>
+                      <span className="hw-how-n">{i + 1}</span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="hw-beat hw-beat-write">
+                <div className="hw-beat-label">Write it down</div>
+                <div className="hw-gate">
+                  <div className="hw-gate-text">
+                    The behavior I keep missing is <em>opening email before my task list</em>, and the condition I&rsquo;m changing is <em>browser homepage → tasks</em>.
+                  </div>
+                </div>
+              </div>
+
+              <div className="hw-beat-do">
+                <span className="hw-do-label">Do it now</span>
+                <span className="hw-do-text">Change one default so tomorrow&rsquo;s first screen points at the work.</span>
               </div>
             </div>
             <div className="hw-footer">
-              <div className="hw-footer-stat">Progress <strong>3/7</strong></div>
               <div className="hw-footer-stat">Logged to <strong>manager dashboard</strong></div>
+              <div className="hw-footer-stat">Inspired by <strong>Atomic Habits</strong></div>
             </div>
           </div>
         </div>
       </div>
 
-      <hr className="section-divider" />
+      <section className="proof-bar" aria-label="Product highlights">
+        <div className="wrap proof-bar-inner">
+          <div className="proof-item">
+            <strong>Skill first</strong>
+            <span>Clear takeaway + numbered how — not a video library</span>
+          </div>
+          <div className="proof-item">
+            <strong>Write &amp; do</strong>
+            <span>Every day ends on real work, not a quiz</span>
+          </div>
+          <div className="proof-item">
+            <strong>Visible to managers</strong>
+            <span>Progress and written responses in one dashboard</span>
+          </div>
+        </div>
+      </section>
 
       <section className="mechanic" id="how">
         <div className="wrap">
-          <div className="mechanic-inner">
+          <div className="mechanic-inner mechanic-inner-v2">
             <div className="mechanic-lede reveal">
+              <p className="label">How it works</p>
               <h2>Not content delivery.<br /><em>A skill-building system.</em></h2>
-              <p>Most learning tools tell you who clicked through. SummitSkills tells you who actually engaged with the work.</p>
+              <p>Most tools report who clicked through. SummitSkills shows who practiced on real work.</p>
             </div>
-            <div className="mechanic-steps">
+            <div className="mechanic-steps mechanic-steps-3">
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">01</div>
                 <div>
-                  <h3>Assign a sprint to your team</h3>
-                  <p>Pick any sprint and assign it to individuals, a role group, or your full team. Team members get an email and they're in. No app, no LMS, no IT ticket.</p>
-                  <p className="aside">✓ Live within minutes</p>
+                  <h3>Assign a sprint</h3>
+                  <p>Pick a skill sprint and assign it to people or the whole team. They get email access — no app, no LMS, no IT ticket.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">02</div>
                 <div>
-                  <h3>One concept per day</h3>
-                  <p>Each day delivers one applied concept. The next day doesn't open until they've engaged with the current one. Paced for a real workday, not a blocked training afternoon.</p>
-                  <p className="aside">✓ Async. No scheduling, no time zones.</p>
+                  <h3>Practice one skill a day</h3>
+                  <p>Teach the move, see it in practice, write it on their work, then do it. Async. Built for a real workday.</p>
                 </div>
               </div>
               <div className="mechanic-step reveal">
                 <div className="mechanic-num">03</div>
                 <div>
-                  <h3>Every day includes a written reflection prompt.</h3>
-                  <p>They connect the concept to something real in their work before moving on. Every response is logged to the manager dashboard.</p>
-                </div>
-              </div>
-              <div className="mechanic-step reveal">
-                <div className="mechanic-num">04</div>
-                <div>
-                  <h3>Day 7 produces a real work deliverable.</h3>
-                  <p>Built from their own reflections across the sprint. A working tool for their actual job, not a certificate to file away.</p>
+                  <h3>See what they wrote</h3>
+                  <p>Day-by-day progress and every written response land on your dashboard — not a completion percentage.</p>
                 </div>
               </div>
             </div>
@@ -636,55 +678,50 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="sprint-section">
+      <section className="sprint-section" id="product">
         <div className="wrap">
           <div className="sprint-intro reveal">
-            <h2>Seven days. One real output.</h2>
+            <p className="label">Inside a day</p>
+            <h2>Seven days. One skill. Real output.</h2>
+            <p className="sprint-intro-sub">
+              Same structure every sprint: the skill, how to do it, where it fails, write it down, do it now.
+            </p>
           </div>
-          <div className="sprint-wrap reveal">
-            <div className="sprint-chrome">
-              <div className="sprint-chrome-left">
-                <div>
-                  <div className="sprint-name">Building Consistent Habits</div>
-                  <div className="sprint-cat">Productivity &amp; Habits · 7-Day Skill Sprint</div>
-                </div>
-              </div>
-              <div className="sprint-chrome-right">
-                <div className="sprint-stat"><strong>7</strong> days</div>
-                <div className="sprint-stat">Reflection-prompted</div>
-              </div>
+          <div className="day-structure reveal">
+            <div className="day-structure-card">
+              <div className="dsc-n">1</div>
+              <h3>The skill</h3>
+              <p>Takeaway + numbered how. What to do, not a monologue.</p>
             </div>
-
-            <div className="stage-grid">
-              {STAGES.map(s => (
-                <div key={s.n} className={`stage-col ${s.cls}`}>
-                  <span className="stage-n">{s.n}</span>
-                  <div className="stage-type">{s.type}</div>
-                  <div className="stage-desc">{s.desc}</div>
-                </div>
-              ))}
+            <div className="day-structure-card">
+              <div className="dsc-n">2</div>
+              <h3>In practice</h3>
+              <p>One concrete workplace scene so the move is visible.</p>
             </div>
-
-            <div className="sprint-footer-line">
-              <p>Same structure, every sprint.</p>
-              <a href="#pricing">See pricing →</a>
+            <div className="day-structure-card">
+              <div className="dsc-n">3</div>
+              <h3>Common miss</h3>
+              <p>Where the move dies under pressure — so they catch it.</p>
             </div>
-            <div className="sprint-deliverable">
-              <div className="sprint-deliverable-label">Day 7 Deliverable</div>
-              <div className="sprint-deliverable-title">A personal behavior framework</div>
-              <div className="sprint-deliverable-desc">
-                Built from their own reflections across the sprint, including the patterns they identified, the friction they removed, the approaches they'll actually use. A working reference for their job, not a template filled in for them.
-              </div>
+            <div className="day-structure-card">
+              <div className="dsc-n">4</div>
+              <h3>Write &amp; do</h3>
+              <p>Pin it to their work, then one real action outside the app.</p>
             </div>
           </div>
+          <p className="sprint-footer-line reveal">
+            Day 7 ties the week into one run-through on a live situation.
+            <a href="#pricing"> See pricing →</a>
+          </p>
         </div>
       </section>
 
       <section className="dashboard-preview">
         <div className="wrap">
           <div className="dashboard-preview-intro reveal">
-            <h2>For managers who want<br />more than a <em>completion report.</em></h2>
-            <p>Day-by-day progress, every written response, and sprint assignment in one place. No manual reporting, no post-training survey.</p>
+            <p className="label">For managers</p>
+            <h2>More than a <em>completion report.</em></h2>
+            <p>Assign sprints, track day-by-day progress, and read every written response in one place.</p>
           </div>
           <div className="dashboard-img-wrap reveal">
             <img src="/dashboard-preview.png" alt="SummitSkills manager dashboard" />
@@ -692,37 +729,23 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="coach-callout">
-        <div className="wrap">
-          <div className="coach-callout-inner reveal">
-            <div className="coach-callout-eyebrow">Built-in Coach</div>
-            <h2 className="coach-callout-heading">Your coach knows the sprint.<br /><em>Not just the topic.</em></h2>
-            <p className="coach-callout-body">Most coaching tools make you explain yourself from scratch. The Summit Coach already knows what you&rsquo;re working on, where you are in the sprint, and what today&rsquo;s concept is asking of you. Stuck on a reflection? Trying to apply the concept to something real? It&rsquo;s already there.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="credibility">
+      <section className="credibility credibility-v2">
         <div className="wrap">
           <div className="credibility-inner reveal">
-            <h2>Why completion rates<br /><em>aren't enough.</em></h2>
-            <p className="credibility-sub">Most corporate training gets completed. Almost none of it changes how people work on Monday.</p>
+            <h2>Completion isn&rsquo;t the goal.<br /><em>Behavior is.</em></h2>
             <div className="credibility-grid">
               <div className="credibility-item">
-                <div className="credibility-stat">Written.</div>
-                <div className="credibility-label">Every day, employees connect the concept to something real in their work. No quiz, no multiple choice. Their actual thinking, in their own words.</div>
+                <div className="credibility-stat">Write</div>
+                <div className="credibility-label">Each day connects the skill to something real in their work — in their own words.</div>
               </div>
               <div className="credibility-item">
-                <div className="credibility-stat">Logged.</div>
-                <div className="credibility-label">Every response goes to the manager dashboard. The writing, not a completion percentage. You see what your team actually thinks, day by day.</div>
+                <div className="credibility-stat">Do</div>
+                <div className="credibility-label">A concrete next action outside the app so the skill leaves the page.</div>
               </div>
               <div className="credibility-item">
-                <div className="credibility-stat">Delivered.</div>
-                <div className="credibility-label">Day 7 ends with a real work output built from their own reflections. Not a certificate to file away. A tool they'll actually use.</div>
+                <div className="credibility-stat">See</div>
+                <div className="credibility-label">Managers see progress and writing, not a green checkmark alone.</div>
               </div>
-            </div>
-            <div className="credibility-pull">
-              Written reflection isn't a comprehension check. It's what separates content someone consumed from a skill they actually built.
             </div>
           </div>
         </div>
@@ -842,23 +865,28 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="individual-cta">
+      <section className="individual-cta individual-cta-quiet">
         <div className="wrap">
           <div className="individual-cta-inner reveal">
             <div className="individual-cta-left">
-              <h3 className="individual-cta-heading">For individual access.</h3>
-              <p className="individual-cta-body">Full sprint library, built-in coach, and a 7-day free trial. No MSA, no seat minimum, no team required.</p>
+              <h3 className="individual-cta-heading">For individuals</h3>
+              <p className="individual-cta-body">
+                Full library and coach, no team required.
+              </p>
             </div>
             <div className="individual-cta-right">
-              <div className="individual-cta-price">$149 <span>/ year</span></div>
+              <div className="individual-cta-price">
+                $149 <span>/ year</span>
+              </div>
               <button
+                type="button"
                 onClick={handleIndividualCheckout}
                 disabled={checkoutLoading}
                 className="individual-cta-btn"
               >
-                {checkoutLoading ? 'Loading…' : 'Start Free Trial →'}
+                {checkoutLoading ? 'Loading…' : 'Start free trial →'}
               </button>
-              <div className="individual-cta-note">7-day free trial · No MSA · Cancel anytime</div>
+              <div className="individual-cta-note">7-day trial · Cancel anytime</div>
             </div>
           </div>
         </div>
@@ -893,19 +921,27 @@ export default function Home() {
       </section>
 
       <section className="final-cta">
-        <h2>Your team could be a week in<br /><em>by this time next week.</em></h2>
-        <p>No implementation call, no LMS, no IT ticket. You invite your team and they're in.</p>
-        <button onClick={handleFreeTrialSignup} className="btn-primary">Start Team Pilot →</button>
-        <p className="final-note">14-day pilot · Simple contract · First charge on day 15</p>
+        <h2>
+          Your team could be a week in
+          <br />
+          <em>by this time next week.</em>
+        </h2>
+        <p>No LMS. No IT ticket. Invite them and start the first sprint.</p>
+        <button type="button" onClick={handleFreeTrialSignup} className="btn-primary">
+          Start team pilot →
+        </button>
+        <p className="final-note">14-day pilot · First charge on day 15</p>
       </section>
 
       <footer>
-        <a href="#" className="footer-logo">Summit<em>Skills</em></a>
+        <a href="#" className="footer-logo">
+          Summit<em>Skills</em>
+        </a>
         <div className="footer-links">
           <a href="#how">Product</a>
           <a href="#pricing">Pricing</a>
           <a href="/security">Security</a>
-          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="/privacy-policy">Privacy</a>
           <a href="/terms">Terms</a>
           <a href="mailto:support@summitskills.io">Contact</a>
         </div>
