@@ -4,6 +4,7 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BrandLogo from '@/components/BrandLogo';
+import { displaySprintTitle } from '@/lib/sprintDisplay';
 
 function SkeletonBlock({ width = '100%', height = '20px', style = {} }) {
   return (
@@ -114,15 +115,19 @@ export default function SprintsPage() {
         <div className="nav-content">
           <BrandLogo href="/library" />
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
             <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
               <span /><span /><span />
             </button>
             {menuOpen && (
               <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
                 <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
-                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
               </div>
             )}
           </div>
@@ -169,9 +174,21 @@ export default function SprintsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-muted)', margin: 0 }}>
-              No sprints match this filter.
-            </p>
+            {sprintList.length === 0 ? (
+              <>
+                <h2 style={{ marginBottom: '12px', fontSize: '1.2rem' }}>No sprints yet</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>
+                  Start one from the library — it will show up here.
+                </p>
+                <button type="button" className="btn-primary" onClick={() => router.push('/library')}>
+                  Browse library →
+                </button>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+                No sprints match this filter.
+              </p>
+            )}
           </div>
         ) : (
           <div className="glass-panel" style={{ padding: '8px 0' }}>
@@ -205,7 +222,7 @@ export default function SprintsPage() {
                     {/* Title + progress */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {book.sprint_title || book.title}
+                        {displaySprintTitle(book)}
                       </div>
                       {/* Progress bar */}
                       <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '3px', overflow: 'hidden', maxWidth: '260px' }}>

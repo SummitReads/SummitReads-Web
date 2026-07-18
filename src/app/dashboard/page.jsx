@@ -4,7 +4,7 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BrandLogo from '@/components/BrandLogo';
-import { displaySprintTitle } from '@/lib/sprintDisplay';
+import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = 'var(--brand-teal)' }) {
@@ -101,7 +101,8 @@ export default function DashboardPage() {
   const sprintList = useMemo(() => Object.values(sprintMap), [sprintMap]);
   const sprintsStarted = sprintList.length;
   const sprintsCompleted = sprintList.filter(s => s.completedDays >= 7).length;
-  const sprintsInProgress = sprintList.filter(s => s.completedDays > 0 && s.completedDays < 7);
+  // Include day-0 / just-started (0 complete) so they still show under Continue
+  const sprintsInProgress = sprintList.filter(s => s.completedDays < 7);
 
   // Recently completed sprints (full 7-day)
   const recentlyCompleted = useMemo(() =>
@@ -126,12 +127,15 @@ export default function DashboardPage() {
   const reflectionsBySprint = useMemo(() => {
     const map = {};
     allProgress.forEach(p => {
-      if (!p.reflection_data || !p.books) return;
+      if (!p.books) return;
+      const text = displayReflectionText(p.reflection_data);
+      if (!text) return;
       const id = p.book_id;
       if (!map[id]) map[id] = { book: p.books, entries: [] };
-      map[id].entries.push({ day_number: p.day_number, text: p.reflection_data, unlocked_at: p.unlocked_at });
+      map[id].entries.push({ day_number: p.day_number, text, unlocked_at: p.unlocked_at });
     });
     return Object.values(map)
+      .filter(s => s.entries.length > 0)
       .map(s => ({ ...s, entries: s.entries.sort((a, b) => a.day_number - b.day_number) }))
       .sort((a, b) => new Date(b.entries[b.entries.length - 1].unlocked_at) - new Date(a.entries[a.entries.length - 1].unlocked_at));
   }, [allProgress]);
@@ -151,17 +155,19 @@ export default function DashboardPage() {
         <div className="nav-content">
           <BrandLogo href="/library" />
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
             <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
               <span /><span /><span />
             </button>
             {menuOpen && (
               <div className="nav-mobile-menu">
+                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
                 <button onClick={() => { setMenuOpen(false); router.push('/dashboard/sprints'); }}>My Sprints</button>
                 <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
-                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign Out</button>
+                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
               </div>
             )}
           </div>
@@ -227,9 +233,9 @@ export default function DashboardPage() {
                       href={`/summit/${book.id}/day/${nextDay}`}
                       style={{ textDecoration: 'none' }}
                     >
-                      <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer', transition: 'transform 0.15s', ':hover': { transform: 'translateY(-2px)' } }}>
+                      <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer', transition: 'border-color 0.15s' }}>
                         <div style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--brand-teal)', marginBottom: '8px' }}>
-                          Day {nextDay} of 7
+                          {cd === 0 ? 'Start Day 1 of 7' : `Day ${nextDay} of 7`}
                         </div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
                         {displaySprintTitle(book)}
@@ -373,9 +379,12 @@ export default function DashboardPage() {
                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
                             <div style={{ fontSize: '0.68rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--brand-teal)', whiteSpace: 'nowrap', paddingTop: '2px', minWidth: '52px' }}>
-                              Stage {entry.day_number}
+                              Day {entry.day_number}
                             </div>
-                            <div style={{ fontSize: '0.85rem', color: 'rgba(238,242,247,0.6)', lineHeight: 1.6, flex: 1 }}>
+                            <div style={{
+                              fontSize: '0.85rem', color: 'rgba(238,242,247,0.6)', lineHeight: 1.6, flex: 1,
+                              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                            }}>
                               {entry.text}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.2)', paddingTop: '2px' }}>→</div>

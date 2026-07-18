@@ -33,3 +33,23 @@ export function displaySprintTitle(book) {
 
   return 'Skill Sprint';
 }
+
+/**
+ * reflection_data is jsonb — may be a plain string or { text: "..." }.
+ * Safe for dashboard / reflections list rendering.
+ */
+export function displayReflectionText(reflectionData) {
+  if (reflectionData == null || reflectionData === '') return '';
+  if (typeof reflectionData === 'string') return reflectionData.trim();
+  if (typeof reflectionData === 'object') {
+    if (reflectionData.text != null) return String(reflectionData.text).trim();
+    if (reflectionData.reflection != null) return String(reflectionData.reflection).trim();
+    try {
+      const s = JSON.stringify(reflectionData);
+      return s === '{}' ? '' : s;
+    } catch {
+      return '';
+    }
+  }
+  return String(reflectionData);
+}

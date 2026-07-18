@@ -63,16 +63,18 @@ export default function SettingsPage() {
     }
     loadUser();
 
-    // Load saved prefs from localStorage
-    const savedReminder = localStorage.getItem('sr_reminder_enabled');
-    const savedTime     = localStorage.getItem('sr_reminder_time');
+    // Load saved prefs (migrate legacy sr_ keys once)
+    const savedReminder =
+      localStorage.getItem('ss_reminder_enabled') ?? localStorage.getItem('sr_reminder_enabled');
+    const savedTime =
+      localStorage.getItem('ss_reminder_time') ?? localStorage.getItem('sr_reminder_time');
     if (savedReminder !== null) setReminderEnabled(savedReminder === 'true');
     if (savedTime) setReminderTime(savedTime);
   }, []);
 
   function savePreferences() {
-    localStorage.setItem('sr_reminder_enabled', reminderEnabled.toString());
-    localStorage.setItem('sr_reminder_time', reminderTime);
+    localStorage.setItem('ss_reminder_enabled', reminderEnabled.toString());
+    localStorage.setItem('ss_reminder_time', reminderTime);
     setPrefsSaved(true);
     setTimeout(() => setPrefsSaved(false), 2500);
   }
@@ -194,17 +196,19 @@ export default function SettingsPage() {
         <div className="nav-content">
           <BrandLogo href="/library" />
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
-            <button className="btn-primary small nav-btn-desktop" onClick={handleSignOut}>Sign Out</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
+            <button className="btn-outline small nav-btn-desktop" onClick={handleSignOut}>Sign out</button>
             <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
               <span /><span /><span />
             </button>
             {menuOpen && (
               <div className="nav-mobile-menu">
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
                 <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
-                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign Out</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
+                <button onClick={() => { setMenuOpen(false); router.push('/dashboard/sprints'); }}>My Sprints</button>
+                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign out</button>
               </div>
             )}
           </div>
@@ -262,14 +266,14 @@ export default function SettingsPage() {
         </div>
 
         {/* ── Plan & Billing ───────────────────────────────────────────────── */}
-        {!loadingUser && hasSubscription && (
+        {!loadingUser && (
           <div className="glass-panel" style={{ padding: '32px', marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '24px', color: 'var(--brand-teal)' }}>
               Plan & Billing
             </h2>
 
-            {/* Plan and status */}
-            <div style={{ display: 'flex', gap: '32px', marginBottom: '24px' }}>
+            {/* Plan and status — always show so free users aren't left blank */}
+            <div style={{ display: 'flex', gap: '32px', marginBottom: '24px', flexWrap: 'wrap' }}>
               <div>
                 <span style={labelStyle}>Plan</span>
                 <span style={valueStyle}>{getPlanLabel(profile?.plan_type)}</span>
@@ -277,7 +281,7 @@ export default function SettingsPage() {
               <div>
                 <span style={labelStyle}>Status</span>
                 <span style={{ ...valueStyle, color: statusInfo.color, fontWeight: '700' }}>
-                  {statusInfo.label}
+                  {hasSubscription ? statusInfo.label : 'No active subscription'}
                 </span>
               </div>
               {trialEndFormatted && profile?.subscription_status === 'trialing' && (
@@ -288,124 +292,138 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* Seats — team only */}
-            {isTeam && (
-              <>
-                <div style={dividerStyle} />
-                <div>
-                  <span style={labelStyle}>Seats</span>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '16px' }}>
-                    {profile?.seats_used ?? 0} of {profile?.seat_count ?? 1} seats used.
-                    Adding seats will be prorated and billed immediately.
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                    <button
-                      onClick={() => setSeatCount(c => Math.max(1, c - 1))}
-                      disabled={seatCount <= (profile?.seats_used ?? 1)}
-                      style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'white', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: seatCount <= (profile?.seats_used ?? 1) ? 0.3 : 1 }}>
-                      −
-                    </button>
-                    <span style={{ fontSize: '1.2rem', fontWeight: '700', minWidth: '32px', textAlign: 'center' }}>
-                      {seatCount}
-                    </span>
-                    <button
-                      onClick={() => setSeatCount(c => c + 1)}
-                      style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'white', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      +
-                    </button>
-                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)' }}>seats</span>
-                  </div>
-                  {seatCount !== profile?.seat_count && (
-                    <button className="btn-primary small" onClick={handleUpdateSeats}
-                      disabled={seatLoading}
-                      style={{ opacity: seatLoading ? 0.6 : 1 }}>
-                      {seatLoading ? 'Updating...' : `Update to ${seatCount} seats`}
-                    </button>
-                  )}
-                  {seatSuccess && (
-                    <p style={{ color: '#4ade80', fontSize: '0.875rem', marginTop: '8px' }}>✓ Seats updated successfully</p>
-                  )}
-                  {seatError && (
-                    <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '8px' }}>{seatError}</p>
-                  )}
-                </div>
-              </>
+            {!hasSubscription && (
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', margin: 0 }}>
+                Need a team plan?{' '}
+                <Link href="/#pricing" style={{ color: 'var(--brand-teal)', fontWeight: 600 }}>
+                  View pricing →
+                </Link>
+              </p>
             )}
 
-            {/* Cancellation */}
-            {!isCanceling && !isCanceled && (
+            {/* Seats + cancel only when they have a Stripe subscription */}
+            {hasSubscription && (
               <>
-                <div style={dividerStyle} />
-                <div>
-                  <span style={labelStyle}>Cancel Subscription</span>
-                  <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '16px' }}>
-                    {profile?.subscription_status === 'trialing'
-                      ? `Your access continues until your trial ends${trialEndFormatted ? ` on ${trialEndFormatted}` : ''}. You won't be charged.`
-                      : 'Your access continues until the end of the current billing period.'}
-                  </p>
-                  {!confirmCancel ? (
-                    <button
-                      onClick={() => setConfirmCancel(true)}
-                      style={{ background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', color: 'rgba(239,68,68,0.7)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)'; e.currentTarget.style.color = '#ef4444'; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = 'rgba(239,68,68,0.7)'; }}>
-                      Cancel Subscription
-                    </button>
-                  ) : (
-                    <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '16px' }}>
-                      <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '12px' }}>
-                        Are you sure? Your access continues until {trialEndFormatted ?? 'the end of your billing period'}.
+                {isTeam && (
+                  <>
+                    <div style={dividerStyle} />
+                    <div>
+                      <span style={labelStyle}>Seats</span>
+                      <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '16px' }}>
+                        {profile?.seats_used ?? 0} of {profile?.seat_count ?? 1} seats used.
+                        Adding seats will be prorated and billed immediately.
                       </p>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={handleCancel} disabled={cancelLoading}
-                          style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600', fontFamily: 'var(--font-sans)', opacity: cancelLoading ? 0.6 : 1 }}>
-                          {cancelLoading ? 'Canceling...' : 'Yes, cancel'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <button
+                          onClick={() => setSeatCount(c => Math.max(1, c - 1))}
+                          disabled={seatCount <= (profile?.seats_used ?? 1)}
+                          style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'white', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: seatCount <= (profile?.seats_used ?? 1) ? 0.3 : 1 }}>
+                          −
                         </button>
-                        <button onClick={() => setConfirmCancel(false)}
-                          style={{ background: 'rgba(23,184,224,0.08)', border: '1px solid rgba(23,184,224,0.3)', color: '#17B8E0', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>
-                          Keep my plan
+                        <span style={{ fontSize: '1.2rem', fontWeight: '700', minWidth: '32px', textAlign: 'center' }}>
+                          {seatCount}
+                        </span>
+                        <button
+                          onClick={() => setSeatCount(c => c + 1)}
+                          style={{ width: '36px', height: '36px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'white', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          +
                         </button>
+                        <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)' }}>seats</span>
                       </div>
-                      {cancelError && (
-                        <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '8px' }}>{cancelError}</p>
+                      {seatCount !== profile?.seat_count && (
+                        <button className="btn-primary small" onClick={handleUpdateSeats}
+                          disabled={seatLoading}
+                          style={{ opacity: seatLoading ? 0.6 : 1 }}>
+                          {seatLoading ? 'Updating...' : `Update to ${seatCount} seats`}
+                        </button>
+                      )}
+                      {seatSuccess && (
+                        <p style={{ color: '#4ade80', fontSize: '0.875rem', marginTop: '8px' }}>✓ Seats updated successfully</p>
+                      )}
+                      {seatError && (
+                        <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '8px' }}>{seatError}</p>
                       )}
                     </div>
-                  )}
-                </div>
-              </>
-            )}
+                  </>
+                )}
 
-            {/* Canceling state */}
-            {isCanceling && (
-              <>
-                <div style={dividerStyle} />
-                <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '16px' }}>
-                  <p style={{ fontSize: '0.875rem', color: 'rgba(245,158,11,0.9)', margin: 0 }}>
-                    Your subscription is set to cancel. Access continues until {trialEndFormatted ?? 'the end of your billing period'}.
-                  </p>
-                </div>
-              </>
-            )}
+                {!isCanceling && !isCanceled && (
+                  <>
+                    <div style={dividerStyle} />
+                    <div>
+                      <span style={labelStyle}>Cancel Subscription</span>
+                      <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.875rem', marginBottom: '16px' }}>
+                        {profile?.subscription_status === 'trialing'
+                          ? `Your access continues until your trial ends${trialEndFormatted ? ` on ${trialEndFormatted}` : ''}. You won't be charged.`
+                          : 'Your access continues until the end of the current billing period.'}
+                      </p>
+                      {!confirmCancel ? (
+                        <button
+                          onClick={() => setConfirmCancel(true)}
+                          style={{ background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', color: 'rgba(239,68,68,0.7)', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'var(--font-sans)', transition: 'all 0.15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.6)'; e.currentTarget.style.color = '#ef4444'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; e.currentTarget.style.color = 'rgba(239,68,68,0.7)'; }}>
+                          Cancel Subscription
+                        </button>
+                      ) : (
+                        <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '16px' }}>
+                          <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.7)', marginBottom: '12px' }}>
+                            Are you sure? Your access continues until {trialEndFormatted ?? 'the end of your billing period'}.
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={handleCancel} disabled={cancelLoading}
+                              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600', fontFamily: 'var(--font-sans)', opacity: cancelLoading ? 0.6 : 1 }}>
+                              {cancelLoading ? 'Canceling...' : 'Yes, cancel'}
+                            </button>
+                            <button onClick={() => setConfirmCancel(false)}
+                              style={{ background: 'rgba(23,184,224,0.08)', border: '1px solid rgba(23,184,224,0.3)', color: '#17B8E0', borderRadius: '8px', padding: '8px 16px', fontSize: '0.875rem', cursor: 'pointer', fontWeight: '600', fontFamily: 'var(--font-sans)' }}>
+                              Keep my plan
+                            </button>
+                          </div>
+                          {cancelError && (
+                            <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '8px' }}>{cancelError}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
 
-            {cancelSuccess && (
-              <div style={{ marginTop: '16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', padding: '12px 16px', color: '#4ade80', fontSize: '0.875rem' }}>
-                ✓ Subscription canceled. Your access continues until {trialEndFormatted ?? 'the end of your billing period'}.
-              </div>
+                {isCanceling && (
+                  <>
+                    <div style={dividerStyle} />
+                    <div style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '10px', padding: '16px' }}>
+                      <p style={{ fontSize: '0.875rem', color: 'rgba(245,158,11,0.9)', margin: 0 }}>
+                        Your subscription is set to cancel. Access continues until {trialEndFormatted ?? 'the end of your billing period'}.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {cancelSuccess && (
+                  <div style={{ marginTop: '16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: '8px', padding: '12px 16px', color: '#4ade80', fontSize: '0.875rem' }}>
+                    ✓ Subscription canceled. Your access continues until {trialEndFormatted ?? 'the end of your billing period'}.
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
 
-        {/* ── Daily Reminder ───────────────────────────────────────────────── */}
+        {/* ── Daily Reminder (pref stored; email delivery not wired yet) ──── */}
         <div className="glass-panel" style={{ padding: '32px', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '24px', color: 'var(--brand-teal)' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px', color: 'var(--brand-teal)' }}>
             Daily Reminder
           </h2>
+          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: '24px' }}>
+            Preference is saved to this device. Email delivery is coming soon.
+          </p>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
             <div>
               <p style={{ fontWeight: '600', marginBottom: '4px' }}>Email reminders</p>
               <p style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.45)' }}>
-                Get a nudge each day to complete your sprint task
+                Prefer a daily nudge to finish your sprint day
               </p>
             </div>
             <button onClick={() => setReminderEnabled(!reminderEnabled)}

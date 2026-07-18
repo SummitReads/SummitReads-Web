@@ -4,6 +4,7 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import BrandLogo from '@/components/BrandLogo';
+import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
 
 function SkeletonBlock({ width = '100%', height = '20px', style = {} }) {
   return (
@@ -77,11 +78,13 @@ export default function ReflectionsPage() {
     allProgress.forEach(p => {
       if (!p.books) return;
       if (activeCategory !== 'All' && p.books.category !== activeCategory) return;
+      const text = displayReflectionText(p.reflection_data);
+      if (!text) return;
+
       if (q) {
         const haystack = [
-          p.reflection_data,
-          p.books.sprint_title,
-          p.books.title,
+          text,
+          displaySprintTitle(p.books),
           p.books.category,
         ].join(' ').toLowerCase();
         if (!haystack.includes(q)) return;
@@ -91,13 +94,14 @@ export default function ReflectionsPage() {
       if (!map[id]) map[id] = { book: p.books, entries: [] };
       map[id].entries.push({
         day_number:   p.day_number,
-        text:         p.reflection_data,
+        text,
         unlocked_at:  p.unlocked_at,
         completed:    p.completed,
       });
     });
 
     return Object.values(map)
+      .filter(s => s.entries.length > 0)
       .map(s => ({ ...s, entries: s.entries.sort((a, b) => a.day_number - b.day_number) }))
       .sort((a, b) =>
         new Date(b.entries[b.entries.length - 1].unlocked_at) -
@@ -237,7 +241,7 @@ export default function ReflectionsPage() {
                   {/* Sprint header */}
                   <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-                    <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{book.sprint_title || book.title}</div>
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem', flex: 1 }}>{displaySprintTitle(book)}</div>
                   </div>
                   {/* Entries */}
                   {entries.map((entry, i) => (
@@ -257,7 +261,7 @@ export default function ReflectionsPage() {
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
                         <div style={{ fontSize: '0.68rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--brand-teal)', whiteSpace: 'nowrap', paddingTop: '2px', minWidth: '52px' }}>
-                          Stage {entry.day_number}
+                          Day {entry.day_number}
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'rgba(238,242,247,0.6)', lineHeight: 1.6, flex: 1 }}>
                           {entry.text}
