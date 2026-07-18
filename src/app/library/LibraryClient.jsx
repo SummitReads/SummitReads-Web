@@ -472,7 +472,7 @@ function LibraryInner({
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <BrandLogo href="/library" imgStyle={{ height: 26, width: 'auto' }} />
+          <BrandLogo href="/library" />
           <div
             className="nav-actions"
             style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}

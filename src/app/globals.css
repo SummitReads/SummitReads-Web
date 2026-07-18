@@ -149,13 +149,13 @@ nav {
 }
 
 .logo-img {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: block;
   object-fit: contain;
   opacity: 1;
-  /* Sole spacing between mountain icon and wordmark — keep tight */
-  margin-right: 8px;
+  /* Sole spacing between mark and wordmark — tight optical pairing */
+  margin-right: 5px;
   flex-shrink: 0;
 }
 
@@ -740,7 +740,7 @@ a:hover .card .author { color: var(--text-muted) !important; }
   /* Nav */
   .nav-content { padding: 12px 16px; }
   .logo { font-size: 1.05rem; }
-  .logo-img { width: 26px; height: 26px; margin-right: 7px; }
+  .logo-img { width: 28px; height: 28px; margin-right: 5px; }
   .nav-actions { gap: 8px; }
   .nav-btn-desktop { display: none; }
 

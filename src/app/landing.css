@@ -1037,10 +1037,10 @@
 /* Legacy: only color direct Skills span if old markup remains */
 .landing-page .logo > span:not(.logo-wordmark) { color: var(--teal); }
 .landing-page .logo-img {
-  width: 26px !important;
-  height: 26px !important;
+  width: 32px !important;
+  height: 32px !important;
   object-fit: contain;
-  margin-right: 8px; /* icon sits close to wordmark */
+  margin-right: 5px; /* sit close to SummitSkills */
   flex-shrink: 0;
 }
 .landing-page .footer-logo .logo-wordmark,
