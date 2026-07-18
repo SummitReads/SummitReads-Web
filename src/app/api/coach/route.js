@@ -97,8 +97,7 @@ Do it now status: ${userMission ? '✓ Done' : 'Not done'}
 
 Posture: ${stagePhaseGuidance}
 
-${learningPreferences ? `LEARNER PREFERENCES:
-${learningPreferences.context === 'individual_contributor' ? '- Context: Individual contributor. Frame examples through personal workflow and individual performance, not team leadership.' : ''}${learningPreferences.context === 'people_manager' ? '- Context: People manager. Frame examples through leading a team, 1:1s, direct reports, and management decisions.' : ''}${learningPreferences.context === 'business_owner' ? '- Context: Business owner or founder. Frame examples through organizational decisions, strategy, and leading at scale.' : ''}
+${learningPreferences?.style ? `LEARNER PREFERENCES (coach style only — same options as onboarding/Settings):
 ${learningPreferences.style === 'examples_first' ? '- Coaching style: Lead with a concrete real-world example before explaining the concept. Make it tangible first.' : ''}${learningPreferences.style === 'question_led' ? '- Coaching style: Guide through questions more than statements. Help them find the answer themselves.' : ''}${learningPreferences.style === 'action_first' ? '- Coaching style: Lead with a specific next action. Be direct. They will figure out the reasoning themselves.' : ''}${learningPreferences.style === 'reasoning_first' ? '- Coaching style: Explain the why before the what. They want to understand the mechanism before acting.' : ''}` : ''}
 
 VOICE:

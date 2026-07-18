@@ -179,9 +179,9 @@ export default function DashboardPage() {
                 sub={`${sprintsCompleted} completed`}
               />
               <StatCard
-                label="Days Done"
+                label="Days Finished"
                 value={daysCompletedCount}
-                sub="practice days completed"
+                sub="sprint days marked complete"
                 color="#34D399"
               />
               <StatCard

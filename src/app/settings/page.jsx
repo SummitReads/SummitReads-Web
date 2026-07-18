@@ -5,17 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 
+// Same four styles as OnboardingModal — how Summit Coach talks (not sprint content)
 const COACH_STYLES = [
-  { id: 'examples_first',  label: 'Examples first',   sub: 'Show how it works in practice before the concept' },
-  { id: 'question_led',    label: 'Ask me questions', sub: 'Guide me to think it through' },
-  { id: 'action_first',    label: 'Tell me what to do', sub: 'Clear next action first' },
-  { id: 'reasoning_first', label: 'Reasoning first',  sub: 'Explain why before what' },
-];
-
-const WORK_CONTEXTS = [
-  { id: 'individual_contributor', label: 'Individual contributor' },
-  { id: 'people_manager',         label: 'People manager' },
-  { id: 'business_owner',         label: 'Business owner / founder' },
+  { id: 'examples_first',  label: 'Walk me through examples first', sub: 'Show me how it works in practice before explaining the concept' },
+  { id: 'question_led',    label: 'Ask me questions',               sub: 'Help me think it through — just give me the space to figure it out' },
+  { id: 'action_first',    label: 'Tell me what to do',             sub: "Give me a clear next action and I'll figure out the rest" },
+  { id: 'reasoning_first', label: 'Give me the reasoning first',    sub: 'I want to understand why before I know what to do' },
 ];
 
 export default function SettingsPage() {
@@ -30,9 +25,8 @@ export default function SettingsPage() {
   const [reminderTime,          setReminderTime]          = useState('08:00');
   const [prefsSaved,            setPrefsSaved]            = useState(false);
 
-  // Coach / role prefs (profiles.learning_preferences)
+  // Coach style only (profiles.learning_preferences.style) — matches onboarding
   const [coachStyle,            setCoachStyle]            = useState('question_led');
-  const [workContext,           setWorkContext]           = useState(null);
   const [coachSaved,            setCoachSaved]            = useState(false);
   const [coachSaving,           setCoachSaving]           = useState(false);
   const [coachError,            setCoachError]            = useState('');
@@ -78,7 +72,6 @@ export default function SettingsPage() {
         setSeatCount(profileData.seat_count || 1);
         const lp = profileData.learning_preferences || {};
         if (lp.style) setCoachStyle(lp.style);
-        if (lp.context) setWorkContext(lp.context);
       }
 
       setLoadingUser(false);
@@ -106,17 +99,18 @@ export default function SettingsPage() {
     setCoachSaving(true);
     setCoachError('');
     try {
+      // Style only — do not surface or rewrite work context (single product persona)
+      const prev = profile?.learning_preferences || {};
       const learning_preferences = {
-        ...(profile?.learning_preferences || {}),
         style: coachStyle,
-        context: workContext,
+        ...(prev.context != null ? { context: prev.context } : {}),
       };
       const { error } = await supabase
         .from('profiles')
         .update({ learning_preferences })
         .eq('id', user.id);
       if (error) throw error;
-      setProfile(prev => ({ ...prev, learning_preferences }));
+      setProfile(prevProfile => ({ ...prevProfile, learning_preferences }));
       setCoachSaved(true);
       setTimeout(() => setCoachSaved(false), 2500);
     } catch (err) {
@@ -443,47 +437,30 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* ── Coach preferences ──────────────────────────────────────────── */}
+        {/* ── Coach style (matches onboarding) ───────────────────────────── */}
         <div className="glass-panel" style={{ padding: '32px', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px', color: 'var(--brand-teal)' }}>
             Summit Coach
           </h2>
-          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px' }}>
-            How the coach talks to you. Does not change sprint content.
+          <p style={{ fontSize: '0.88rem', color: 'rgba(238,242,247,0.55)', marginBottom: '6px', lineHeight: 1.5 }}>
+            How should your coach work with you?
+          </p>
+          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px', lineHeight: 1.5 }}>
+            Your Summit Coach adapts to how you think. This only affects the coach — not sprint content.
           </p>
 
-          <span style={labelStyle}>Work context</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-            {WORK_CONTEXTS.map(({ id, label }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setWorkContext(id)}
-                style={{
-                  width: '100%', padding: '12px 14px', borderRadius: '10px', textAlign: 'left',
-                  border: `1px solid ${workContext === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  background: workContext === id ? 'rgba(23,184,224,0.08)' : 'transparent',
-                  color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer',
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <span style={labelStyle}>Coach style</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {COACH_STYLES.map(({ id, label, sub }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setCoachStyle(id)}
                 style={{
-                  width: '100%', padding: '12px 14px', borderRadius: '10px', textAlign: 'left',
+                  width: '100%', padding: '13px 16px', borderRadius: '10px', textAlign: 'left',
                   border: `1px solid ${coachStyle === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`,
                   background: coachStyle === id ? 'rgba(23,184,224,0.08)' : 'transparent',
                   color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', gap: 3,
+                  display: 'flex', flexDirection: 'column', gap: 3, transition: 'all 0.15s',
                 }}
               >
                 <span>{label}</span>
@@ -500,7 +477,7 @@ export default function SettingsPage() {
               disabled={coachSaving || loadingUser}
               style={{ opacity: coachSaving || loadingUser ? 0.6 : 1 }}
             >
-              {coachSaving ? 'Saving…' : 'Save coach settings'}
+              {coachSaving ? 'Saving…' : 'Save coach style'}
             </button>
             {coachSaved && <span style={{ color: '#4ade80', fontSize: '0.875rem' }}>✓ Saved</span>}
           </div>
