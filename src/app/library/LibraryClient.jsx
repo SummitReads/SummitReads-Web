@@ -2,11 +2,10 @@
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { supabase } from '@/app/supabaseClient'
 import BookRow from '@/components/BookRow'
 import SprintCard from '@/components/SprintCard'
 import OnboardingModal from '@/components/OnboardingModal'
-import BrandLogo from '@/components/BrandLogo'
+import AppNav from '@/components/AppNav'
 import { displaySprintTitle } from '@/lib/sprintDisplay'
 
 const GRID_THRESHOLD = 8
@@ -358,7 +357,6 @@ function LibraryInner({
     searchParams?.get('category') ?? 'All'
   )
   const [onboardingChecked, setOnboardingChecked] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const cat = searchParams?.get('category')
@@ -429,16 +427,6 @@ function LibraryInner({
       ? `sprint${sprintCount === 1 ? '' : 's'}`
       : 'sprints'
 
-  async function handleSignOut() {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) alert('Error signing out: ' + error.message)
-      else router.replace('/')
-    } catch (err) {
-      alert('Error: ' + err.message)
-    }
-  }
-
   const catsWithBooks = categoryOrder.filter((cat) => booksByCategory[cat]?.length > 0)
   // Also include categories not in order list
   sortedCategories.forEach((c) => {
@@ -470,78 +458,7 @@ function LibraryInner({
         }}
       />
 
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <BrandLogo href="/library" />
-          <div
-            className="nav-actions"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}
-          >
-            <button
-              className="btn-outline small nav-btn-desktop"
-              onClick={() => router.push('/dashboard')}
-              type="button"
-            >
-              Dashboard
-            </button>
-            <button
-              className="btn-outline small nav-btn-desktop"
-              onClick={() => router.push('/settings')}
-              type="button"
-            >
-              Settings
-            </button>
-            <button
-              className="btn-outline small nav-btn-desktop"
-              onClick={handleSignOut}
-              type="button"
-            >
-              Sign out
-            </button>
-            <button
-              className="nav-hamburger"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Menu"
-              type="button"
-            >
-              <span />
-              <span />
-              <span />
-            </button>
-            {menuOpen && (
-              <div className="nav-mobile-menu">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    router.push('/dashboard')
-                  }}
-                >
-                  Dashboard
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    router.push('/settings')
-                  }}
-                >
-                  Settings
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    handleSignOut()
-                  }}
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <AppNav active="library" />
 
       {/* Tighter page header */}
       <header

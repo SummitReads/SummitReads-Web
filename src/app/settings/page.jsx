@@ -3,7 +3,20 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import BrandLogo from '@/components/BrandLogo';
+import AppNav from '@/components/AppNav';
+
+const COACH_STYLES = [
+  { id: 'examples_first',  label: 'Examples first',   sub: 'Show how it works in practice before the concept' },
+  { id: 'question_led',    label: 'Ask me questions', sub: 'Guide me to think it through' },
+  { id: 'action_first',    label: 'Tell me what to do', sub: 'Clear next action first' },
+  { id: 'reasoning_first', label: 'Reasoning first',  sub: 'Explain why before what' },
+];
+
+const WORK_CONTEXTS = [
+  { id: 'individual_contributor', label: 'Individual contributor' },
+  { id: 'people_manager',         label: 'People manager' },
+  { id: 'business_owner',         label: 'Business owner / founder' },
+];
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -16,6 +29,13 @@ export default function SettingsPage() {
   const [reminderEnabled,       setReminderEnabled]       = useState(false);
   const [reminderTime,          setReminderTime]          = useState('08:00');
   const [prefsSaved,            setPrefsSaved]            = useState(false);
+
+  // Coach / role prefs (profiles.learning_preferences)
+  const [coachStyle,            setCoachStyle]            = useState('question_led');
+  const [workContext,           setWorkContext]           = useState(null);
+  const [coachSaved,            setCoachSaved]            = useState(false);
+  const [coachSaving,           setCoachSaving]           = useState(false);
+  const [coachError,            setCoachError]            = useState('');
 
   // Password reset
   const [passwordResetSent,     setPasswordResetSent]     = useState(false);
@@ -33,7 +53,6 @@ export default function SettingsPage() {
   const [cancelLoading,         setCancelLoading]         = useState(false);
   const [cancelSuccess,         setCancelSuccess]         = useState(false);
   const [cancelError,           setCancelError]           = useState('');
-  const [menuOpen,              setMenuOpen]              = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -47,16 +66,19 @@ export default function SettingsPage() {
       }
       setUser(currentUser);
 
-      // Fetch profile for billing info
+      // Fetch profile for billing + coach prefs
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('plan_type, seat_count, seats_used, subscription_status, trial_ends_at, stripe_subscription_id')
+        .select('plan_type, seat_count, seats_used, subscription_status, trial_ends_at, stripe_subscription_id, learning_preferences, full_name')
         .eq('id', currentUser.id)
         .single();
 
       if (profileData) {
         setProfile(profileData);
         setSeatCount(profileData.seat_count || 1);
+        const lp = profileData.learning_preferences || {};
+        if (lp.style) setCoachStyle(lp.style);
+        if (lp.context) setWorkContext(lp.context);
       }
 
       setLoadingUser(false);
@@ -77,6 +99,31 @@ export default function SettingsPage() {
     localStorage.setItem('ss_reminder_time', reminderTime);
     setPrefsSaved(true);
     setTimeout(() => setPrefsSaved(false), 2500);
+  }
+
+  async function saveCoachPreferences() {
+    if (!user?.id) return;
+    setCoachSaving(true);
+    setCoachError('');
+    try {
+      const learning_preferences = {
+        ...(profile?.learning_preferences || {}),
+        style: coachStyle,
+        context: workContext,
+      };
+      const { error } = await supabase
+        .from('profiles')
+        .update({ learning_preferences })
+        .eq('id', user.id);
+      if (error) throw error;
+      setProfile(prev => ({ ...prev, learning_preferences }));
+      setCoachSaved(true);
+      setTimeout(() => setCoachSaved(false), 2500);
+    } catch (err) {
+      setCoachError(err.message || 'Could not save coach preferences');
+    } finally {
+      setCoachSaving(false);
+    }
   }
 
   async function handlePasswordReset() {
@@ -192,28 +239,7 @@ export default function SettingsPage() {
   return (
     <>
       <div className="ambient-glow" />
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <BrandLogo href="/library" />
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={handleSignOut}>Sign out</button>
-            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
-              <span /><span /><span />
-            </button>
-            {menuOpen && (
-              <div className="nav-mobile-menu">
-                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard/sprints'); }}>My Sprints</button>
-                <button onClick={() => { setMenuOpen(false); handleSignOut(); }}>Sign out</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <AppNav active="settings" />
 
       <main className="container" style={{ maxWidth: '600px', paddingTop: '80px', paddingLeft: '16px', paddingRight: '16px' }}>
 
@@ -227,6 +253,13 @@ export default function SettingsPage() {
           <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '24px', color: 'var(--brand-teal)' }}>
             Account
           </h2>
+
+          {profile?.full_name && (
+            <div style={sectionStyle}>
+              <span style={labelStyle}>Name</span>
+              <span style={valueStyle}>{profile.full_name}</span>
+            </div>
+          )}
 
           <div style={sectionStyle}>
             <span style={labelStyle}>Email</span>
@@ -409,6 +442,72 @@ export default function SettingsPage() {
             )}
           </div>
         )}
+
+        {/* ── Coach preferences ──────────────────────────────────────────── */}
+        <div className="glass-panel" style={{ padding: '32px', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '8px', color: 'var(--brand-teal)' }}>
+            Summit Coach
+          </h2>
+          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginBottom: '20px' }}>
+            How the coach talks to you. Does not change sprint content.
+          </p>
+
+          <span style={labelStyle}>Work context</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            {WORK_CONTEXTS.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setWorkContext(id)}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '10px', textAlign: 'left',
+                  border: `1px solid ${workContext === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  background: workContext === id ? 'rgba(23,184,224,0.08)' : 'transparent',
+                  color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <span style={labelStyle}>Coach style</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            {COACH_STYLES.map(({ id, label, sub }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setCoachStyle(id)}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: '10px', textAlign: 'left',
+                  border: `1px solid ${coachStyle === id ? 'rgba(23,184,224,0.5)' : 'rgba(255,255,255,0.08)'}`,
+                  background: coachStyle === id ? 'rgba(23,184,224,0.08)' : 'transparent',
+                  color: '#EEF2F7', fontSize: '0.88rem', fontWeight: 600, fontFamily: 'var(--font-sans)', cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', gap: 3,
+                }}
+              >
+                <span>{label}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'rgba(238,242,247,0.45)' }}>{sub}</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button
+              className="btn-primary small"
+              type="button"
+              onClick={saveCoachPreferences}
+              disabled={coachSaving || loadingUser}
+              style={{ opacity: coachSaving || loadingUser ? 0.6 : 1 }}
+            >
+              {coachSaving ? 'Saving…' : 'Save coach settings'}
+            </button>
+            {coachSaved && <span style={{ color: '#4ade80', fontSize: '0.875rem' }}>✓ Saved</span>}
+          </div>
+          {coachError && (
+            <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '10px' }}>{coachError}</p>
+          )}
+        </div>
 
         {/* ── Daily Reminder (pref stored; email delivery not wired yet) ──── */}
         <div className="glass-panel" style={{ padding: '32px', marginBottom: '24px' }}>

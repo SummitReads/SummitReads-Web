@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import BrandLogo from '@/components/BrandLogo';
+import AppNav from '@/components/AppNav';
 import { displaySprintTitle } from '@/lib/sprintDisplay';
 
 function SkeletonBlock({ width = '100%', height = '20px', style = {} }) {
@@ -41,7 +41,6 @@ export default function SprintsPage() {
   const [allProgress, setAllProgress] = useState([]);
   const [loading,     setLoading]     = useState(true);
   const [filter,      setFilter]      = useState('All');
-  const [menuOpen,    setMenuOpen]    = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -111,28 +110,7 @@ export default function SprintsPage() {
       `}</style>
 
       <div className="ambient-glow" />
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <BrandLogo href="/library" />
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard')}>Dashboard</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
-            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
-              <span /><span /><span />
-            </button>
-            {menuOpen && (
-              <div className="nav-mobile-menu">
-                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard'); }}>Dashboard</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
-                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <AppNav active="sprints" />
 
       <main className="container" style={{ paddingTop: '80px', maxWidth: '900px', paddingLeft: '16px', paddingRight: '16px' }}>
 

@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import BrandLogo from '@/components/BrandLogo';
+import AppNav from '@/components/AppNav';
 import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -44,7 +44,6 @@ function categoryColor(cat) { return categoryColors[cat] || 'var(--brand-teal)';
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -80,8 +79,10 @@ export default function DashboardPage() {
   }, []);
 
   // ── Derived data ──────────────────────────────────────────────────────────
-  const completedDays = useMemo(() =>
-    allProgress.filter(p => p.completed), [allProgress]);
+  const daysCompletedCount = useMemo(
+    () => allProgress.filter(p => p.completed).length,
+    [allProgress],
+  );
 
   // A sprint = one book. "Started" = any day touched. "Completed" = all 7 days done.
   // Only include books that actually have summit_days content.
@@ -151,28 +152,7 @@ export default function DashboardPage() {
       `}</style>
 
       <div className="ambient-glow"></div>
-      <nav className="glass-nav">
-        <div className="nav-content">
-          <BrandLogo href="/library" />
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/library')}>Library</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>
-            <button className="btn-outline small nav-btn-desktop" onClick={async () => { await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
-            <button className="nav-hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
-              <span /><span /><span />
-            </button>
-            {menuOpen && (
-              <div className="nav-mobile-menu">
-                <button onClick={() => { setMenuOpen(false); router.push('/library'); }}>Library</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/dashboard/sprints'); }}>My Sprints</button>
-                <button onClick={() => { setMenuOpen(false); router.push('/settings'); }}>Settings</button>
-                <button onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); router.push('/'); }}>Sign out</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      <AppNav active="dashboard" />
 
       <main className="container" style={{ paddingTop: '80px', maxWidth: '900px', paddingLeft: '16px', paddingRight: '16px' }}>
 
@@ -188,15 +168,21 @@ export default function DashboardPage() {
         </div>
 
         {/* ── Stat cards ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', marginBottom: '40px' }}>
           {loading ? (
-            [1,2].map(i => <SkeletonBlock key={i} height="100px" style={{ borderRadius: '12px' }} />)
+            [1, 2, 3].map(i => <SkeletonBlock key={i} height="100px" style={{ borderRadius: '12px' }} />)
           ) : (
             <>
               <StatCard
                 label="Sprints Started"
                 value={sprintsStarted}
                 sub={`${sprintsCompleted} completed`}
+              />
+              <StatCard
+                label="Days Done"
+                value={daysCompletedCount}
+                sub="practice days completed"
+                color="#34D399"
               />
               <StatCard
                 label="Categories"
