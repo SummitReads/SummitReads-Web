@@ -246,7 +246,7 @@ export default function DashboardPage() {
                     letterSpacing: '-0.01em',
                   }}>
                     {practiceStreak.paused
-                      ? `Streak paused · Day ${continueHero?.nextDay ?? '…'} is still waiting`
+                      ? `Streak paused · ${practiceStreak.streak}-day practice streak waiting`
                       : `Practice streak · ${practiceStreak.streak} day${practiceStreak.streak === 1 ? '' : 's'}`}
                   </p>
                 )}
