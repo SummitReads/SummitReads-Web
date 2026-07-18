@@ -79,9 +79,6 @@ export default function Home() {
   // Checkout state — declared early so useEffects can reference it
   const [checkoutLoading, setCheckoutLoading] = useState(false)
 
-  // Seed with null so the pill shows "..." until Supabase returns the live count.
-  const [sprintCount, setSprintCount] = useState(null)
-
   // Auth redirect — logged-in users go to /library
   // NOTE: For a flash-free experience, also handle this in middleware.js so
   // the redirect happens server-side before this page renders at all.
@@ -90,24 +87,6 @@ export default function Home() {
       .then(({ data: { session } }) => {
         if (session?.user) router.replace('/library')
       })
-  }, [])
-
-  // Fetch live approved sprint count
-  useEffect(() => {
-    let isMounted = true
-
-    supabase
-      .from('books')
-      .select('id', { count: 'exact', head: true })
-      .eq('review_status', 'approved')
-      .then(({ count, error }) => {
-        if (!isMounted || error) return
-        if (typeof count === 'number') setSprintCount(count)
-      })
-
-    return () => {
-      isMounted = false
-    }
   }, [])
 
   // Reset checkout loading on mount (handles browser back button)
@@ -233,10 +212,10 @@ export default function Home() {
     }
   }
 
-  const sprintCountLabel =
-    typeof sprintCount === 'number'
-      ? sprintCount.toLocaleString('en-US')
-      : '—'
+  // Static marketing catalog size — never fetch on the client for the hero line.
+  // A live Supabase count always paints one string first, then swaps (the flash).
+  // Bump this when a new wave ships; optional later: server-render the real count.
+  const sprintCountLabel = '14'
 
   const faqItems = getFaqItems(sprintCountLabel)
 
@@ -557,11 +536,7 @@ export default function Home() {
             <a href="#how" className="btn-ghost">How it works</a>
           </div>
           <p className="hero-footnote">
-            14-day pilot · No charge until day 15
-            {/* Only append count once loaded — avoid "Skill sprints" → "14 sprints" flash */}
-            {typeof sprintCount === 'number' && (
-              <span> · {sprintCountLabel} sprints live</span>
-            )}
+            14-day pilot · No charge until day 15 · {sprintCountLabel} sprints live
           </p>
           <div className="hero-trust">
             <div className="hero-trust-item">No LMS</div>
@@ -776,11 +751,7 @@ export default function Home() {
                   <li>Day 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>
-                    {typeof sprintCount === 'number'
-                      ? `${sprintCountLabel} sprints across leadership, sales, productivity, and more`
-                      : 'Sprints across leadership, sales, productivity, and more'}
-                  </li>
+                  <li>{sprintCountLabel} sprints across leadership, sales, productivity, and more</li>
                   <li>Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
