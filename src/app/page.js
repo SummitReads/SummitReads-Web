@@ -557,10 +557,11 @@ export default function Home() {
             <a href="#how" className="btn-ghost">How it works</a>
           </div>
           <p className="hero-footnote">
-            14-day pilot · No charge until day 15 ·{' '}
-            <span style={{ opacity: 0.9 }}>
-              {sprintCountLabel !== '—' ? `${sprintCountLabel} sprints` : 'Skill sprints'} live
-            </span>
+            14-day pilot · No charge until day 15
+            {/* Only append count once loaded — avoid "Skill sprints" → "14 sprints" flash */}
+            {typeof sprintCount === 'number' && (
+              <span> · {sprintCountLabel} sprints live</span>
+            )}
           </p>
           <div className="hero-trust">
             <div className="hero-trust-item">No LMS</div>
@@ -775,7 +776,11 @@ export default function Home() {
                   <li>Day 7 work deliverable per sprint</li>
                   <li>Assign by individual, role, or full team</li>
                   <li>Self-serve setup, live in minutes</li>
-                  <li>{typeof sprintCount === 'number' ? `${sprintCountLabel} sprints` : 'Sprints'} across leadership, sales, productivity, and more</li>
+                  <li>
+                    {typeof sprintCount === 'number'
+                      ? `${sprintCountLabel} sprints across leadership, sales, productivity, and more`
+                      : 'Sprints across leadership, sales, productivity, and more'}
+                  </li>
                   <li>Annual price lock · No renewal surprises</li>
                 </ul>
               </div>
