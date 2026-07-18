@@ -1,13 +1,11 @@
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function Navigation() {
   return (
     <nav className="glass-nav">
       <div className="nav-content">
-        <Link href="/" className="logo">
-          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-          Summit<span>Reads</span>
-        </Link>
+        <BrandLogo href="/" />
         
         <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Link href="/library" className="btn-outline small">Library</Link>

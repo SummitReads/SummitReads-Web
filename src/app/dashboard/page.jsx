@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BrandLogo from '@/components/BrandLogo';
 import { displaySprintTitle } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -148,10 +149,7 @@ export default function DashboardPage() {
       <div className="ambient-glow"></div>
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
-          </Link>
+          <BrandLogo href="/library" />
           <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
             <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/dashboard/sprints')}>My Sprints</button>
             <button className="btn-primary small nav-btn-desktop" onClick={() => router.push('/settings')}>Settings</button>

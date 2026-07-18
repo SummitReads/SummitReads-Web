@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Mountain } from "lucide-react";
 import { C, font, NAV } from "@/lib/admin/constants";
+import { LogoWordmark } from "@/components/BrandLogo";
 
 function NavItem({ active, onClick, children }) {
   const [hov, setHov] = useState(false);
@@ -55,7 +56,7 @@ export default function Sidebar({ activeNav, setActiveNav, onNav }) {
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: "0.95rem", color: C.text, letterSpacing: "-0.4px", fontFamily: font.sans }}>
-              Summit<span style={{ color: C.teal }}>Skills</span>
+              <LogoWordmark />
             </div>
             <div style={{ fontSize: "0.56rem", color: C.sub, textTransform: "uppercase", letterSpacing: "0.07em", marginTop: 1 }}>
               Admin

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { LogoWordmark } from '@/components/BrandLogo'
 
 export default function SecurityPage() {
   return (
@@ -26,7 +27,7 @@ export default function SecurityPage() {
           fontSize: '1rem',
           letterSpacing: '-0.01em',
         }}>
-          Summit<em style={{ color: '#17B8E0', fontStyle: 'italic' }}>Skills</em>
+          <LogoWordmark />
         </Link>
         <Link href="/" style={{
           color: 'rgba(238,242,247,0.58)',

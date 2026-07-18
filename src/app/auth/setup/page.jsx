@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { supabase } from '@/app/supabaseClient';
 
 export default function SetupPage() {
@@ -88,10 +89,7 @@ export default function SetupPage() {
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
-          </Link>
+          <BrandLogo href="/" />
         </div>
       </nav>
 

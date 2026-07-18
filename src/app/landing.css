@@ -1021,18 +1021,35 @@
 .landing-page .logo {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0; /* never split Summit / Skills into two words */
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
   text-decoration: none;
 }
-.landing-page .logo span { color: var(--teal); }
+.landing-page .logo .logo-wordmark {
+  display: inline;
+  white-space: nowrap;
+}
+.landing-page .logo .logo-summit { color: var(--text); }
+.landing-page .logo .logo-skills { color: var(--teal); font-style: normal; }
+/* Legacy: only color direct Skills span if old markup remains */
+.landing-page .logo > span:not(.logo-wordmark) { color: var(--teal); }
 .landing-page .logo-img {
   width: 26px !important;
   height: 26px !important;
   object-fit: contain;
+  margin-right: 8px; /* icon sits close to wordmark */
+  flex-shrink: 0;
+}
+.landing-page .footer-logo .logo-wordmark,
+.landing-page .footer-logo {
+  white-space: nowrap;
+}
+.landing-page .footer-logo .logo-skills {
+  color: rgba(23, 184, 224, 0.55);
+  font-style: normal;
 }
 .landing-page .nav-cta {
   border-radius: 8px;

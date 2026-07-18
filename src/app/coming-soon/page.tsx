@@ -57,7 +57,7 @@ export default function ComingSoon() {
           margin-bottom: 64px;
           display: block;
         }
-        .cs-logo em {
+        .cs-logo-skills {
           font-style: normal;
           color: rgba(23,184,224,0.5);
         }
@@ -168,7 +168,7 @@ export default function ComingSoon() {
       <div className="cs-page">
         <div className="cs-inner">
 
-          <span className="cs-logo">Summit<em>Skills</em></span>
+          <span className="cs-logo">Summit<span className="cs-logo-skills">Skills</span></span>
 
           <span className="cs-eyebrow">Coming Soon</span>
 

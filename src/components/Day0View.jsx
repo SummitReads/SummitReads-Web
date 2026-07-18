@@ -12,6 +12,7 @@
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { type, t } from '@/lib/typeScale';
 
 // ── Parse sprint_intro markdown into structured sections ───────────────────
@@ -234,10 +235,7 @@ export default function Day0View({
       <div className="ambient-glow" />
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
-          </Link>
+          <BrandLogo href="/library" />
           <div className="nav-actions">
             <Link href="/library" className="btn-outline small">
               Exit to Library

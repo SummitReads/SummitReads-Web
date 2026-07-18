@@ -29,7 +29,7 @@ export async function POST(request) {
       to:      email,
       subject,
       html: `<div style="font-family:sans-serif;background:#0D1520;color:#EEF2F7;padding:40px;border-radius:12px;max-width:560px;margin:0 auto;">
-        <p style="font-size:1.1rem;font-weight:800;margin:0 0 24px;">Summit<span style="color:#17B8E0;">Reads</span></p>
+        <p style="font-size:1.1rem;font-weight:800;margin:0 0 24px;">Summit<span style="color:#17B8E0;">Skills</span></p>
         <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#17B8E0;margin:0 0 12px;">${isLastStage ? 'Final Stage' : `Stage ${nextStage} of 7`}</p>
         <h1 style="font-size:1.6rem;font-weight:800;margin:0 0 8px;">${isLastStage ? 'Your Summit awaits.' : `Stage ${nextStage} is ready.`}</h1>
         <p style="color:rgba(238,242,247,0.5);margin:0 0 8px;font-size:0.85rem;">${bookTitle}</p>

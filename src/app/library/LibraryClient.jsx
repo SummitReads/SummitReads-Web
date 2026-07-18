@@ -6,6 +6,7 @@ import { supabase } from '@/app/supabaseClient'
 import BookRow from '@/components/BookRow'
 import SprintCard from '@/components/SprintCard'
 import OnboardingModal from '@/components/OnboardingModal'
+import BrandLogo from '@/components/BrandLogo'
 import { displaySprintTitle } from '@/lib/sprintDisplay'
 
 const GRID_THRESHOLD = 8
@@ -471,18 +472,7 @@ function LibraryInner({
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
-            <img
-              src="/SummitSkills-Logo.png"
-              alt=""
-              className="logo-img"
-              style={{ height: 26, width: 'auto' }}
-            />
-            {/* SummitSkills as one word — no space/gap between halves */}
-            <span className="logo-wordmark">
-              <span style={{ color: '#FFFFFF' }}>Summit</span><span style={{ color: 'var(--brand-teal)' }}>Skills</span>
-            </span>
-          </Link>
+          <BrandLogo href="/library" imgStyle={{ height: 26, width: 'auto' }} />
           <div
             className="nav-actions"
             style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}

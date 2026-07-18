@@ -8,6 +8,7 @@ import CompletionCelebration from '@/components/CompletionCelebration';
 import SummitCoach from '@/components/SummitCoach';
 import Day0View from '@/components/Day0View';
 import PracticeProse from '@/components/PracticeProse';
+import BrandLogo from '@/components/BrandLogo';
 import { type, t } from '@/lib/typeScale';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
@@ -552,10 +553,7 @@ export default function SummitDayPage({ params }) {
       <div className="ambient-glow" />
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/library" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
-          </Link>
+          <BrandLogo href="/library" />
           <div className="nav-actions">
             <Link href="/library" className="btn-outline small">Exit to Library</Link>
           </div>

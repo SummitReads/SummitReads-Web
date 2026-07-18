@@ -14,7 +14,7 @@
 const header = `
   <div style="padding:32px 40px;border-bottom:1px solid rgba(255,255,255,0.07);">
     <p style="font-size:1.1rem;font-weight:800;margin:0;font-family:sans-serif;">
-      Summit<span style="color:#17B8E0;font-style:italic;">Skills</span>
+      Summit<span style="color:#17B8E0;">Skills</span>
     </p>
   </div>`
 

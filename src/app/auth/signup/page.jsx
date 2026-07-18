@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import BrandLogo from '@/components/BrandLogo';
 
 function SignupForm() {
   const router = useRouter();
@@ -83,10 +84,7 @@ function SignupForm() {
   const Nav = () => (
     <nav className="glass-nav">
       <div className="nav-content">
-        <Link href="/" className="logo">
-          <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-          Summit<span>Skills</span>
-        </Link>
+        <BrandLogo href="/" />
       </div>
     </nav>
   );

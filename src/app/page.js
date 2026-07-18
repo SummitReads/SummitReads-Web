@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/supabaseClient'
+import BrandLogo, { LogoWordmark } from '@/components/BrandLogo'
 import './landing.css'
 
 // ── Pricing ──────────────────────────────────────────────────────────────────
@@ -520,10 +521,11 @@ export default function Home() {
         }
       `}</style>
       <nav>
-        <a href="#" className="logo">
-          <img src="/SummitSkills-Logo.png" alt="" className="logo-img" onError={e => { e.target.style.display = 'none' }} />
-          Summit<span>Skills</span>
-        </a>
+        <BrandLogo
+          href="#"
+          as="a"
+          onImgError={e => { e.target.style.display = 'none' }}
+        />
         <div className="nav-links">
           <a href="#how" className="nav-link">How it works</a>
           <a href="#pricing" className="nav-link">Pricing</a>
@@ -935,7 +937,7 @@ export default function Home() {
 
       <footer>
         <a href="#" className="footer-logo">
-          Summit<em>Skills</em>
+          <LogoWordmark />
         </a>
         <div className="footer-links">
           <a href="#how">Product</a>

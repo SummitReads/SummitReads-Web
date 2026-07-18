@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/app/supabaseClient';
 import SummitCoach from '@/components/SummitCoach';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function DeepDivePage({ params }) {
   const unwrappedParams = React.use(params);
@@ -139,10 +140,7 @@ export default function DeepDivePage({ params }) {
 
       <nav className="glass-nav">
         <div className="nav-content">
-          <Link href="/" className="logo">
-            <img src="/SummitSkills-Logo.png" alt="SummitSkills" className="logo-img" />
-            Summit<span>Skills</span>
-          </Link>
+          <BrandLogo href="/" />
           <div className="nav-actions">
             <Link href="/library" className="btn-outline small">Exit to Library</Link>
           </div>
