@@ -4,7 +4,13 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppNav from '@/components/AppNav';
-import { displaySprintTitle, displayReflectionText, computeSprintProgress } from '@/lib/sprintDisplay';
+import {
+  displaySprintTitle,
+  displayReflectionText,
+  computeSprintProgress,
+  computePracticeStreak,
+  sprintArcLine,
+} from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = 'var(--brand-teal)' }) {
@@ -131,17 +137,7 @@ export default function DashboardPage() {
   // Primary sprint for pull hero (most recently touched, still open)
   const continueHero = sprintsInProgress[0] || null;
 
-  function arcLine(s) {
-    if (!s) return null;
-    const n = s.nextDay;
-    if (s.completedDays === 0) return 'Day 1 is ready — one skill, about 15 minutes.';
-    if (n <= 2) return 'Early days. Lay the foundation before it gets real.';
-    if (n === 3 || n === 4) return 'Halfway. This is where it sticks — or stays theory.';
-    if (n === 5) return 'Past the midpoint. Two more days to your Summit.';
-    if (n === 6) return 'Tomorrow is Summit day — you produce the real output.';
-    if (n === 7) return 'Summit day. Close the loop with something you can use at work.';
-    return null;
-  }
+
 
   // Recently completed sprints (all 7 days done)
   const recentlyCompleted = useMemo(() =>
@@ -180,6 +176,11 @@ export default function DashboardPage() {
   }, [allProgress]);
 
   const firstName = profile?.full_name?.split(' ')[0] || 'there';
+
+  const practiceStreak = useMemo(
+    () => computePracticeStreak(allProgress),
+    [allProgress],
+  );
 
   return (
     <>
@@ -231,7 +232,26 @@ export default function DashboardPage() {
           </p>
           {loading
             ? <SkeletonBlock width="260px" height="36px" />
-            : <h1 style={{ fontSize: '2rem', margin: 0 }}>Welcome back, {firstName}</h1>
+            : (
+              <>
+                <h1 style={{ fontSize: '2rem', margin: 0 }}>Welcome back, {firstName}</h1>
+                {practiceStreak.streak > 0 && (
+                  <p style={{
+                    margin: '10px 0 0',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    color: practiceStreak.paused
+                      ? 'rgba(238,242,247,0.45)'
+                      : 'var(--brand-teal)',
+                    letterSpacing: '-0.01em',
+                  }}>
+                    {practiceStreak.paused
+                      ? `Streak paused · ${practiceStreak.streak}-day practice streak waiting`
+                      : `🔥 ${practiceStreak.streak}-day practice streak`}
+                  </p>
+                )}
+              </>
+            )
           }
         </div>
 
@@ -272,12 +292,12 @@ export default function DashboardPage() {
                   {displaySprintTitle(continueHero.book)}
                 </h2>
 
-                {arcLine(continueHero) && (
+                {sprintArcLine(continueHero.nextDay, continueHero.completedDays) && (
                   <p style={{
                     fontSize: '0.88rem', color: 'rgba(238,242,247,0.55)',
                     margin: '0 0 16px', lineHeight: 1.5,
                   }}>
-                    {arcLine(continueHero)}
+                    {sprintArcLine(continueHero.nextDay, continueHero.completedDays)}
                   </p>
                 )}
 

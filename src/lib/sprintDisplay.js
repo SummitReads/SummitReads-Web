@@ -107,3 +107,65 @@ export function computeSprintProgress(rows) {
     hasStarted: list.length > 0,
   };
 }
+
+/**
+ * Short arc line for Continue UI — progress drama, not fluff.
+ * @param {number} nextDay - first incomplete day 1–7
+ * @param {number} completedDays - count of finished days 1–7
+ */
+export function sprintArcLine(nextDay, completedDays = 0) {
+  const n = Number(nextDay) || 1;
+  if (completedDays === 0) return 'Day 1 is ready — one skill, about 15 minutes.';
+  if (n <= 2) return 'Early days. Lay the foundation before it gets real.';
+  if (n === 3 || n === 4) return 'Halfway. This is where it sticks — or stays theory.';
+  if (n === 5) return 'Past the midpoint. Two more days to your Summit.';
+  if (n === 6) return 'Tomorrow is Summit — finish what you started.';
+  if (n === 7) return 'Summit day. Close the loop with something you can use at work.';
+  return null;
+}
+
+/**
+ * Consecutive calendar days with at least one day 1–7 completed.
+ * Streak stays alive if last practice was today or yesterday.
+ *
+ * @param {Array<{ day_number?: number, completed?: boolean, completed_at?: string, unlocked_at?: string }>} rows
+ * @returns {{ streak: number, paused: boolean }}
+ */
+export function computePracticeStreak(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const dateKeys = new Set();
+
+  for (const p of list) {
+    if (!p.completed) continue;
+    const n = Number(p.day_number);
+    if (!Number.isFinite(n) || n < 1 || n > 7) continue;
+    const raw = p.completed_at || p.unlocked_at;
+    if (!raw) continue;
+    const dt = new Date(raw);
+    if (Number.isNaN(dt.getTime())) continue;
+    dateKeys.add(`${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`);
+  }
+
+  if (dateKeys.size === 0) return { streak: 0, paused: false };
+
+  const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const cursor = new Date(today);
+  if (!dateKeys.has(dayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!dateKeys.has(dayKey(cursor))) {
+      return { streak: 0, paused: true };
+    }
+  }
+
+  const practicedToday = dateKeys.has(dayKey(today));
+  let streak = 0;
+  while (dateKeys.has(dayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return { streak, paused: !practicedToday && streak > 0 };
+}

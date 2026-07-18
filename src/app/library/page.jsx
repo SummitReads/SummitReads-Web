@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { computeSprintProgress } from '@/lib/sprintDisplay'
 import LibraryClient from './LibraryClient'
 
 // ── Data helpers ──────────────────────────────────────────────────────────────
@@ -13,36 +14,49 @@ function groupBooksByCategory(booksData) {
   }, {})
 }
 
+/**
+ * Build continue rows using accurate day 1–7 progress (not raw completed-row counts).
+ */
 function buildUserSkills(progressData, booksData) {
   if (!progressData || progressData.length === 0) return []
 
-  const daysByBook = progressData.reduce((acc, row) => {
-    if (!acc[row.book_id]) acc[row.book_id] = 0
-    if (row.completed) acc[row.book_id] += 1
-    return acc
-  }, {})
+  const byBook = {}
+  progressData.forEach((row) => {
+    if (!byBook[row.book_id]) byBook[row.book_id] = []
+    byBook[row.book_id].push(row)
+  })
 
-  return Object.entries(daysByBook)
-    .map(([bookId, daysCompleted]) => {
+  return Object.entries(byBook)
+    .map(([bookId, rows]) => {
       const book = booksData.find((b) => b.id === bookId)
-      // Need a name for the row: prefer short sprint_title, never require the long skill blurb
       if (!book) return null
-      if (daysCompleted < 1) return null
       if (!book.sprint_title && !book.sprint_skill) return null
+
+      const progress = computeSprintProgress(rows)
+      // Show in Continue only if they've started and not finished all 7
+      if (!progress.hasStarted || progress.isComplete) return null
+      // Need at least some engagement (unlocked or completed) on the sprint
+      if (progress.completedDays < 1 && !rows.some((r) => Number(r.day_number) >= 0)) {
+        return null
+      }
+
       return {
         bookId,
-        bookTitle:    book.title,
-        sprintTitle:  book.sprint_title || '',
-        sprintSkill:  book.sprint_skill || '',
-        daysCompleted,
+        bookTitle: book.title,
+        sprintTitle: book.sprint_title || '',
+        sprintSkill: book.sprint_skill || '',
+        daysCompleted: progress.completedDays,
+        nextDay: progress.nextDay,
+        pct: progress.pct,
+        lastTouched: progress.lastTouched,
       }
     })
     .filter(Boolean)
     .sort((a, b) => {
-      const aComplete = a.daysCompleted >= 7
-      const bComplete = b.daysCompleted >= 7
-      if (aComplete && !bComplete) return 1
-      if (!aComplete && bComplete) return -1
+      // Most recently touched first, then further along
+      const ta = a.lastTouched ? new Date(a.lastTouched).getTime() : 0
+      const tb = b.lastTouched ? new Date(b.lastTouched).getTime() : 0
+      if (tb !== ta) return tb - ta
       return b.daysCompleted - a.daysCompleted
     })
 }
@@ -53,7 +67,6 @@ export default async function LibraryPage() {
   const supabase = await createSupabaseServerClient()
 
   // ── Auth check — redirect before anything renders ─────────────────────────
-  // getUser() validates server-side — more secure than getSession()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     redirect('/auth/login')
@@ -69,18 +82,16 @@ export default async function LibraryPage() {
   const books = booksError || !booksData ? [] : booksData
   const booksByCategory = groupBooksByCategory(books)
 
-  // ── Sprint count derived from books — no extra query needed ─────────────
   const sprintCount = books.length
 
   // ── Fetch user progress ────────────────────────────────────────────────────
   const { data: progressData } = await supabase
     .from('user_progress')
-    .select('book_id, day_number, completed')
+    .select('book_id, day_number, completed, unlocked_at, completed_at')
     .eq('user_id', user.id)
 
   const userSkills = buildUserSkills(progressData ?? [], books)
 
-  // ── Pass pre-fetched data to client component ──────────────────────────────
   return (
     <LibraryClient
       initialBooks={books}

@@ -3,6 +3,11 @@ import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import './CompletionCelebration.css';
 
+/**
+ * Day complete modal.
+ * Days 1–6 → next day preview.
+ * Day 7 → sprint complete + pull into next skill (or library).
+ */
 export default function CompletionCelebration({
   isOpen,
   onClose,
@@ -11,13 +16,19 @@ export default function CompletionCelebration({
   nextDayTitle,
   nextDayPreview,
   nextDayUrl,
+  /** Optional: { id, title } suggested next sprint after Day 7 */
+  suggestedNext = null,
+  lastWriteSnippet = null,
 }) {
   const [step, setStep] = useState(1); // 1: celebration, 2: preview / sprint complete
 
   useEffect(() => {
+    if (isOpen) setStep(1);
+  }, [isOpen, dayNum]);
+
+  useEffect(() => {
     if (isOpen && step === 1) {
       // Confetti only on Day 7 — the sprint completion milestone.
-      // Days 1-6 are routine completions and don't need celebration animation.
       if (dayNum === 7) {
         const duration = 2000;
         const end = Date.now() + duration;
@@ -49,6 +60,10 @@ export default function CompletionCelebration({
 
   if (!isOpen) return null;
 
+  const nextHref = suggestedNext?.id
+    ? `/summit/${suggestedNext.id}/day/0`
+    : '/library';
+
   return (
     <div className="celebration-overlay" onClick={(e) => e.target.className === 'celebration-overlay' && onClose()}>
       <div className="celebration-modal">
@@ -56,7 +71,9 @@ export default function CompletionCelebration({
         {/* Step 1: Celebration */}
         {step === 1 && (
           <div className="celebration-step fade-in">
-            <h2 className="celebration-title">Day {dayNum} complete.</h2>
+            <h2 className="celebration-title">
+              {dayNum === 7 ? 'Summit complete.' : `Day ${dayNum} complete.`}
+            </h2>
             <p className="celebration-book">{bookTitle}</p>
             <div className="progress-circle">
               <svg viewBox="0 0 100 100">
@@ -105,41 +122,62 @@ export default function CompletionCelebration({
           </div>
         )}
 
-        {/* Step 2: Sprint Complete (Day 7) */}
+        {/* Step 2: Sprint Complete (Day 7) — open next loop */}
         {step === 2 && dayNum === 7 && (
           <div className="celebration-step fade-in">
-            <div className="progress-circle">
-              <svg viewBox="0 0 100 100">
-                <defs>
-                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#00D9FF" />
-                    <stop offset="100%" stopColor="#0EA5E9" />
-                  </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="45" className="progress-bg" />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  className="progress-fill"
-                  style={{
-                    strokeDasharray: `283 283`,
-                    animation: 'progressFill 1s ease-out forwards'
-                  }}
-                />
-              </svg>
-              <div className="progress-text">100%</div>
-            </div>
-            <h2 className="celebration-title">Sprint Complete.</h2>
+            <div className="preview-badge">Sprint complete</div>
+            <h2 className="celebration-title">You finished the Summit.</h2>
             <p className="celebration-subtitle">
-              You've completed all 7 days of {bookTitle}.
+              Seven days of real practice on {bookTitle}.
             </p>
-            <p className="completion-message">
-              Seven days, done.
-            </p>
-            <button onClick={onClose} className="btn-primary-celebration">
-              Explore More Sprints
-            </button>
+            {lastWriteSnippet && (
+              <p className="next-day-preview" style={{ fontStyle: 'italic', opacity: 0.9 }}>
+                “{lastWriteSnippet}”
+              </p>
+            )}
+            {!lastWriteSnippet && (
+              <p className="completion-message">
+                Close one loop. Open the next skill.
+              </p>
+            )}
+
+            <div className="button-group" style={{ flexDirection: 'column', gap: 10, width: '100%' }}>
+              {suggestedNext?.title && (
+                <button
+                  type="button"
+                  className="btn-primary-celebration"
+                  style={{ width: '100%' }}
+                  onClick={() => {
+                    onClose();
+                    window.location.href = nextHref;
+                  }}
+                >
+                  Next skill: {suggestedNext.title} →
+                </button>
+              )}
+              <button
+                type="button"
+                className={suggestedNext?.title ? 'btn-ghost' : 'btn-primary-celebration'}
+                style={{ width: '100%' }}
+                onClick={() => {
+                  onClose();
+                  window.location.href = '/library';
+                }}
+              >
+                {suggestedNext?.title ? 'Browse all sprints' : 'Explore more sprints →'}
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ width: '100%' }}
+                onClick={() => {
+                  onClose();
+                  window.location.href = '/dashboard';
+                }}
+              >
+                Back to dashboard
+              </button>
+            </div>
           </div>
         )}
 

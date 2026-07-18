@@ -9,6 +9,7 @@ import SummitCoach from '@/components/SummitCoach';
 import Day0View from '@/components/Day0View';
 import PracticeProse from '@/components/PracticeProse';
 import BrandLogo from '@/components/BrandLogo';
+import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
 import { type, t } from '@/lib/typeScale';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
@@ -63,6 +64,7 @@ export default function SummitDayPage({ params }) {
   const [previousDayProgress, setPreviousDayProgress] = useState(null);
   const [showCelebration,     setShowCelebration]     = useState(false);
   const [nextDayData,         setNextDayData]         = useState(null);
+  const [suggestedNext,       setSuggestedNext]       = useState(null);
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
   const [coachOpen,           setCoachOpen]           = useState(false);
 
@@ -175,6 +177,26 @@ export default function SummitDayPage({ params }) {
               .maybeSingle();
           }
           setNextDayData(nextQuery.data || null);
+        }
+        // Day 7: suggest another approved sprint for the post-Summit loop
+        if (dayNum === 7) {
+          const { data: otherBooks } = await supabase
+            .from('books')
+            .select('id, sprint_title, sprint_skill, title, category')
+            .eq('review_status', 'approved')
+            .neq('id', id)
+            .limit(40);
+          if (otherBooks?.length) {
+            const sameCat = bookData.category
+              ? otherBooks.filter((b) => b.category === bookData.category)
+              : [];
+            const pool = sameCat.length ? sameCat : otherBooks;
+            const pick = pool[Math.floor(Math.random() * pool.length)];
+            setSuggestedNext({
+              id: pick.id,
+              title: displaySprintTitle(pick),
+            });
+          }
         }
         if (currentUser && dayNum > 1) {
           const { data: prevProgress } = await supabase
@@ -1129,10 +1151,16 @@ export default function SummitDayPage({ params }) {
         isOpen={showCelebration}
         onClose={handleCloseCelebration}
         dayNum={dayNum}
-        bookTitle={book.sprint_title || book.title}
+        bookTitle={displaySprintTitle(book) || book.sprint_title || book.title}
         nextDayTitle={nextDayData?.title || `Day ${dayNum + 1}`}
         nextDayPreview={nextStagePreview}
         nextDayUrl={`/summit/${id}/day/${dayNum + 1}`}
+        suggestedNext={suggestedNext}
+        lastWriteSnippet={
+          dayNum === 7
+            ? (displayReflectionText(reflectionText) || '').slice(0, 180) || null
+            : null
+        }
       />
       <SummitCoach
         bookId={id}

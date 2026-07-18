@@ -6,7 +6,7 @@ import BookRow from '@/components/BookRow'
 import SprintCard from '@/components/SprintCard'
 import OnboardingModal from '@/components/OnboardingModal'
 import AppNav from '@/components/AppNav'
-import { displaySprintTitle } from '@/lib/sprintDisplay'
+import { displaySprintTitle, sprintArcLine } from '@/lib/sprintDisplay'
 
 const GRID_THRESHOLD = 8
 
@@ -50,7 +50,7 @@ function LoadingSkeleton() {
 // ── Continue (in progress) ────────────────────────────────────────────────────
 function ContinueSection({ userSkills }) {
   if (!userSkills?.length) return null
-  const active = userSkills.filter((s) => s.daysCompleted < 7)
+  const active = userSkills.filter((s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay))
   if (!active.length) return null
 
   const visible = active.slice(0, 3)
@@ -96,92 +96,125 @@ function ContinueSection({ userSkills }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {visible.map((skill) => {
-          const progressPct = Math.round((skill.daysCompleted / 7) * 100)
-          const resumeDay = Math.min(skill.daysCompleted + 1, 7)
+          const nextDay = skill.nextDay || Math.min((skill.daysCompleted || 0) + 1, 7)
+          const progressPct =
+            typeof skill.pct === 'number'
+              ? skill.pct
+              : Math.round(((skill.daysCompleted || 0) / 7) * 100)
           const label = displaySprintTitle({
             sprint_title: skill.sprintTitle,
             sprint_skill: skill.sprintSkill,
           })
+          const arc = sprintArcLine(nextDay, skill.daysCompleted || 0)
+          const nearSummit = nextDay >= 6
           return (
             <Link
               key={skill.bookId}
-              href={`/summit/${skill.bookId}/day/${resumeDay}`}
+              href={`/summit/${skill.bookId}/day/${nextDay}`}
               style={{ textDecoration: 'none' }}
             >
               <div
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
+                  flexDirection: 'column',
+                  gap: 8,
                   padding: '14px 16px',
-                  background: 'rgba(17, 24, 39, 0.95)',
-                  border: '1px solid rgba(255,255,255,0.07)',
+                  background: nearSummit
+                    ? 'linear-gradient(135deg, rgba(23,184,224,0.08), rgba(17,24,39,0.98))'
+                    : 'rgba(17, 24, 39, 0.95)',
+                  border: nearSummit
+                    ? '1px solid rgba(23,184,224,0.28)'
+                    : '1px solid rgba(255,255,255,0.07)',
                   borderRadius: 10,
                   transition: 'border-color 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(25,190,227,0.3)'
+                  e.currentTarget.style.borderColor = 'rgba(25,190,227,0.35)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
+                  e.currentTarget.style.borderColor = nearSummit
+                    ? 'rgba(23,184,224,0.28)'
+                    : 'rgba(255,255,255,0.07)'
                 }}
               >
-                <div style={{ flex: '1 1 180px', minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '0.95rem',
-                      fontWeight: 600,
-                      color: '#F8FAFC',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {label}
-                  </div>
-                </div>
-                <div style={{ flex: '1 1 100px', minWidth: 64, maxWidth: 180 }}>
-                  <div
-                    style={{
-                      height: 3,
-                      borderRadius: 2,
-                      background: 'rgba(255,255,255,0.08)',
-                      overflow: 'hidden',
-                    }}
-                  >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 16,
+                  }}
+                >
+                  <div style={{ flex: '1 1 180px', minWidth: 0 }}>
                     <div
                       style={{
-                        height: '100%',
-                        width: `${progressPct}%`,
-                        borderRadius: 2,
-                        background: 'var(--brand-teal)',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                        color: '#F8FAFC',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
-                    />
+                    >
+                      {label}
+                    </div>
+                  </div>
+                  <div style={{ flex: '1 1 100px', minWidth: 64, maxWidth: 180 }}>
+                    <div
+                      style={{
+                        height: 3,
+                        borderRadius: 2,
+                        background: 'rgba(255,255,255,0.08)',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${progressPct}%`,
+                          borderRadius: 2,
+                          background: 'var(--brand-teal)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      flex: '0 0 auto',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      color: nearSummit ? 'var(--brand-teal)' : 'rgba(148,163,184,0.95)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Day {nextDay} of 7
+                  </div>
+                  <div
+                    style={{
+                      color: 'var(--brand-teal)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      flexShrink: 0,
+                    }}
+                  >
+                    Continue →
                   </div>
                 </div>
-                <div
-                  style={{
-                    flex: '0 0 auto',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                    color: 'rgba(148,163,184,0.95)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Day {skill.daysCompleted} of 7
-                </div>
-                <div
-                  style={{
-                    color: 'var(--brand-teal)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    flexShrink: 0,
-                  }}
-                >
-                  Continue →
-                </div>
+                {arc && (
+                  <div
+                    style={{
+                      fontSize: '0.78rem',
+                      color: nearSummit
+                        ? 'rgba(23,184,224,0.85)'
+                        : 'rgba(238,242,247,0.42)',
+                      lineHeight: 1.4,
+                      paddingLeft: 0,
+                    }}
+                  >
+                    {arc}
+                  </div>
+                )}
               </div>
             </Link>
           )
