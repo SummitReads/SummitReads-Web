@@ -4,7 +4,7 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppNav from '@/components/AppNav';
-import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
+import { displaySprintTitle, displayReflectionText, computeSprintProgress } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function StatCard({ label, value, sub, color = 'var(--brand-teal)' }) {
@@ -79,47 +79,48 @@ export default function DashboardPage() {
   }, []);
 
   // ── Derived data ──────────────────────────────────────────────────────────
-  const daysCompletedCount = useMemo(
-    () => allProgress.filter(p => p.completed).length,
-    [allProgress],
-  );
-
-  // A sprint = one book. "Started" = any day touched. "Completed" = all 7 days done.
-  // Only include books that actually have summit_days content.
-  const sprintMap = useMemo(() => {
-    const map = {};
+  // A sprint = one book. Progress uses days 1–7 only (Day 0 does not count).
+  // nextDay = first incomplete day 1–7 — never "count of completed rows + 1".
+  const sprintList = useMemo(() => {
+    const byBook = {};
     allProgress.forEach(p => {
       const id = p.book_id;
       const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
-      if (!hasDays) return;
-      if (!map[id]) map[id] = { book: p.books, days: [], completedDays: 0 };
-      map[id].days.push(p.day_number);
-      if (p.completed) map[id].completedDays++;
+      if (!hasDays || !id) return;
+      if (!byBook[id]) byBook[id] = { book: p.books, rows: [] };
+      byBook[id].rows.push(p);
     });
-    return map;
+    return Object.values(byBook).map(({ book, rows }) => {
+      const progress = computeSprintProgress(rows);
+      return { book, ...progress };
+    });
   }, [allProgress]);
 
-  const sprintList = useMemo(() => Object.values(sprintMap), [sprintMap]);
-  const sprintsStarted = sprintList.length;
-  const sprintsCompleted = sprintList.filter(s => s.completedDays >= 7).length;
-  // Include day-0 / just-started (0 complete) so they still show under Continue
-  const sprintsInProgress = sprintList.filter(s => s.completedDays < 7);
+  // Total finished practice days (days 1–7 only) across all sprints
+  const daysCompletedCount = useMemo(
+    () => sprintList.reduce((sum, s) => sum + s.completedDays, 0),
+    [sprintList],
+  );
 
-  // Recently completed sprints (full 7-day)
+  const sprintsStarted = sprintList.length;
+  const sprintsCompleted = sprintList.filter(s => s.isComplete).length;
+  const sprintsInProgress = sprintList.filter(s => !s.isComplete);
+
+  // Recently completed sprints (all 7 days done)
   const recentlyCompleted = useMemo(() =>
     sprintList
-      .filter(s => s.completedDays >= 7)
+      .filter(s => s.isComplete)
       .slice(0, 3),
   [sprintList]);
 
   // Categories explored
   const categoriesExplored = useMemo(() => {
     const cats = {};
-    sprintList.forEach(({ book, completedDays: cd }) => {
+    sprintList.forEach(({ book, isComplete }) => {
       if (!book?.category) return;
       if (!cats[book.category]) cats[book.category] = { started: 0, completed: 0 };
       cats[book.category].started++;
-      if (cd >= 7) cats[book.category].completed++;
+      if (isComplete) cats[book.category].completed++;
     });
     return Object.entries(cats).sort((a, b) => b[1].started - a[1].started);
   }, [sprintList]);
@@ -209,10 +210,8 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-                {sprintsInProgress.slice(0, 3).map(({ book, completedDays: cd }) => {
+                {sprintsInProgress.slice(0, 3).map(({ book, completedDays: cd, nextDay, pct }) => {
                   if (!book) return null;
-                  const nextDay = cd + 1;
-                  const pct = Math.round((cd / 7) * 100);
                   return (
                     <Link
                       key={book.id}
@@ -221,7 +220,7 @@ export default function DashboardPage() {
                     >
                       <div className="glass-panel" style={{ padding: '20px', cursor: 'pointer', transition: 'border-color 0.15s' }}>
                         <div style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--brand-teal)', marginBottom: '8px' }}>
-                          {cd === 0 ? 'Start Day 1 of 7' : `Day ${nextDay} of 7`}
+                          {cd === 0 ? 'Start Day 1 of 7' : `Continue · Day ${nextDay} of 7`}
                         </div>
                         <div style={{ fontWeight: '600', marginBottom: '4px', fontSize: '0.95rem' }}>
                         {displaySprintTitle(book)}
@@ -230,7 +229,9 @@ export default function DashboardPage() {
                         <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '4px', overflow: 'hidden' }}>
                           <div style={{ width: `${pct}%`, height: '100%', background: 'var(--brand-teal)', borderRadius: '99px', transition: 'width 0.4s' }} />
                         </div>
-                        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>{pct}% complete</div>
+                        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', marginTop: '6px' }}>
+                          {cd} of 7 days finished
+                        </div>
                       </div>
                     </Link>
                   );

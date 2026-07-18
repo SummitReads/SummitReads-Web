@@ -4,7 +4,7 @@ import { supabase } from '@/app/supabaseClient';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AppNav from '@/components/AppNav';
-import { displaySprintTitle } from '@/lib/sprintDisplay';
+import { displaySprintTitle, computeSprintProgress } from '@/lib/sprintDisplay';
 
 function SkeletonBlock({ width = '100%', height = '20px', style = {} }) {
   return (
@@ -65,31 +65,35 @@ export default function SprintsPage() {
     load();
   }, []);
 
-  // Build sprint list — one entry per book, only books with content
+  // Build sprint list — progress from days 1–7 only (see computeSprintProgress)
   const sprintList = useMemo(() => {
     const map = {};
     allProgress.forEach(p => {
       const id = p.book_id;
       const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
-      if (!hasDays) return;
-      if (!map[id]) map[id] = { book: p.books, completedDays: 0, lastTouched: p.unlocked_at };
-      if (p.completed) map[id].completedDays++;
-      if (p.unlocked_at > map[id].lastTouched) map[id].lastTouched = p.unlocked_at;
+      if (!hasDays || !id) return;
+      if (!map[id]) map[id] = { book: p.books, rows: [] };
+      map[id].rows.push(p);
     });
 
-    return Object.values(map).sort((a, b) => {
-      // In Progress first, then Completed, then Just Started
-      const order = (cd) => cd > 0 && cd < 7 ? 0 : cd >= 7 ? 1 : 2;
-      const diff = order(a.completedDays) - order(b.completedDays);
-      if (diff !== 0) return diff;
-      return new Date(b.lastTouched) - new Date(a.lastTouched);
-    });
+    return Object.values(map)
+      .map(({ book, rows }) => {
+        const progress = computeSprintProgress(rows);
+        return { book, ...progress };
+      })
+      .sort((a, b) => {
+        // In Progress first, then Completed, then Just Started
+        const order = (s) => (!s.isComplete && s.completedDays > 0 ? 0 : s.isComplete ? 1 : 2);
+        const diff = order(a) - order(b);
+        if (diff !== 0) return diff;
+        return new Date(b.lastTouched || 0) - new Date(a.lastTouched || 0);
+      });
   }, [allProgress]);
 
   const filtered = useMemo(() => {
     if (filter === 'All') return sprintList;
-    if (filter === 'In Progress') return sprintList.filter(s => s.completedDays > 0 && s.completedDays < 7);
-    if (filter === 'Completed')   return sprintList.filter(s => s.completedDays >= 7);
+    if (filter === 'In Progress') return sprintList.filter(s => !s.isComplete && s.completedDays > 0);
+    if (filter === 'Completed')   return sprintList.filter(s => s.isComplete);
     if (filter === 'Just Started') return sprintList.filter(s => s.completedDays === 0);
     return sprintList;
   }, [sprintList, filter]);
@@ -170,18 +174,16 @@ export default function SprintsPage() {
           </div>
         ) : (
           <div className="glass-panel" style={{ padding: '8px 0' }}>
-            {filtered.map(({ book, completedDays, lastTouched }, i) => {
+            {filtered.map(({ book, completedDays, nextDay, pct, isComplete }, i) => {
               if (!book) return null;
-              const pct      = Math.round((completedDays / 7) * 100);
-              const nextDay  = Math.min(completedDays + 1, 7);
               const color    = categoryColor(book.category);
-              const badge    = statusBadge(completedDays);
+              const badge    = statusBadge(isComplete ? 7 : completedDays);
               const isLast   = i === filtered.length - 1;
 
               return (
                 <Link
                   key={book.id}
-                  href={`/summit/${book.id}/day/${nextDay}`}
+                  href={`/summit/${book.id}/day/${isComplete ? 7 : nextDay}`}
                   style={{ textDecoration: 'none' }}
                 >
                   <div
@@ -204,11 +206,11 @@ export default function SprintsPage() {
                       </div>
                       {/* Progress bar */}
                       <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '3px', overflow: 'hidden', maxWidth: '260px' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: completedDays >= 7 ? '#4ade80' : 'var(--brand-teal)', borderRadius: '99px', transition: 'width 0.4s' }} />
+                        <div style={{ width: `${pct}%`, height: '100%', background: isComplete ? '#4ade80' : 'var(--brand-teal)', borderRadius: '99px', transition: 'width 0.4s' }} />
                       </div>
                     </div>
 
-                    {/* Badge + day count */}
+                    {/* Badge + progress label (not "Day N" when N is a count) */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 }}>
                       <div style={{
                         fontSize: '0.68rem', fontWeight: '700', textTransform: 'uppercase',
@@ -218,7 +220,11 @@ export default function SprintsPage() {
                         {badge.label}
                       </div>
                       <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>
-                        Day {completedDays} of 7
+                        {isComplete
+                          ? '7 of 7 days finished'
+                          : completedDays === 0
+                            ? 'Day 1 of 7 · not started'
+                            : `${completedDays} of 7 finished · up next Day ${nextDay}`}
                       </div>
                     </div>
                   </div>

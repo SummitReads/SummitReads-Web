@@ -53,3 +53,57 @@ export function displayReflectionText(reflectionData) {
   }
   return String(reflectionData);
 }
+
+/**
+ * Sprint progress from user_progress rows for one book.
+ *
+ * IMPORTANT: Do not use "count of completed rows" as the day number.
+ * Day 0 is intro and must not count toward 1–7. Next day = first incomplete
+ * among days 1–7 (handles skips / out-of-order completions).
+ *
+ * @param {Array<{ day_number?: number, completed?: boolean, unlocked_at?: string }>} rows
+ */
+export function computeSprintProgress(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const byDay = {};
+  let lastTouched = null;
+
+  for (const p of list) {
+    const n = Number(p.day_number);
+    if (!Number.isFinite(n)) continue;
+    if (p.unlocked_at && (!lastTouched || p.unlocked_at > lastTouched)) {
+      lastTouched = p.unlocked_at;
+    }
+    // Prefer completed row if duplicates ever appear
+    if (n >= 1 && n <= 7) {
+      if (!byDay[n] || p.completed) byDay[n] = p;
+    }
+  }
+
+  let completedDays = 0;
+  for (let d = 1; d <= 7; d++) {
+    if (byDay[d]?.completed) completedDays++;
+  }
+
+  let nextDay = 1;
+  for (let d = 1; d <= 7; d++) {
+    if (!byDay[d]?.completed) {
+      nextDay = d;
+      break;
+    }
+    if (d === 7) nextDay = 7;
+  }
+
+  const isComplete = completedDays >= 7;
+  const pct = Math.round((completedDays / 7) * 100);
+
+  return {
+    completedDays,
+    nextDay,
+    isComplete,
+    pct,
+    lastTouched,
+    /** True if user has any progress row (including day 0) */
+    hasStarted: list.length > 0,
+  };
+}
