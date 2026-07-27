@@ -116,13 +116,24 @@ export default async function LibraryPage() {
     redirect('/auth/login')
   }
 
+  // Public library = shippable only (approved + has sprint title).
+  // Never surface in_repair / pending — even if RLS or cache is noisy.
   const { data: booksData, error: booksError } = await supabase
     .from('books')
     .select('id, title, author, category, tag, cover_url, brief_content, sprint_title, sprint_skill, review_status')
     .eq('review_status', 'approved')
+    .not('sprint_title', 'is', null)
     .order('created_at', { ascending: false })
 
-  const books = booksError || !booksData ? [] : booksData
+  if (booksError) {
+    console.error('[library] books query failed:', booksError.message)
+  }
+
+  const books = (booksError || !booksData ? [] : booksData).filter(
+    (b) =>
+      b?.review_status === 'approved' &&
+      String(b.sprint_title || '').trim().length > 0
+  )
   const booksByCategory = groupBooksByCategory(books)
   const sprintCount = books.length
 

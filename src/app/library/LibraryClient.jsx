@@ -547,6 +547,9 @@ const categoryOrder = [
   'Marketing, Branding & Storytelling',
   'Coaching & Development',
   'Setting Direction & Priorities',
+  'Performance & Accountability',
+  'Hard Conversations',
+  'Team Dynamics',
 ]
 
 function getCategoryShortName(category) {
@@ -559,8 +562,18 @@ function getCategoryShortName(category) {
     'Marketing, Branding & Storytelling': 'Marketing',
     'Coaching & Development': 'Coaching',
     'Setting Direction & Priorities': 'Priorities',
+    'Performance & Accountability': 'Performance',
+    'Hard Conversations': 'Conversations',
+    'Team Dynamics': 'Teams',
   }
   return shortNames[category] || category.split(/[&,]/)[0].trim()
+}
+
+/** Only shippable rows — belt-and-suspenders if bad data slips into props */
+function isShippableBook(book) {
+  if (!book?.id) return false
+  if (book.review_status && book.review_status !== 'approved') return false
+  return String(book.sprint_title || book.sprint_skill || '').trim().length > 0
 }
 
 // ── Inner component ───────────────────────────────────────────────────────────
@@ -574,10 +587,25 @@ function LibraryInner({
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [books] = useState(initialBooks)
-  const [booksByCategory] = useState(initialBooksByCategory)
-  const [userSkills] = useState(initialUserSkills)
-  const [sprintCount] = useState(initialSprintCount)
+  // Harden: never list non-approved / untitled sprints in the public library
+  const [books] = useState(() => (initialBooks || []).filter(isShippableBook))
+  const [booksByCategory] = useState(() => {
+    const allowed = new Set((initialBooks || []).filter(isShippableBook).map((b) => b.id))
+    const next = {}
+    Object.entries(initialBooksByCategory || {}).forEach(([cat, list]) => {
+      const filtered = (list || []).filter((b) => allowed.has(b.id) && isShippableBook(b))
+      if (filtered.length) next[cat] = filtered
+    })
+    return next
+  })
+  const [userSkills] = useState(() => {
+    const allowed = new Set((initialBooks || []).filter(isShippableBook).map((b) => b.id))
+    return (initialUserSkills || []).filter((s) => allowed.has(s.bookId))
+  })
+  const [sprintCount] = useState(() => {
+    const n = (initialBooks || []).filter(isShippableBook).length
+    return typeof initialSprintCount === 'number' ? Math.min(initialSprintCount, n) : n
+  })
   const [practiceStreak] = useState(initialPracticeStreak)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(
@@ -620,27 +648,35 @@ function LibraryInner({
     return booksByCategory[selectedCategory] || []
   }, [isSearching, filteredBooks, selectedCategory, books, booksByCategory])
 
+  const inProgressIds = useMemo(
+    () =>
+      new Set(
+        (userSkills || [])
+          .filter((s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay))
+          .map((s) => s.bookId)
+      ),
+    [userSkills]
+  )
+
   const featuredBook = useMemo(() => {
     if (!books.length || isSearching) return null
-    // Don't feature a book the user is already mid-sprint on if we can avoid it
-    const inProgressIds = new Set(
-      (userSkills || [])
-        .filter((s) => s.daysCompleted < 7)
-        .map((s) => s.bookId)
-    )
+    // Prefer a shippable sprint the user is NOT already mid-way through
     const candidates = books.filter((b) => !inProgressIds.has(b.id))
     const pool = candidates.length ? candidates : books
     const explicit = pool.find((b) => b.featured)
     if (explicit) return explicit
     const rich = pool.find((b) => b.sprint_title && b.brief_content)
     return rich || pool[0]
-  }, [books, userSkills, isSearching])
+  }, [books, inProgressIds, isSearching])
 
-  // Browse list excludes featured when showing "All" (avoid duplicate)
+  // Browse: exclude featured (when All) AND sprints already in Today's practice
   const browseWithoutFeatured = useMemo(() => {
-    if (isSearching || selectedCategory !== 'All' || !featuredBook) return browseBooks
-    return browseBooks.filter((b) => b.id !== featuredBook.id)
-  }, [browseBooks, featuredBook, isSearching, selectedCategory])
+    let list = browseBooks.filter((b) => isShippableBook(b) && !inProgressIds.has(b.id))
+    if (!isSearching && selectedCategory === 'All' && featuredBook) {
+      list = list.filter((b) => b.id !== featuredBook.id)
+    }
+    return list
+  }, [browseBooks, featuredBook, isSearching, selectedCategory, inProgressIds])
 
   const useFlatGrid =
     !isSearching &&
@@ -982,7 +1018,9 @@ function LibraryInner({
 
               {browseWithoutFeatured.length === 0 ? (
                 <p style={{ color: 'rgba(148,163,184,0.8)', fontSize: '0.9rem' }}>
-                  No sprints in this category yet.
+                  {inProgressIds.size > 0 && selectedCategory === 'All'
+                    ? 'You’re mid-sprint above — finish that open loop, or check back as we ship more skills.'
+                    : 'No sprints in this category yet.'}
                 </p>
               ) : useFlatGrid || selectedCategory !== 'All' ? (
                 <div
