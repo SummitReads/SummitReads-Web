@@ -25,14 +25,23 @@ const PRACTICE_DAY_V2 = true;
 // Rollback: set false.
 const LEAN_DAY_V1 = true;
 
-// ── Phase 2 preview: return loop (continuity + proof) ────────────────────────
-// Two visible pieces so the "come back" vision is tangible:
-//   1) Your situation this week — saved on Day 1 (progress_notes), echoed Days 2–7
-//   2) What I did — optional mission proof (action_commitment), shown as
-//      "Yesterday you…" on the next day
-// Uses existing user_progress columns only. Still non-blocking for complete.
+// ── Practice / return loop (continuity + proof + outcome) ───────────────────
+// Behavioral change loop (non-blocking — never gates "Mark day complete"):
+//   1) Situation this week — Day 1 progress_notes, echoed Days 2–7 when set
+//   2) What I did — optional action_commitment; shown next day only if filled
+//   3) What happened — optional evening_reflection on the day of the attempt;
+//      prompted on Day N+1 only when yesterday has a "What I did"
+// Empty prior fields → no blank chrome (strip only renders when there is content).
 // Rollback: set false.
 const RETURN_LOOP_V1 = true;
+
+// ── Explore Further (deep dive) entry point ──────────────────────────────────
+// Render-only kill switch for the "Explore Further" link that leads to the
+// /deep view (bonus_content: extended_reading / real_examples / reflection_prompts
+// / action_challenges). Hidden for now so the day ends cleanly after "What I did".
+// The /deep route, its data, and all Supabase queries are untouched.
+// Re-enable: set true and hard-refresh — no DB or API changes.
+const SHOW_EXPLORE = false;
 
 // Beat labels. Hierarchy = number badge + label color + card chrome, NOT body size.
 // All practice prose uses type.body (SaaS type-scale rule).
@@ -68,10 +77,14 @@ export default function SummitDayPage({ params }) {
   const [pacingDismissed,     setPacingDismissed]     = useState(false);
   const [coachOpen,           setCoachOpen]           = useState(false);
 
-  // ── Return loop (situation + mission proof) ─────────────────────────
+  // ── Return loop (situation + mission proof + outcome) ───────────────
   const [situationText,       setSituationText]       = useState('');
   const [missionNote,         setMissionNote]         = useState('');
   const [yesterdayNote,       setYesterdayNote]       = useState('');
+  // Outcome of *yesterday's* attempt (stored on prior day as evening_reflection)
+  const [yesterdayOutcome,    setYesterdayOutcome]    = useState('');
+  // Optional same-day outcome if they already know what happened
+  const [todayOutcome,        setTodayOutcome]        = useState('');
 
   // ── Second-look state (Phase 2) ──────────────────────────────────────
   const [coachObservation,     setCoachObservation]     = useState('');
@@ -100,6 +113,13 @@ export default function SummitDayPage({ params }) {
 
         if (bookError || !bookData) {
           setError('Book not found');
+          setLoading(false);
+          return;
+        }
+        // Public product: only shippable sprints (review_status=approved).
+        // Sprints in repair stay in admin pipeline until every day clears ≥ 8.5.
+        if (bookData.review_status && bookData.review_status !== 'approved') {
+          setError('This skill sprint is not available yet. Pick one from the library.');
           setLoading(false);
           return;
         }
@@ -201,7 +221,7 @@ export default function SummitDayPage({ params }) {
         if (currentUser && dayNum > 1) {
           const { data: prevProgress } = await supabase
             .from('user_progress')
-            .select('completed_at, completed, action_commitment, unlocked_at')
+            .select('completed_at, completed, action_commitment, evening_reflection, unlocked_at')
             .eq('user_id', currentUser.id)
             .eq('book_id', id)
             .eq('day_number', dayNum - 1)
@@ -209,6 +229,9 @@ export default function SummitDayPage({ params }) {
           setPreviousDayProgress(prevProgress);
           if (prevProgress?.action_commitment) {
             setYesterdayNote(String(prevProgress.action_commitment).trim());
+          }
+          if (prevProgress?.evening_reflection) {
+            setYesterdayOutcome(String(prevProgress.evening_reflection).trim());
           }
         }
         if (currentUser) {
@@ -224,6 +247,9 @@ export default function SummitDayPage({ params }) {
             setMissionComplete(currentProgress.completed || false);
             if (currentProgress.action_commitment) {
               setMissionNote(String(currentProgress.action_commitment).trim());
+            }
+            if (currentProgress.evening_reflection) {
+              setTodayOutcome(String(currentProgress.evening_reflection).trim());
             }
             if (currentProgress.coach_observation) {
               setCoachObservation(currentProgress.coach_observation);
@@ -315,6 +341,37 @@ export default function SummitDayPage({ params }) {
     } catch (err) { console.error('Error saving mission note:', err?.message ?? err); }
   }
 
+  // Outcome of yesterday's attempt — stored on prior day (optional, never gates complete).
+  async function saveYesterdayOutcome() {
+    if (!user || !RETURN_LOOP_V1 || dayNum <= 1) return;
+    // Only meaningful if they logged an attempt yesterday
+    if (!yesterdayNote.trim()) return;
+    const text = yesterdayOutcome.trim();
+    try {
+      await supabase.from('user_progress').upsert({
+        user_id:             user.id,
+        book_id:             id,
+        day_number:          dayNum - 1,
+        evening_reflection:  text || null,
+      }, { onConflict: 'user_id,book_id,day_number' });
+    } catch (err) { console.error('Error saving outcome:', err?.message ?? err); }
+  }
+
+  // Same-day outcome if they already know what happened (optional).
+  async function saveTodayOutcome() {
+    if (!user || !RETURN_LOOP_V1) return;
+    if (!missionNote.trim()) return;
+    const text = todayOutcome.trim();
+    try {
+      await supabase.from('user_progress').upsert({
+        user_id:             user.id,
+        book_id:             id,
+        day_number:          dayNum,
+        evening_reflection:  text || null,
+      }, { onConflict: 'user_id,book_id,day_number' });
+    } catch (err) { console.error('Error saving today outcome:', err?.message ?? err); }
+  }
+
   // ── Second-look handler (Phase 2) ────────────────────────────────────
   async function getSecondLook() {
     if (!user) { alert('Please sign in to use the coach.'); return; }
@@ -402,9 +459,12 @@ export default function SummitDayPage({ params }) {
           completed:    true,
           completed_at: now,
         };
-        // Carry optional mission proof into the complete write so Day N+1 can show it.
+        // Carry optional mission proof / outcome into complete write (never required).
         if (RETURN_LOOP_V1 && missionNote.trim()) {
           payload.action_commitment = missionNote.trim();
+        }
+        if (RETURN_LOOP_V1 && missionNote.trim() && todayOutcome.trim()) {
+          payload.evening_reflection = todayOutcome.trim();
         }
         const { error } = await supabase.from('user_progress').upsert(payload, { onConflict: 'user_id,book_id,day_number' });
         if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(false); return; }
@@ -656,7 +716,7 @@ export default function SummitDayPage({ params }) {
           </div>
         </div>
 
-        {/* ── Continuity (Days 2–7) — quiet, like Day 0 chrome ───────── */}
+        {/* ── Continuity (Days 2–7) — only when there is something to show ─ */}
         {RETURN_LOOP_V1 && dayNum > 1 && (situationText || yesterdayNote) && (
           <div
             style={{
@@ -677,10 +737,32 @@ export default function SummitDayPage({ params }) {
               </p>
             )}
             {yesterdayNote && (
-              <p style={t('caption', { margin: 0, color: 'rgba(238,242,247,0.55)' })}>
-                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Yesterday · </span>
+              <p style={t('caption', { margin: yesterdayOutcome ? '0 0 10px 0' : 0, color: 'rgba(238,242,247,0.55)' })}>
+                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Yesterday you · </span>
                 {yesterdayNote}
               </p>
+            )}
+            {/* Close the loop only when they logged an attempt yesterday — never required */}
+            {yesterdayNote && (
+              <div style={{ marginTop: yesterdayOutcome ? 0 : 10 }}>
+                <label style={t('label', {
+                  display: 'block',
+                  marginBottom: 6,
+                  color: 'rgba(255,255,255,0.35)',
+                })}>
+                  What happened when you tried it?{' '}
+                  <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional)</span>
+                </label>
+                <textarea
+                  className="journal-input"
+                  value={yesterdayOutcome}
+                  onChange={e => setYesterdayOutcome(e.target.value)}
+                  onBlur={saveYesterdayOutcome}
+                  placeholder="e.g. Worked Mon; Tue the meeting ran long and I skipped · or: not yet"
+                  rows={2}
+                  style={{ minHeight: 48, marginBottom: 0 }}
+                />
+              </div>
             )}
           </div>
         )}
@@ -1070,6 +1152,28 @@ export default function SummitDayPage({ params }) {
                   rows={2}
                   style={{ minHeight: 48, marginBottom: 0 }}
                 />
+                {/* Same-day outcome only if they logged an attempt — no empty chrome */}
+                {missionNote.trim().length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <label style={t('label', {
+                      display: 'block',
+                      marginBottom: 8,
+                      color: 'rgba(255,255,255,0.35)',
+                    })}>
+                      What happened?{' '}
+                      <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional — if you already know)</span>
+                    </label>
+                    <textarea
+                      className="journal-input"
+                      value={todayOutcome}
+                      onChange={e => setTodayOutcome(e.target.value)}
+                      onBlur={saveTodayOutcome}
+                      placeholder="What resulted — or write not yet / missed with why"
+                      rows={2}
+                      style={{ minHeight: 48, marginBottom: 0 }}
+                    />
+                  </div>
+                )}
               </div>
             )}
             <button
@@ -1093,7 +1197,7 @@ export default function SummitDayPage({ params }) {
         )}
         
         {/* Explore Further link — only shown once stage is complete */}
-        {missionComplete && (
+        {SHOW_EXPLORE && missionComplete && (
           <div style={{ textAlign: 'center', marginTop: 24 }}>
             <Link
               href={`/summit/${id}/day/${dayNum}/deep`}
@@ -1159,6 +1263,16 @@ export default function SummitDayPage({ params }) {
         lastWriteSnippet={
           dayNum === 7
             ? (displayReflectionText(reflectionText) || '').slice(0, 180) || null
+            : null
+        }
+        situationSnippet={
+          dayNum < 7 && situationText?.trim()
+            ? situationText.trim().slice(0, 120)
+            : null
+        }
+        lastDidSnippet={
+          dayNum < 7 && missionNote?.trim()
+            ? missionNote.trim().slice(0, 120)
             : null
         }
       />

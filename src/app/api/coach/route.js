@@ -55,15 +55,34 @@ async function logInteraction({ userId, bookId, dayNumber, interactionType, user
 // CHAT mode. Handles both general coaching and milepost evaluation.
 // Used by both the chat widget AND the "Get another look" feature, which sends
 // a structured "evaluate this milepost" message that this prompt knows how to handle.
-function buildChatSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences }) {
+function buildPracticeTrail(progressMap, situationText) {
+  const lines = [];
+  if (situationText) lines.push(`Week situation: "${situationText}"`);
+  for (let d = 1; d <= 7; d++) {
+    const p = progressMap?.[d];
+    if (!p) continue;
+    const did = (p.action_commitment || '').trim();
+    const happened = (p.evening_reflection || '').trim();
+    if (!did && !happened) continue;
+    if (did && happened) lines.push(`Day ${d}: tried "${did}" → result "${happened}"`);
+    else if (did) lines.push(`Day ${d}: tried "${did}" (no result logged yet)`);
+    else lines.push(`Day ${d}: result "${happened}"`);
+  }
+  if (lines.length === 0) return '';
+  return `\nPRACTICE TRAIL (learner's real attempts — coach from this evidence when present):
+${lines.join('\n')}
+If a result is missing, do not invent one. You may ask what happened. Prefer patterns across days over generic tips.\n`;
+}
+
+function buildChatSystemPrompt({ book, currentDay, userReflection, userMission, learningPreferences, practiceTrail = '' }) {
   const stageNum = currentDay.day_number;
   const stagePhaseGuidance = stageNum <= 2
     ? 'ORIENTATION mode. Be curious and exploratory. Help them see where today\'s move shows up in their current reality. Push awareness before action.'
     : stageNum <= 4
     ? 'APPLICATION mode. Get specific. Ask about real situations, real friction, real moments from their week.'
     : stageNum <= 6
-    ? 'REINFORCEMENT mode. Help them see what\'s actually shifting. Challenge them to go one level deeper.'
-    : 'INTEGRATION mode. Help them name what\'s genuinely changed and how they carry it forward.';
+    ? 'REINFORCEMENT mode. Help them see what\'s actually shifting. Challenge them to go one level deeper. Use their practice trail (what they tried and what happened) when available.'
+    : 'INTEGRATION mode. Help them name what\'s genuinely changed and how they carry it forward. Ground this in their week of attempts and outcomes.';
 
   // Today's practice — four v2 teaching components (UI: The move / Watch this /
   // Where it dies / Your turn). User-facing labels, not legacy "milepost/mission".
@@ -85,6 +104,7 @@ TERMINOLOGY (match the product UI — never say "milepost" or "summit mission" t
 - "Write it down" = the written checkpoint for the day (DB field: milepost)
 - "Do it now" = the real-world action (DB field: summit_mission)
 - "What I did" = optional one-line proof they completed the action
+- "What happened" = optional observed result of that attempt (practice loop)
 
 CONTEXT:
 Book: "${book.title}" by ${book.author}
@@ -94,7 +114,7 @@ Write it down prompt: ${currentDay.milepost || 'None.'}
 Do it now action: ${currentDay.summit_mission || 'None.'}
 User's write-it-down answer: ${userReflection || 'Not written yet. Ask what stood out.'}
 Do it now status: ${userMission ? '✓ Done' : 'Not done'}
-
+${practiceTrail}
 Posture: ${stagePhaseGuidance}
 
 ${learningPreferences?.style ? `LEARNER PREFERENCES (coach style only — same options as onboarding/Settings):
@@ -395,6 +415,8 @@ export async function POST(request) {
   const currentProgress = progressMap[dayNum];
   const userReflection  = extractMilepostText(currentProgress?.reflection_data);
   const userMission     = currentProgress?.completed === true;
+  const situationText   = (progressMap[1]?.progress_notes || '').trim() || null;
+  const practiceTrail   = buildPracticeTrail(progressMap, situationText);
 
   // ── Mode dispatch ──────────────────────────────────────────────────────
   let systemPrompt;
@@ -408,6 +430,7 @@ export async function POST(request) {
         userReflection,
         userMission,
         learningPreferences,
+        practiceTrail,
       });
       break;
 
@@ -433,6 +456,7 @@ export async function POST(request) {
         userReflection: milepostText,
         userMission,
         learningPreferences,
+        practiceTrail,
       });
 
       // Construct an explicit evaluation request as the user message.

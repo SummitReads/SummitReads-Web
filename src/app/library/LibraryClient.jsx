@@ -6,7 +6,12 @@ import BookRow from '@/components/BookRow'
 import SprintCard from '@/components/SprintCard'
 import OnboardingModal from '@/components/OnboardingModal'
 import AppNav from '@/components/AppNav'
-import { displaySprintTitle, sprintArcLine } from '@/lib/sprintDisplay'
+import {
+  displaySprintTitle,
+  sprintArcLine,
+  sprintDayJobLine,
+  sprintOpenLoopLine,
+} from '@/lib/sprintDisplay'
 
 const GRID_THRESHOLD = 8
 
@@ -47,23 +52,53 @@ function LoadingSkeleton() {
   )
 }
 
-// ── Continue (in progress) ────────────────────────────────────────────────────
-function ContinueSection({ userSkills }) {
+// ── Today's practice (open-loop pull) ───────────────────────────────────────
+// Primary return surface: unfinished personal thread + today's job + hard CTA.
+// Secondary rows for other in-progress sprints stay compact.
+function ContinueSection({ userSkills, practiceStreak }) {
   if (!userSkills?.length) return null
   const active = userSkills.filter((s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay))
   if (!active.length) return null
 
-  const visible = active.slice(0, 3)
+  const primary = active[0]
+  const rest = active.slice(1, 3)
   const hasMore = active.length > 3
 
+  const nextDay = primary.nextDay || Math.min((primary.daysCompleted || 0) + 1, 7)
+  const progressPct =
+    typeof primary.pct === 'number'
+      ? primary.pct
+      : Math.round(((primary.daysCompleted || 0) / 7) * 100)
+  const label = displaySprintTitle({
+    sprint_title: primary.sprintTitle,
+    sprint_skill: primary.sprintSkill,
+  })
+  const jobLine = sprintDayJobLine(nextDay, primary.nextDayTitle)
+  const openLoop = sprintOpenLoopLine({
+    situation: primary.situation,
+    lastDid: primary.lastDid,
+    lastOutcome: primary.lastOutcome,
+    nextDay,
+  })
+  const arc = sprintArcLine(nextDay, primary.daysCompleted || 0)
+  const nearSummit = nextDay >= 6
+  const streak = practiceStreak?.streak || 0
+  const streakPaused = !!practiceStreak?.paused
+  const cta =
+    nextDay === 7
+      ? 'Close your Summit →'
+      : primary.lastDid && !primary.lastOutcome
+        ? 'See what happened →'
+        : `Do Day ${nextDay} now →`
+
   return (
-    <section style={{ marginBottom: 40 }}>
+    <section style={{ marginBottom: 44 }}>
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 14,
+          marginBottom: 12,
           gap: 12,
         }}
       >
@@ -78,148 +113,305 @@ function ContinueSection({ userSkills }) {
             margin: 0,
           }}
         >
-          Continue
+          Today&apos;s practice
         </h2>
-        {hasMore && (
-          <Link
-            href="/dashboard"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {streak > 0 && (
+            <span
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                color: streakPaused ? 'rgba(251,191,36,0.9)' : 'rgba(23,184,224,0.9)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {streakPaused
+                ? `Streak paused · ${streak}d`
+                : `Practice streak · ${streak} day${streak === 1 ? '' : 's'}`}
+            </span>
+          )}
+          {hasMore && (
+            <Link
+              href="/dashboard"
+              style={{
+                fontSize: '0.78rem',
+                color: 'rgba(148,163,184,0.95)',
+                textDecoration: 'none',
+                fontWeight: 600,
+              }}
+            >
+              All in progress →
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Primary open-loop hero */}
+      <Link
+        href={`/summit/${primary.bookId}/day/${nextDay}`}
+        style={{ textDecoration: 'none', display: 'block', marginBottom: rest.length ? 10 : 0 }}
+      >
+        <div
+          style={{
+            padding: '22px 22px 20px',
+            borderRadius: 14,
+            background: nearSummit
+              ? 'linear-gradient(145deg, rgba(23,184,224,0.14) 0%, rgba(17,24,39,0.98) 42%, rgba(17,24,39,1) 100%)'
+              : 'linear-gradient(145deg, rgba(23,184,224,0.09) 0%, rgba(17,24,39,0.98) 38%, rgba(17,24,39,1) 100%)',
+            border: nearSummit
+              ? '1px solid rgba(23,184,224,0.38)'
+              : '1px solid rgba(23,184,224,0.22)',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.28)',
+            transition: 'border-color 0.15s ease, transform 0.15s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'rgba(25,190,227,0.5)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = nearSummit
+              ? 'rgba(23,184,224,0.38)'
+              : 'rgba(23,184,224,0.22)'
+          }}
+        >
+          <div
             style={{
-              fontSize: '0.78rem',
-              color: 'rgba(148,163,184,0.95)',
-              textDecoration: 'none',
-              fontWeight: 600,
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'baseline',
+              justifyContent: 'space-between',
+              gap: 10,
+              marginBottom: 10,
             }}
           >
-            All in progress →
-          </Link>
-        )}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {visible.map((skill) => {
-          const nextDay = skill.nextDay || Math.min((skill.daysCompleted || 0) + 1, 7)
-          const progressPct =
-            typeof skill.pct === 'number'
-              ? skill.pct
-              : Math.round(((skill.daysCompleted || 0) / 7) * 100)
-          const label = displaySprintTitle({
-            sprint_title: skill.sprintTitle,
-            sprint_skill: skill.sprintSkill,
-          })
-          const arc = sprintArcLine(nextDay, skill.daysCompleted || 0)
-          const nearSummit = nextDay >= 6
-          return (
-            <Link
-              key={skill.bookId}
-              href={`/summit/${skill.bookId}/day/${nextDay}`}
-              style={{ textDecoration: 'none' }}
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--brand-teal)',
+              }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 8,
-                  padding: '14px 16px',
-                  background: nearSummit
-                    ? 'linear-gradient(135deg, rgba(23,184,224,0.08), rgba(17,24,39,0.98))'
-                    : 'rgba(17, 24, 39, 0.95)',
-                  border: nearSummit
-                    ? '1px solid rgba(23,184,224,0.28)'
-                    : '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: 10,
-                  transition: 'border-color 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(25,190,227,0.35)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = nearSummit
-                    ? 'rgba(23,184,224,0.28)'
-                    : 'rgba(255,255,255,0.07)'
-                }}
+              Your open loop · Day {nextDay} of 7
+            </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.7rem',
+                color: 'rgba(148,163,184,0.95)',
+              }}
+            >
+              {primary.daysCompleted || 0}/7 days done
+            </div>
+          </div>
+
+          <h3
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '1.35rem',
+              fontWeight: 700,
+              color: '#F8FAFC',
+              margin: '0 0 10px',
+              lineHeight: 1.25,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {label}
+          </h3>
+
+          <p
+            style={{
+              margin: '0 0 12px',
+              fontSize: '0.95rem',
+              lineHeight: 1.5,
+              color: 'rgba(238,242,247,0.88)',
+              fontWeight: 500,
+            }}
+          >
+            {jobLine}
+          </p>
+
+          {openLoop && (
+            <p
+              style={{
+                margin: '0 0 14px',
+                fontSize: '0.86rem',
+                lineHeight: 1.5,
+                color: 'rgba(23,184,224,0.92)',
+                padding: '10px 12px',
+                borderRadius: 10,
+                background: 'rgba(23,184,224,0.07)',
+                border: '1px solid rgba(23,184,224,0.18)',
+              }}
+            >
+              {openLoop}
+            </p>
+          )}
+
+          {!openLoop && arc && (
+            <p
+              style={{
+                margin: '0 0 14px',
+                fontSize: '0.86rem',
+                lineHeight: 1.45,
+                color: 'rgba(238,242,247,0.5)',
+              }}
+            >
+              {arc}
+            </p>
+          )}
+
+          {/* 7-day dots */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 6,
+              marginBottom: 16,
+              alignItems: 'center',
+            }}
+            aria-hidden
+          >
+            {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+              const done = d <= (primary.daysCompleted || 0)
+              const current = d === nextDay
+              return (
+                <div
+                  key={d}
+                  style={{
+                    flex: 1,
+                    height: 4,
+                    borderRadius: 2,
+                    background: done
+                      ? 'var(--brand-teal)'
+                      : current
+                        ? 'rgba(23,184,224,0.55)'
+                        : 'rgba(255,255,255,0.1)',
+                    boxShadow: current ? '0 0 10px rgba(23,184,224,0.35)' : 'none',
+                  }}
+                />
+              )
+            })}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.78rem',
+                color: 'rgba(148,163,184,0.9)',
+              }}
+            >
+              About 15 minutes · real work, not reading
+              {progressPct > 0 ? ` · ${progressPct}% through` : ''}
+            </div>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '11px 18px',
+                borderRadius: 10,
+                background: 'var(--brand-teal)',
+                color: '#0B1220',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {cta}
+            </span>
+          </div>
+        </div>
+      </Link>
+
+      {/* Secondary in-progress (compact) */}
+      {rest.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {rest.map((skill) => {
+            const nd = skill.nextDay || Math.min((skill.daysCompleted || 0) + 1, 7)
+            const lbl = displaySprintTitle({
+              sprint_title: skill.sprintTitle,
+              sprint_skill: skill.sprintSkill,
+            })
+            const sub =
+              sprintOpenLoopLine({
+                situation: skill.situation,
+                lastDid: skill.lastDid,
+                lastOutcome: skill.lastOutcome,
+                nextDay: nd,
+              }) || sprintArcLine(nd, skill.daysCompleted || 0)
+            return (
+              <Link
+                key={skill.bookId}
+                href={`/summit/${skill.bookId}/day/${nd}`}
+                style={{ textDecoration: 'none' }}
               >
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 16,
+                    gap: 14,
+                    padding: '12px 14px',
+                    borderRadius: 10,
+                    background: 'rgba(17, 24, 39, 0.95)',
+                    border: '1px solid rgba(255,255,255,0.07)',
                   }}
                 >
-                  <div style={{ flex: '1 1 180px', minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '0.95rem',
                         fontWeight: 600,
                         color: '#F8FAFC',
+                        fontSize: '0.9rem',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}
                     >
-                      {label}
+                      {lbl}
                     </div>
-                  </div>
-                  <div style={{ flex: '1 1 100px', minWidth: 64, maxWidth: 180 }}>
-                    <div
-                      style={{
-                        height: 3,
-                        borderRadius: 2,
-                        background: 'rgba(255,255,255,0.08)',
-                        overflow: 'hidden',
-                      }}
-                    >
+                    {sub && (
                       <div
                         style={{
-                          height: '100%',
-                          width: `${progressPct}%`,
-                          borderRadius: 2,
-                          background: 'var(--brand-teal)',
+                          fontSize: '0.75rem',
+                          color: 'rgba(238,242,247,0.45)',
+                          marginTop: 3,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
-                      />
-                    </div>
+                      >
+                        {sub}
+                      </div>
+                    )}
                   </div>
                   <div
                     style={{
-                      flex: '0 0 auto',
                       fontFamily: 'var(--font-mono)',
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      color: nearSummit ? 'var(--brand-teal)' : 'rgba(148,163,184,0.95)',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Day {nextDay} of 7
-                  </div>
-                  <div
-                    style={{
-                      color: 'var(--brand-teal)',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
+                      fontSize: '0.68rem',
+                      color: 'rgba(148,163,184,0.95)',
                       flexShrink: 0,
                     }}
                   >
+                    Day {nd}/7
+                  </div>
+                  <div style={{ color: 'var(--brand-teal)', fontWeight: 600, fontSize: '0.8rem' }}>
                     Continue →
                   </div>
                 </div>
-                {arc && (
-                  <div
-                    style={{
-                      fontSize: '0.78rem',
-                      color: nearSummit
-                        ? 'rgba(23,184,224,0.85)'
-                        : 'rgba(238,242,247,0.42)',
-                      lineHeight: 1.4,
-                      paddingLeft: 0,
-                    }}
-                  >
-                    {arc}
-                  </div>
-                )}
-              </div>
-            </Link>
-          )
-        })}
-      </div>
+              </Link>
+            )
+          })}
+        </div>
+      )}
     </section>
   )
 }
@@ -377,6 +569,7 @@ function LibraryInner({
   initialBooksByCategory,
   initialUserSkills,
   initialSprintCount,
+  initialPracticeStreak = { streak: 0, paused: false },
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -385,6 +578,7 @@ function LibraryInner({
   const [booksByCategory] = useState(initialBooksByCategory)
   const [userSkills] = useState(initialUserSkills)
   const [sprintCount] = useState(initialSprintCount)
+  const [practiceStreak] = useState(initialPracticeStreak)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams?.get('category') ?? 'All'
@@ -707,13 +901,48 @@ function LibraryInner({
 
         {!isSearching && (
           <>
-            {/* 1. Continue */}
-            <ContinueSection userSkills={userSkills} />
+            {/* 1. Today's practice (open-loop pull) — owns the page when in progress */}
+            <ContinueSection userSkills={userSkills} practiceStreak={practiceStreak} />
 
-            {/* 2. Featured */}
-            {selectedCategory === 'All' && <FeaturedSprint book={featuredBook} />}
+            {/* 2–3. Discovery: demoted when a sprint is open */}
+            {(() => {
+              const inPractice = (userSkills || []).some(
+                (s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay)
+              )
+              return (
+                <div
+                  style={
+                    inPractice
+                      ? {
+                          marginTop: 8,
+                          paddingTop: 28,
+                          borderTop: '1px solid rgba(255,255,255,0.06)',
+                          opacity: 0.92,
+                        }
+                      : undefined
+                  }
+                >
+                  {inPractice && selectedCategory === 'All' && (
+                    <p
+                      style={{
+                        margin: '0 0 18px',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color: 'rgba(148,163,184,0.65)',
+                      }}
+                    >
+                      Explore when you&apos;re ready
+                    </p>
+                  )}
 
-            {/* 3. Browse */}
+            {/* Featured only when not mid-sprint — practice hero owns attention */}
+            {selectedCategory === 'All' && !inPractice && (
+              <FeaturedSprint book={featuredBook} />
+            )}
+
+            {/* Browse */}
             <section>
               <div
                 style={{
@@ -735,7 +964,9 @@ function LibraryInner({
                   }}
                 >
                   {selectedCategory === 'All'
-                    ? 'Browse'
+                    ? inPractice
+                      ? 'More sprints'
+                      : 'Browse'
                     : getCategoryShortName(selectedCategory)}
                 </h2>
                 <span
@@ -785,6 +1016,9 @@ function LibraryInner({
                   })
               )}
             </section>
+                </div>
+              )
+            })()}
           </>
         )}
       </main>

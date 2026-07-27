@@ -89,7 +89,8 @@ export default function LandingClient({ sprintCount = 14 }) {
   useEffect(() => {
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
-        if (session?.user) router.replace('/library')
+        // Practice-first home when already signed in
+        if (session?.user) router.replace('/dashboard')
       })
   }, [router])
 

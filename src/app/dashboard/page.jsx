@@ -10,6 +10,8 @@ import {
   computeSprintProgress,
   computePracticeStreak,
   sprintArcLine,
+  sprintDayJobLine,
+  sprintOpenLoopLine,
 } from '@/lib/sprintDisplay';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -98,7 +100,16 @@ export default function DashboardPage() {
     });
     return Object.values(byBook).map(({ book, rows }) => {
       const progress = computeSprintProgress(rows);
-      // Most recent write-it-down (days 1–7), for continue hero pull
+      const byDay = {};
+      rows.forEach((r) => {
+        const n = Number(r.day_number);
+        if (Number.isFinite(n)) byDay[n] = r;
+      });
+
+      // Week situation (Day 1)
+      const situation = String(byDay[1]?.progress_notes || '').trim() || null;
+
+      // Most recent write-it-down (days 1–7)
       let lastWrite = null;
       let lastWriteDay = null;
       const withText = rows
@@ -116,7 +127,40 @@ export default function DashboardPage() {
         lastWrite = displayReflectionText(withText[0].reflection_data);
         lastWriteDay = Number(withText[0].day_number);
       }
-      return { book, rows, lastWrite, lastWriteDay, ...progress };
+
+      // Last practice attempt (What I did / what happened)
+      let lastDid = null;
+      let lastOutcome = null;
+      for (let d = 7; d >= 1; d--) {
+        const row = byDay[d];
+        if (!row?.completed && d !== progress.nextDay - 1) continue;
+        const did = String(row?.action_commitment || '').trim();
+        const outcome = String(row?.evening_reflection || '').trim();
+        if (did || outcome) {
+          lastDid = did || null;
+          lastOutcome = outcome || null;
+          break;
+        }
+      }
+      if (!lastDid && progress.nextDay > 1) {
+        const prev = byDay[progress.nextDay - 1];
+        const did = String(prev?.action_commitment || '').trim();
+        if (did) {
+          lastDid = did;
+          lastOutcome = String(prev?.evening_reflection || '').trim() || null;
+        }
+      }
+
+      return {
+        book,
+        rows,
+        lastWrite,
+        lastWriteDay,
+        situation,
+        lastDid,
+        lastOutcome,
+        ...progress,
+      };
     });
   }, [allProgress]);
 
@@ -255,7 +299,7 @@ export default function DashboardPage() {
           }
         </div>
 
-        {/* ── Continue hero (pull) ── */}
+        {/* ── Today's practice (open-loop pull) ── */}
         {loading ? (
           <SkeletonBlock height="180px" style={{ borderRadius: '16px', marginBottom: '32px' }} />
         ) : continueHero?.book ? (
@@ -276,7 +320,7 @@ export default function DashboardPage() {
                   }}>
                     {continueHero.completedDays === 0
                       ? 'Ready to start'
-                      : `Continue · Day ${continueHero.nextDay} of 7`}
+                      : `Your open loop · Day ${continueHero.nextDay} of 7`}
                   </span>
                   <span style={{
                     fontSize: '0.72rem', color: 'rgba(238,242,247,0.35)',
@@ -292,16 +336,46 @@ export default function DashboardPage() {
                   {displaySprintTitle(continueHero.book)}
                 </h2>
 
-                {sprintArcLine(continueHero.nextDay, continueHero.completedDays) && (
+                <p style={{
+                  fontSize: '0.95rem', color: 'rgba(238,242,247,0.88)',
+                  margin: '0 0 12px', lineHeight: 1.5, fontWeight: 500,
+                }}>
+                  {sprintDayJobLine(continueHero.nextDay)}
+                </p>
+
+                {sprintOpenLoopLine({
+                  situation: continueHero.situation,
+                  lastDid: continueHero.lastDid,
+                  lastOutcome: continueHero.lastOutcome,
+                  nextDay: continueHero.nextDay,
+                }) ? (
+                  <div style={{
+                    background: 'rgba(23,184,224,0.08)',
+                    border: '1px solid rgba(23,184,224,0.2)',
+                    borderRadius: 10,
+                    padding: '12px 14px',
+                    marginBottom: 12,
+                    fontSize: '0.88rem',
+                    lineHeight: 1.5,
+                    color: 'rgba(23,184,224,0.95)',
+                  }}>
+                    {sprintOpenLoopLine({
+                      situation: continueHero.situation,
+                      lastDid: continueHero.lastDid,
+                      lastOutcome: continueHero.lastOutcome,
+                      nextDay: continueHero.nextDay,
+                    })}
+                  </div>
+                ) : sprintArcLine(continueHero.nextDay, continueHero.completedDays) ? (
                   <p style={{
                     fontSize: '0.88rem', color: 'rgba(238,242,247,0.55)',
-                    margin: '0 0 16px', lineHeight: 1.5,
+                    margin: '0 0 12px', lineHeight: 1.5,
                   }}>
                     {sprintArcLine(continueHero.nextDay, continueHero.completedDays)}
                   </p>
-                )}
+                ) : null}
 
-                {continueHero.lastWrite && (
+                {continueHero.lastWrite && !continueHero.lastDid && (
                   <div style={{
                     background: 'rgba(0,0,0,0.25)',
                     borderLeft: '3px solid var(--brand-teal)',
@@ -332,22 +406,38 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Progress */}
-                <div style={{
-                  marginTop: '18px', background: 'rgba(255,255,255,0.08)',
-                  borderRadius: '99px', height: '5px', overflow: 'hidden',
-                }}>
-                  <div style={{
-                    width: `${continueHero.pct}%`, height: '100%',
-                    background: 'var(--brand-teal)', borderRadius: '99px',
-                    transition: 'width 0.4s',
-                  }} />
+                {/* 7-day dots */}
+                <div style={{ display: 'flex', gap: 6, marginTop: 16, marginBottom: 4 }} aria-hidden>
+                  {[1, 2, 3, 4, 5, 6, 7].map((d) => {
+                    const done = d <= (continueHero.completedDays || 0);
+                    const current = d === continueHero.nextDay;
+                    return (
+                      <div
+                        key={d}
+                        style={{
+                          flex: 1,
+                          height: 5,
+                          borderRadius: 3,
+                          background: done
+                            ? 'var(--brand-teal)'
+                            : current
+                              ? 'rgba(23,184,224,0.5)'
+                              : 'rgba(255,255,255,0.1)',
+                          boxShadow: current ? '0 0 10px rgba(23,184,224,0.35)' : 'none',
+                        }}
+                      />
+                    );
+                  })}
                 </div>
 
                 <span className="continue-hero-cta">
                   {continueHero.completedDays === 0
                     ? 'Start Day 1 →'
-                    : `Continue Day ${continueHero.nextDay} →`}
+                    : continueHero.nextDay === 7
+                      ? 'Close your Summit →'
+                      : continueHero.lastDid && !continueHero.lastOutcome
+                        ? 'See what happened →'
+                        : `Do Day ${continueHero.nextDay} now →`}
                 </span>
               </div>
             </Link>
@@ -361,6 +451,33 @@ export default function DashboardPage() {
                 </Link>
               </div>
             )}
+          </section>
+        ) : !loading ? (
+          <section style={{ marginBottom: '32px' }}>
+            <div className="continue-hero" style={{ textAlign: 'left' }}>
+              <div style={{
+                fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em',
+                textTransform: 'uppercase', color: 'var(--brand-teal)',
+                fontFamily: 'var(--font-mono)', marginBottom: 10,
+              }}>
+                Start a practice week
+              </div>
+              <h2 style={{
+                fontSize: '1.35rem', fontWeight: 800, margin: '0 0 8px',
+                letterSpacing: '-0.02em', color: '#EEF2F7',
+              }}>
+                Pick a 7-day skill sprint
+              </h2>
+              <p style={{
+                fontSize: '0.9rem', color: 'rgba(238,242,247,0.55)',
+                margin: '0 0 4px', lineHeight: 1.5,
+              }}>
+                One real situation. Daily practice on work — not a content binge.
+              </p>
+              <Link href="/library" className="continue-hero-cta">
+                Browse skill sprints →
+              </Link>
+            </div>
           </section>
         ) : null}
 

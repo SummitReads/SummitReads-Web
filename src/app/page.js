@@ -27,6 +27,6 @@ async function getApprovedSprintCount() {
 
 export default async function Home() {
   const sprintCount = await getApprovedSprintCount()
-  // Fallback keeps marketing line intact if Supabase is briefly unavailable
-  return <LandingClient sprintCount={sprintCount ?? 14} />
+  // Fallback: shippable library only (Atomic Habits until more sprints clear the bar)
+  return <LandingClient sprintCount={sprintCount ?? 1} />
 }

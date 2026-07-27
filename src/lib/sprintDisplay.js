@@ -125,6 +125,51 @@ export function sprintArcLine(nextDay, completedDays = 0) {
 }
 
 /**
+ * What today's job is for (pull language — role drama, not fluff).
+ * @param {number} nextDay
+ * @param {string} [dayTitle] - optional live day title from summit_days
+ */
+export function sprintDayJobLine(nextDay, dayTitle = '') {
+  const n = Number(nextDay) || 1;
+  const titled = String(dayTitle || '').trim();
+  const jobs = {
+    1: 'Name the real moment this skill has to land in your week.',
+    2: 'Put the cue where the decision actually happens — not nearby.',
+    3: 'Size a floor version that still runs on a hard day.',
+    4: 'Diagnose one real skip and name the one fix.',
+    5: 'Leave evidence: one line so Friday is not guesswork.',
+    6: 'Change one thing the evidence shows — not the whole system.',
+    7: 'Run it once more now, then plant next week with a real time.',
+  };
+  const job = jobs[n] || 'Fifteen minutes on real work.';
+  if (titled) return `Today · ${titled}. ${job}`;
+  return `Day ${n} · ${job}`;
+}
+
+/**
+ * Build a short open-loop pull line from personal practice data.
+ * Only uses fields that exist — never invents blanks.
+ */
+export function sprintOpenLoopLine({ situation, lastDid, lastOutcome, nextDay } = {}) {
+  const bits = [];
+  if (situation) bits.push(`Working with: ${clipPull(situation, 72)}`);
+  if (lastDid && !lastOutcome) {
+    bits.push(`You tried: ${clipPull(lastDid, 64)} — what happened?`);
+  } else if (lastDid && lastOutcome) {
+    bits.push(`Last try: ${clipPull(lastDid, 48)} → ${clipPull(lastOutcome, 40)}`);
+  } else if (Number(nextDay) > 1) {
+    bits.push('Your thread is open. Pick it up where you left off.');
+  }
+  return bits.length ? bits.join(' · ') : null;
+}
+
+function clipPull(s, max) {
+  const t = String(s || '').replace(/\s+/g, ' ').trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max - 1).trimEnd()}…`;
+}
+
+/**
  * Consecutive calendar days with at least one day 1–7 completed.
  * Streak stays alive if last practice was today or yesterday.
  *
