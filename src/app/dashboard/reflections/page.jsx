@@ -49,7 +49,7 @@ export default function ReflectionsPage() {
         supabase.from('profiles').select('full_name').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, category, sprint_title)')
+          .select('*, books(id, title, category, sprint_title, review_status)')
           .eq('user_id', uid)
           .not('reflection_data', 'is', null)
           .order('unlocked_at', { ascending: false }),
@@ -76,6 +76,8 @@ export default function ReflectionsPage() {
 
     allProgress.forEach(p => {
       if (!p.books) return;
+      // Only shippable sprints (approved library)
+      if (p.books.review_status && p.books.review_status !== 'approved') return;
       if (activeCategory !== 'All' && p.books.category !== activeCategory) return;
       const text = displayReflectionText(p.reflection_data);
       if (!text) return;

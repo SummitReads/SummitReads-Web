@@ -53,7 +53,7 @@ export default function SprintsPage() {
         supabase.from('profiles').select('full_name').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, category, sprint_title, summit_days(count))')
+          .select('*, books(id, title, category, sprint_title, review_status, summit_days(count))')
           .eq('user_id', uid)
           .order('unlocked_at', { ascending: false }),
       ]);
@@ -65,14 +65,21 @@ export default function SprintsPage() {
     load();
   }, []);
 
-  // Build sprint list — progress from days 1–7 only (see computeSprintProgress)
+  // Build sprint list — only shippable (approved) books.
+  // Progress on in_repair/pending sprints is retained in DB but not listed
+  // (those are off the public product until they clear the quality bar).
   const sprintList = useMemo(() => {
     const map = {};
     allProgress.forEach(p => {
       const id = p.book_id;
-      const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
+      const book = p.books;
+      if (!book?.id) return;
+      // Public product: only approved sprints with a skill title
+      if (book.review_status && book.review_status !== 'approved') return;
+      if (!String(book.sprint_title || '').trim()) return;
+      const hasDays = (book.summit_days?.[0]?.count ?? 0) > 0;
       if (!hasDays || !id) return;
-      if (!map[id]) map[id] = { book: p.books, rows: [] };
+      if (!map[id]) map[id] = { book, rows: [] };
       map[id].rows.push(p);
     });
 

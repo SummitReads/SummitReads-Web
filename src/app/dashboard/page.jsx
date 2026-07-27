@@ -73,7 +73,7 @@ export default function DashboardPage() {
         supabase.from('profiles').select('full_name, email').eq('id', uid).single(),
         supabase
           .from('user_progress')
-          .select('*, books(id, title, category, sprint_title, cover_url, summit_days(count))')
+          .select('*, books(id, title, category, sprint_title, cover_url, review_status, summit_days(count))')
           .eq('user_id', uid)
           .order('unlocked_at', { ascending: false }),
       ]);
@@ -93,9 +93,14 @@ export default function DashboardPage() {
     const byBook = {};
     allProgress.forEach(p => {
       const id = p.book_id;
-      const hasDays = (p.books?.summit_days?.[0]?.count ?? 0) > 0;
+      const book = p.books;
+      // Only shippable sprints on dashboard (same rule as library)
+      if (!book?.id) return;
+      if (book.review_status && book.review_status !== 'approved') return;
+      if (!String(book.sprint_title || '').trim()) return;
+      const hasDays = (book.summit_days?.[0]?.count ?? 0) > 0;
       if (!hasDays || !id) return;
-      if (!byBook[id]) byBook[id] = { book: p.books, rows: [] };
+      if (!byBook[id]) byBook[id] = { book, rows: [] };
       byBook[id].rows.push(p);
     });
     return Object.values(byBook).map(({ book, rows }) => {
