@@ -658,6 +658,15 @@ function LibraryInner({
     [userSkills]
   )
 
+  // Mid-sprint: practice hero owns the page; FeaturedSprint is not rendered.
+  const inPractice = useMemo(
+    () =>
+      (userSkills || []).some(
+        (s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay)
+      ),
+    [userSkills]
+  )
+
   const featuredBook = useMemo(() => {
     if (!books.length || isSearching) return null
     // Prefer a shippable sprint the user is NOT already mid-way through
@@ -669,15 +678,20 @@ function LibraryInner({
     return rich || pool[0]
   }, [books, inProgressIds, isSearching])
 
-  // Browse: exclude featured (when All) AND sprints already in Today's practice
+  // Only de-dupe the featured pick when FeaturedSprint is actually shown.
+  // Bug (pre-fix): when mid-sprint we hide Featured but still stripped it
+  // from browse → one approved sprint vanished (looked like "3 of 4").
+  const showFeaturedCard =
+    !isSearching && selectedCategory === 'All' && !inPractice && !!featuredBook
+
+  // Browse: exclude in-progress; exclude featured only when its card is visible
   const browseWithoutFeatured = useMemo(() => {
     let list = browseBooks.filter((b) => isShippableBook(b) && !inProgressIds.has(b.id))
-    if (!isSearching && selectedCategory === 'All' && featuredBook) {
+    if (showFeaturedCard && featuredBook) {
       list = list.filter((b) => b.id !== featuredBook.id)
     }
     return list
-  }, [browseBooks, featuredBook, isSearching, selectedCategory, inProgressIds])
-
+  }, [browseBooks, featuredBook, showFeaturedCard, inProgressIds])
   const useFlatGrid =
     !isSearching &&
     selectedCategory === 'All' &&
@@ -942,9 +956,6 @@ function LibraryInner({
 
             {/* 2–3. Discovery: demoted when a sprint is open */}
             {(() => {
-              const inPractice = (userSkills || []).some(
-                (s) => !s.isComplete && (s.daysCompleted < 7 || s.nextDay)
-              )
               return (
                 <div
                   style={
@@ -974,10 +985,7 @@ function LibraryInner({
                   )}
 
             {/* Featured only when not mid-sprint — practice hero owns attention */}
-            {selectedCategory === 'All' && !inPractice && (
-              <FeaturedSprint book={featuredBook} />
-            )}
-
+            {showFeaturedCard && <FeaturedSprint book={featuredBook} />}
             {/* Browse */}
             <section>
               <div
@@ -1040,7 +1048,9 @@ function LibraryInner({
                   .filter((cat) => (booksByCategory[cat] || []).length > 0)
                   .map((cat) => {
                     const list = (booksByCategory[cat] || []).filter(
-                      (b) => !featuredBook || b.id !== featuredBook.id
+                      (b) =>
+                        !inProgressIds.has(b.id) &&
+                        (!showFeaturedCard || !featuredBook || b.id !== featuredBook.id)
                     )
                     if (!list.length) return null
                     return (

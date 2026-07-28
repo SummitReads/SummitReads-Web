@@ -3,6 +3,9 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { computeSprintProgress, computePracticeStreak } from '@/lib/sprintDisplay'
 import LibraryClient from './LibraryClient'
 
+// Always hit Supabase for library — new approved sprints must appear without redeploy.
+export const dynamic = 'force-dynamic'
+
 // ── Data helpers ──────────────────────────────────────────────────────────────
 
 function groupBooksByCategory(booksData) {
