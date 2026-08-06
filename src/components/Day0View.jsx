@@ -10,7 +10,7 @@
  *   5. Personal  — situation capture (the week’s spine)
  *   6. Handoff   — Day 1 question + CTA
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import BrandLogo from '@/components/BrandLogo';
 import { type, t } from '@/lib/typeScale';
@@ -220,15 +220,35 @@ export default function Day0View({
   situationText,
   onSituationChange,
   onSituationBlur,
+  onStartDay1,
+  onExitFlush,
+  startingDay1 = false,
   showSituation = true,
 }) {
-  const [localSituation, setLocalSituation] = useState(situationText || '');
+  // Parent owns the value (controlled). No localSituation + useEffect mirror —
+  // that dual-state could reset the field when a stale parent prop arrived.
+  const situationRef = useRef(situationText || '');
+  situationRef.current = situationText || '';
+  const textareaRef = useRef(null);
 
+  // Flush on unmount (Exit to Library, browser back, etc.)
   useEffect(() => {
-    setLocalSituation(situationText || '');
-  }, [situationText]);
+    return () => {
+      onExitFlush?.();
+    };
+    // Intentionally once — onExitFlush should read refs/latest from parent.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const doc = useMemo(() => parseDay0(introMarkdown), [introMarkdown]);
+
+  async function handleStartDay1() {
+    if (startingDay1) return;
+    const text = situationRef.current;
+    if (onStartDay1) {
+      await onStartDay1(text);
+    }
+  }
 
   return (
     <>
@@ -237,7 +257,7 @@ export default function Day0View({
         <div className="nav-content">
           <BrandLogo href="/library" />
           <div className="nav-actions">
-            <Link href="/library" className="btn-outline small">
+            <Link href="/library" className="btn-outline small" onClick={() => onExitFlush?.()}>
               Exit to Library
             </Link>
           </div>
@@ -386,6 +406,27 @@ export default function Day0View({
           </section>
         )}
 
+        {/* ── Coach surfaces (one line — two different tools) ─────────── */}
+        <section
+          style={{
+            marginBottom: 28,
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
+          <SectionLabel style={{ marginBottom: 8, color: 'rgba(255,255,255,0.35)' }}>
+            Two ways to get help
+          </SectionLabel>
+          <p style={t('bodyMuted', { margin: 0, color: 'rgba(238,242,247,0.48)', lineHeight: 1.55 })}>
+            <strong style={{ color: 'rgba(238,242,247,0.72)', fontWeight: 600 }}>Summit Coach</strong>
+            {' '}is the side chat for the whole day.{' '}
+            <strong style={{ color: 'rgba(238,242,247,0.72)', fontWeight: 600 }}>Second look</strong>
+            {' '}critiques only the line you just wrote under Write it down.
+          </p>
+        </section>
+
         {/* ── 5–6. CLOSE: one personal ask + one handoff ───────────────── */}
         {showSituation && (
           <section
@@ -403,13 +444,17 @@ export default function Day0View({
               friction at work. Every day comes back to this.
             </p>
             <textarea
+              ref={textareaRef}
               className="journal-input"
-              value={localSituation}
+              value={situationText || ''}
               onChange={(e) => {
-                setLocalSituation(e.target.value);
-                onSituationChange?.(e.target.value);
+                const v = e.target.value;
+                situationRef.current = v;
+                onSituationChange?.(v);
               }}
-              onBlur={() => onSituationBlur?.(localSituation)}
+              onBlur={() => {
+                onSituationBlur?.(situationRef.current);
+              }}
               placeholder="e.g. Status updates from Jordan that never land before standup"
               rows={2}
               style={{ minHeight: 68, marginBottom: 0, fontSize: type.body.fontSize }}
@@ -434,21 +479,32 @@ export default function Day0View({
               Fifteen minutes. One move. On real work.
             </p>
           )}
-          <Link
-            href={`/summit/${bookId}/day/1`}
+          {/* Button (not Link): await situation save before navigate — confirmed P1 fix */}
+          <button
+            type="button"
             className="btn-primary-large"
-            style={{ display: 'inline-flex', textDecoration: 'none' }}
+            onClick={() => { void handleStartDay1(); }}
+            disabled={startingDay1}
+            style={{
+              display: 'inline-flex',
+              border: 'none',
+              cursor: startingDay1 ? 'wait' : 'pointer',
+              opacity: startingDay1 ? 0.7 : 1,
+            }}
           >
-            Start Day 1
-            <span className="arrow" style={{ fontSize: '1.1em' }}>
-              →
-            </span>
-          </Link>
+            {startingDay1 ? 'Saving…' : 'Start Day 1'}
+            {!startingDay1 && (
+              <span className="arrow" style={{ fontSize: '1.1em' }}>
+                →
+              </span>
+            )}
+          </button>
         </section>
 
         <div style={{ textAlign: 'center' }}>
           <Link
             href="/library"
+            onClick={() => onExitFlush?.()}
             style={t('caption', { color: 'rgba(255,255,255,0.35)', textDecoration: 'none' })}
           >
             ← Back to library

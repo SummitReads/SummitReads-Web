@@ -112,7 +112,12 @@ export default function DashboardPage() {
       });
 
       // Week situation (Day 1)
-      const situation = String(byDay[1]?.progress_notes || '').trim() || null;
+      const situation = (() => {
+        const raw = byDay[1]?.progress_notes;
+        if (raw == null) return null;
+        if (Array.isArray(raw)) return raw.map(String).join('\n').trim() || null;
+        return String(raw).trim() || null;
+      })();
 
       // Most recent write-it-down (days 1–7)
       let lastWrite = null;
@@ -414,8 +419,9 @@ export default function DashboardPage() {
                 {/* 7-day dots */}
                 <div style={{ display: 'flex', gap: 6, marginTop: 16, marginBottom: 4 }} aria-hidden>
                   {[1, 2, 3, 4, 5, 6, 7].map((d) => {
-                    const done = d <= (continueHero.completedDays || 0);
-                    const current = d === continueHero.nextDay;
+                    // completedDayNumbers only — never d <= completedDays (fabricates progress)
+                    const done = (continueHero.completedDayNumbers || []).includes(d);
+                    const current = d === continueHero.nextDay && !done;
                     return (
                       <div
                         key={d}

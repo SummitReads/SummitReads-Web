@@ -9,7 +9,12 @@ import SummitCoach from '@/components/SummitCoach';
 import Day0View from '@/components/Day0View';
 import PracticeProse from '@/components/PracticeProse';
 import BrandLogo from '@/components/BrandLogo';
-import { displaySprintTitle, displayReflectionText } from '@/lib/sprintDisplay';
+import {
+  displaySprintTitle,
+  displayReflectionText,
+  progressNotesToText,
+  progressNotesToDb,
+} from '@/lib/sprintDisplay';
 import { type, t } from '@/lib/typeScale';
 // import PacingNudge from '@/components/PacingNudge'; // Disabled — friction without proven value. Re-enable if completion data shows binge-and-forget pattern.
 
@@ -85,6 +90,10 @@ export default function SummitDayPage({ params }) {
   const [yesterdayOutcome,    setYesterdayOutcome]    = useState('');
   // Optional same-day outcome if they already know what happened
   const [todayOutcome,        setTodayOutcome]        = useState('');
+  // Completed days 1–7 for this book (progress bar = completion, not page position)
+  const [completedDaysCount,  setCompletedDaysCount]  = useState(0);
+  /** Day numbers 1–7 with completed === true (progress bar — not dayNum-1) */
+  const [completedDayNumbers, setCompletedDayNumbers] = useState([]);
 
   // ── Second-look state (Phase 2) ──────────────────────────────────────
   const [coachObservation,     setCoachObservation]     = useState('');
@@ -92,7 +101,25 @@ export default function SummitDayPage({ params }) {
   const [secondLookStreaming,  setSecondLookStreaming]  = useState(false);
   const [showCoachPanel,       setShowCoachPanel]       = useState(false);
   const [secondLookError,      setSecondLookError]      = useState(null);
+  const [startingDay1,         setStartingDay1]         = useState(false);
   const secondLookAbortRef = useRef(null);
+
+  // Latest draft text — always read from here on save/flush so navigation
+  // never depends on a stale render closure or a lost blur race.
+  const draftsRef = useRef({
+    reflection: '',
+    situation: '',
+    missionNote: '',
+    yesterdayOutcome: '',
+    todayOutcome: '',
+    yesterdayNote: '',
+  });
+  const userRef = useRef(null);
+  userRef.current = user;
+
+  function setDraft(field, value) {
+    draftsRef.current[field] = value;
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -143,8 +170,10 @@ export default function SummitDayPage({ params }) {
               .eq('book_id', id)
               .eq('day_number', 1)
               .maybeSingle();
-            if (day1Progress?.progress_notes) {
-              setSituationText(String(day1Progress.progress_notes).trim());
+            if (day1Progress?.progress_notes != null) {
+              const s = progressNotesToText(day1Progress.progress_notes);
+              setSituationText(s);
+              setDraft('situation', s);
             }
           }
           setLoading(false);
@@ -227,12 +256,22 @@ export default function SummitDayPage({ params }) {
             .eq('day_number', dayNum - 1)
             .maybeSingle();
           setPreviousDayProgress(prevProgress);
-          if (prevProgress?.action_commitment) {
-            setYesterdayNote(String(prevProgress.action_commitment).trim());
-          }
-          if (prevProgress?.evening_reflection) {
-            setYesterdayOutcome(String(prevProgress.evening_reflection).trim());
-          }
+          const yn = prevProgress?.action_commitment
+            ? String(prevProgress.action_commitment).trim()
+            : '';
+          const yo = prevProgress?.evening_reflection
+            ? String(prevProgress.evening_reflection).trim()
+            : '';
+          setYesterdayNote(yn);
+          setDraft('yesterdayNote', yn);
+          setYesterdayOutcome(yo);
+          setDraft('yesterdayOutcome', yo);
+        } else {
+          setPreviousDayProgress(null);
+          setYesterdayNote('');
+          setDraft('yesterdayNote', '');
+          setYesterdayOutcome('');
+          setDraft('yesterdayOutcome', '');
         }
         if (currentUser) {
           const { data: currentProgress } = await supabase
@@ -243,23 +282,55 @@ export default function SummitDayPage({ params }) {
             .eq('day_number', dayNum)
             .maybeSingle();
           if (currentProgress) {
-            setReflectionText(currentProgress.reflection_data || '');
-            setMissionComplete(currentProgress.completed || false);
+            // reflection_data is jsonb — normalize to string for the controlled field
+            const refRaw = currentProgress.reflection_data;
+            const refText = typeof refRaw === 'string'
+              ? refRaw
+              : (refRaw?.text != null ? String(refRaw.text) : (refRaw ? String(refRaw) : ''));
+            setReflectionText(refText);
+            setDraft('reflection', refText);
+            setMissionComplete(currentProgress.completed === true);
             if (currentProgress.action_commitment) {
-              setMissionNote(String(currentProgress.action_commitment).trim());
+              const mn = String(currentProgress.action_commitment).trim();
+              setMissionNote(mn);
+              setDraft('missionNote', mn);
+            } else {
+              setMissionNote('');
+              setDraft('missionNote', '');
             }
             if (currentProgress.evening_reflection) {
-              setTodayOutcome(String(currentProgress.evening_reflection).trim());
+              const to = String(currentProgress.evening_reflection).trim();
+              setTodayOutcome(to);
+              setDraft('todayOutcome', to);
+            } else {
+              setTodayOutcome('');
+              setDraft('todayOutcome', '');
             }
             if (currentProgress.coach_observation) {
               setCoachObservation(currentProgress.coach_observation);
               setShowCoachPanel(true);
             }
-            if (dayNum === 1 && currentProgress.progress_notes) {
-              setSituationText(String(currentProgress.progress_notes).trim());
+            if (dayNum === 1 && currentProgress.progress_notes != null) {
+              const s = progressNotesToText(currentProgress.progress_notes);
+              setSituationText(s);
+              setDraft('situation', s);
             }
+          } else {
+            // Fresh day — clear day-scoped drafts so we don't leak previous day
+            setReflectionText('');
+            setDraft('reflection', '');
+            setMissionNote('');
+            setDraft('missionNote', '');
+            setTodayOutcome('');
+            setDraft('todayOutcome', '');
+            setMissionComplete(false);
+            setCoachObservation('');
+            setShowCoachPanel(false);
           }
-          if (RETURN_LOOP_V1 && dayNum > 1) {
+          // Week thread always lives on day 1 — hydrate for Day 1 revisit AND Days 2–7.
+          // (Day 1 previously only read notes from currentProgress; if that row lacked
+          // progress_notes after a partial upsert, the field rendered blank though data existed.)
+          if (RETURN_LOOP_V1) {
             const { data: day1Progress } = await supabase
               .from('user_progress')
               .select('progress_notes')
@@ -267,9 +338,29 @@ export default function SummitDayPage({ params }) {
               .eq('book_id', id)
               .eq('day_number', 1)
               .maybeSingle();
-            if (day1Progress?.progress_notes) {
-              setSituationText(String(day1Progress.progress_notes).trim());
+            if (day1Progress?.progress_notes != null) {
+              const s = progressNotesToText(day1Progress.progress_notes);
+              setSituationText(s);
+              setDraft('situation', s);
             }
+          }
+          // Progress bar: completed days among 1–7 (not "current day position")
+          const { data: allProg } = await supabase
+            .from('user_progress')
+            .select('day_number, completed')
+            .eq('user_id', currentUser.id)
+            .eq('book_id', id);
+          if (allProg) {
+            const doneNums = allProg
+              .filter(
+                (r) =>
+                  Number(r.day_number) >= 1 &&
+                  Number(r.day_number) <= 7 &&
+                  r.completed === true
+              )
+              .map((r) => Number(r.day_number));
+            setCompletedDayNumbers(doneNums);
+            setCompletedDaysCount(doneNums.length);
           }
           if (dayNum === 1) {
             supabase
@@ -301,36 +392,194 @@ export default function SummitDayPage({ params }) {
   // Cleanup any in-flight second-look request on unmount
   useEffect(() => () => secondLookAbortRef.current?.abort(), []);
 
+  /**
+   * Persist drafts from an explicit snapshot (not render state).
+   * Used by blur, unmount/day-change flush, and Day 0 → Day 1 CTA.
+   */
+  async function persistDrafts({
+    userId,
+    bookId,
+    dayNumber,
+    isDay0Page,
+    drafts,
+  }) {
+    if (!userId || !bookId) return;
+    const ops = [];
+
+    // Week situation always lives on day 1 progress_notes (until runs model).
+    // Only write non-empty — null upsert would wipe a saved thread when flush
+    // races with an empty draft snapshot (nav away mid-type / exit).
+    if (RETURN_LOOP_V1) {
+      const sit = String(drafts.situation ?? '').trim();
+      if (sit) {
+        ops.push(
+          supabase.from('user_progress').upsert({
+            user_id: userId,
+            book_id: bookId,
+            day_number: 1,
+            progress_notes: progressNotesToDb(sit),
+          }, { onConflict: 'user_id,book_id,day_number' })
+        );
+      }
+    }
+
+    // Day-scoped fields only on practice days 1–7
+    if (!isDay0Page && dayNumber >= 1 && dayNumber <= 7) {
+      const reflection = String(drafts.reflection ?? '');
+      if (reflection.trim()) {
+        ops.push(
+          supabase.from('user_progress').upsert({
+            user_id: userId,
+            book_id: bookId,
+            day_number: dayNumber,
+            reflection_data: reflection,
+          }, { onConflict: 'user_id,book_id,day_number' })
+        );
+      }
+      if (RETURN_LOOP_V1) {
+        const mission = String(drafts.missionNote ?? '').trim();
+        ops.push(
+          supabase.from('user_progress').upsert({
+            user_id: userId,
+            book_id: bookId,
+            day_number: dayNumber,
+            action_commitment: mission || null,
+          }, { onConflict: 'user_id,book_id,day_number' })
+        );
+        if (mission) {
+          const today = String(drafts.todayOutcome ?? '').trim();
+          ops.push(
+            supabase.from('user_progress').upsert({
+              user_id: userId,
+              book_id: bookId,
+              day_number: dayNumber,
+              evening_reflection: today || null,
+            }, { onConflict: 'user_id,book_id,day_number' })
+          );
+        }
+        // Yesterday's outcome is stored on the prior day row
+        if (dayNumber > 1 && String(drafts.yesterdayNote ?? '').trim()) {
+          const yo = String(drafts.yesterdayOutcome ?? '').trim();
+          ops.push(
+            supabase.from('user_progress').upsert({
+              user_id: userId,
+              book_id: bookId,
+              day_number: dayNumber - 1,
+              evening_reflection: yo || null,
+            }, { onConflict: 'user_id,book_id,day_number' })
+          );
+        }
+      }
+    }
+
+    if (!ops.length) return;
+    const results = await Promise.all(ops);
+    for (const r of results) {
+      if (r?.error) console.error('Draft persist error:', r.error?.message ?? r.error);
+    }
+  }
+
+  async function flushCurrentDrafts() {
+    const u = userRef.current;
+    if (!u) return;
+    await persistDrafts({
+      userId: u.id,
+      bookId: id,
+      dayNumber: dayNum,
+      isDay0Page: isDay0,
+      drafts: { ...draftsRef.current },
+    });
+  }
+
+  // Flush previous day's drafts when day/book changes or the page unmounts.
+  // Snapshot dayNum/id in the effect so cleanup still targets the day we left.
+  useEffect(() => {
+    const snapDay = dayNum;
+    const snapId = id;
+    const snapIsDay0 = isDay0;
+    return () => {
+      const u = userRef.current;
+      if (!u || !snapId) return;
+      void persistDrafts({
+        userId: u.id,
+        bookId: snapId,
+        dayNumber: snapDay,
+        isDay0Page: snapIsDay0,
+        drafts: { ...draftsRef.current },
+      });
+    };
+  }, [id, dayNum, isDay0]);
+
+  // Also flush when the tab is hidden / page is unloading (hard nav, close).
+  useEffect(() => {
+    function onHide() {
+      if (document.visibilityState !== 'hidden') return;
+      const u = userRef.current;
+      if (!u || !id) return;
+      void persistDrafts({
+        userId: u.id,
+        bookId: id,
+        dayNumber: dayNum,
+        isDay0Page: isDay0,
+        drafts: { ...draftsRef.current },
+      });
+    }
+    function onPageHide() {
+      const u = userRef.current;
+      if (!u || !id) return;
+      void persistDrafts({
+        userId: u.id,
+        bookId: id,
+        dayNumber: dayNum,
+        isDay0Page: isDay0,
+        drafts: { ...draftsRef.current },
+      });
+    }
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [id, dayNum, isDay0]);
+
   async function saveReflection() {
-    if (!user || !reflectionText.trim()) return;
+    const text = String(draftsRef.current.reflection ?? '');
+    if (!user || !text.trim()) return;
     try {
       await supabase.from('user_progress').upsert({
         user_id:         user.id,
         book_id:         id,
         day_number:      dayNum,
-        reflection_data: reflectionText,
+        reflection_data: text,
       }, { onConflict: 'user_id,book_id,day_number' });
     } catch (err) { console.error('Error saving reflection:', err?.message ?? err); }
   }
 
   // Week-long situation: always written to Day 1 so every day can read it back.
-  async function saveSituation() {
+  async function saveSituation(explicitText) {
     if (!user || !RETURN_LOOP_V1) return;
-    const text = situationText.trim();
+    const text = String(
+      explicitText !== undefined ? explicitText : draftsRef.current.situation ?? ''
+    ).trim();
+    // Do not upsert null — clears a good row when blur/flush races with empty draft.
+    if (!text) return;
     try {
-      await supabase.from('user_progress').upsert({
+      const { error } = await supabase.from('user_progress').upsert({
         user_id:         user.id,
         book_id:         id,
         day_number:      1,
-        progress_notes:  text || null,
+        // text[] column — plain string fails with 22P02 and silently discards
+        progress_notes:  progressNotesToDb(text),
       }, { onConflict: 'user_id,book_id,day_number' });
+      if (error) console.error('Error saving situation:', error?.message ?? error);
     } catch (err) { console.error('Error saving situation:', err?.message ?? err); }
   }
 
   // Mission proof: what they actually did on real work (optional).
   async function saveMissionNote() {
     if (!user || !RETURN_LOOP_V1) return;
-    const text = missionNote.trim();
+    const text = String(draftsRef.current.missionNote ?? '').trim();
     try {
       await supabase.from('user_progress').upsert({
         user_id:            user.id,
@@ -344,9 +593,8 @@ export default function SummitDayPage({ params }) {
   // Outcome of yesterday's attempt — stored on prior day (optional, never gates complete).
   async function saveYesterdayOutcome() {
     if (!user || !RETURN_LOOP_V1 || dayNum <= 1) return;
-    // Only meaningful if they logged an attempt yesterday
-    if (!yesterdayNote.trim()) return;
-    const text = yesterdayOutcome.trim();
+    if (!String(draftsRef.current.yesterdayNote ?? '').trim()) return;
+    const text = String(draftsRef.current.yesterdayOutcome ?? '').trim();
     try {
       await supabase.from('user_progress').upsert({
         user_id:             user.id,
@@ -360,8 +608,8 @@ export default function SummitDayPage({ params }) {
   // Same-day outcome if they already know what happened (optional).
   async function saveTodayOutcome() {
     if (!user || !RETURN_LOOP_V1) return;
-    if (!missionNote.trim()) return;
-    const text = todayOutcome.trim();
+    if (!String(draftsRef.current.missionNote ?? '').trim()) return;
+    const text = String(draftsRef.current.todayOutcome ?? '').trim();
     try {
       await supabase.from('user_progress').upsert({
         user_id:             user.id,
@@ -372,10 +620,42 @@ export default function SummitDayPage({ params }) {
     } catch (err) { console.error('Error saving today outcome:', err?.message ?? err); }
   }
 
+  /** Day 0 → Day 1: await situation save, then navigate. No race with <Link>. */
+  async function handleStartDay1(situationFromChild) {
+    if (startingDay1) return;
+    setStartingDay1(true);
+    const text = String(
+      situationFromChild !== undefined
+        ? situationFromChild
+        : draftsRef.current.situation ?? ''
+    );
+    setDraft('situation', text);
+    setSituationText(text);
+    try {
+      if (user && RETURN_LOOP_V1) {
+        const { error } = await supabase.from('user_progress').upsert({
+          user_id: user.id,
+          book_id: id,
+          day_number: 1,
+          progress_notes: progressNotesToDb(text),
+        }, { onConflict: 'user_id,book_id,day_number' });
+        if (error) {
+          console.error('Day 0 situation save failed:', error?.message ?? error);
+          // Still navigate — better to land on Day 1 than trap the user.
+          // Thread may be empty; they can re-enter on Day 1.
+        }
+      }
+      router.push(`/summit/${id}/day/1`);
+    } finally {
+      setStartingDay1(false);
+    }
+  }
+
   // ── Second-look handler (Phase 2) ────────────────────────────────────
   async function getSecondLook() {
     if (!user) { alert('Please sign in to use the coach.'); return; }
-    if (!reflectionText.trim()) { return; }
+    const milepost = String(draftsRef.current.reflection ?? '').trim();
+    if (!milepost) { return; }
     if (secondLookLoading || secondLookStreaming) return;
 
     // Make sure the milepost is saved before the coach reads it
@@ -398,7 +678,7 @@ export default function SummitDayPage({ params }) {
           dayNum,
           userId:           user.id,
           interaction_type: 'second_look',
-          milepostText:     reflectionText.trim(),
+          milepostText:     milepost,
           context:          'day',
         }),
       });
@@ -445,63 +725,78 @@ export default function SummitDayPage({ params }) {
     }
   }
 
+  /**
+   * Mark day complete — one click, one write.
+   * Primary button does NOT uncomplete (that was the two-click trap: first click
+   * toggled false when state was already true, second click completed).
+   * Flush drafts first, then a single upsert with completed: true last.
+   */
   async function toggleMission() {
     if (!user) { alert('Please sign in to save progress.'); return; }
-    const newState = !missionComplete;
-    if (newState) {
-      const now = new Date().toISOString();
-      setMissionComplete(true);
-      try {
-        const payload = {
-          user_id:      user.id,
-          book_id:      id,
-          day_number:   dayNum,
-          completed:    true,
-          completed_at: now,
-        };
-        // Carry optional mission proof / outcome into complete write (never required).
-        if (RETURN_LOOP_V1 && missionNote.trim()) {
-          payload.action_commitment = missionNote.trim();
+    // Already complete: no-op on primary CTA (avoid accidental uncomplete).
+    if (missionComplete) {
+      setShowCelebration(true);
+      return;
+    }
+    const now = new Date().toISOString();
+    setMissionComplete(true);
+    try {
+      // 1) Flush draft fields first (must not race after completed write)
+      await flushCurrentDrafts();
+      // 2) Single complete write — completed:true is authoritative
+      const payload = {
+        user_id:      user.id,
+        book_id:      id,
+        day_number:   dayNum,
+        completed:    true,
+        completed_at: now,
+      };
+      const missionSnap = String(draftsRef.current.missionNote ?? '').trim();
+      const todaySnap = String(draftsRef.current.todayOutcome ?? '').trim();
+      const reflectionSnap = String(draftsRef.current.reflection ?? '').trim();
+      if (reflectionSnap) payload.reflection_data = reflectionSnap;
+      if (RETURN_LOOP_V1 && missionSnap) payload.action_commitment = missionSnap;
+      if (RETURN_LOOP_V1 && todaySnap) payload.evening_reflection = todaySnap;
+      const { error } = await supabase
+        .from('user_progress')
+        .upsert(payload, { onConflict: 'user_id,book_id,day_number' });
+      if (error) {
+        console.error('Complete error:', error?.message ?? JSON.stringify(error));
+        setMissionComplete(false);
+        return;
+      }
+      setCompletedDayNumbers((prev) => {
+        if (prev.includes(dayNum)) {
+          setCompletedDaysCount(prev.length);
+          return prev;
         }
-        if (RETURN_LOOP_V1 && missionNote.trim() && todayOutcome.trim()) {
-          payload.evening_reflection = todayOutcome.trim();
+        const next = [...prev, dayNum].sort((a, b) => a - b);
+        setCompletedDaysCount(next.length);
+        return next;
+      });
+      if (dayNum < 7 && user?.email) {
+        try {
+          await fetch('/api/send-stage-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email:          user.email,
+              bookTitle:      book?.title,
+              currentStage:   dayNum,
+              nextStage:      dayNum + 1,
+              nextStageTitle: nextDayData?.title || `Day ${dayNum + 1}`,
+              bookId:         id,
+              reflection:     reflectionSnap || null,
+            }),
+          });
+        } catch (emailErr) {
+          console.error('Email send failed:', emailErr);
         }
-        const { error } = await supabase.from('user_progress').upsert(payload, { onConflict: 'user_id,book_id,day_number' });
-        if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(false); return; }
-        // ── Fire stage-complete email (only if there's a next stage) ──
-        if (dayNum < 7 && user?.email) {
-          try {
-            await fetch('/api/send-stage-email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email:          user.email,
-                bookTitle:      book?.title,
-                currentStage:   dayNum,
-                nextStage:      dayNum + 1,
-                nextStageTitle: nextDayData?.title || `Day ${dayNum + 1}`,
-                bookId:         id,
-                reflection:     reflectionText.trim() || null,
-              }),
-            });
-          } catch (emailErr) {
-            console.error('Email send failed:', emailErr);
-          }
-        }
-        setShowCelebration(true);
-      } catch (err) { console.error('Critical error:', err?.message ?? err); setMissionComplete(false); }
-    } else {
+      }
+      setShowCelebration(true);
+    } catch (err) {
+      console.error('Critical error:', err?.message ?? err);
       setMissionComplete(false);
-      try {
-        const { error } = await supabase.from('user_progress').upsert({
-          user_id:      user.id,
-          book_id:      id,
-          day_number:   dayNum,
-          completed:    false,
-          completed_at: null,
-        }, { onConflict: 'user_id,book_id,day_number' });
-        if (error) { console.error('Toggle error:', error?.message ?? JSON.stringify(error)); setMissionComplete(true); }
-      } catch (err) { console.error('Critical error:', err?.message ?? err); }
     }
   }
 
@@ -545,20 +840,19 @@ export default function SummitDayPage({ params }) {
         bookId={id}
         situationText={situationText}
         showSituation={RETURN_LOOP_V1}
-        onSituationChange={setSituationText}
-        onSituationBlur={(text) => {
+        startingDay1={startingDay1}
+        onSituationChange={(text) => {
+          setDraft('situation', text);
           setSituationText(text);
-          // saveSituation reads situationText from state — write explicitly
-          if (!user || !RETURN_LOOP_V1) return;
-          const t = (text || '').trim();
-          supabase.from('user_progress').upsert({
-            user_id: user.id,
-            book_id: id,
-            day_number: 1,
-            progress_notes: t || null,
-          }, { onConflict: 'user_id,book_id,day_number' }).then(() => {}, (err) => {
-            console.error('Error saving situation from Day 0:', err?.message ?? err);
-          });
+        }}
+        onSituationBlur={(text) => {
+          setDraft('situation', text);
+          setSituationText(text);
+          void saveSituation(text);
+        }}
+        onStartDay1={handleStartDay1}
+        onExitFlush={() => {
+          void flushCurrentDrafts();
         }}
       />
     );
@@ -585,7 +879,8 @@ export default function SummitDayPage({ params }) {
     </div>
   );
 
-  const progressPercent = Math.round(((dayNum - 1) / 7) * 100);
+  // Completion-based progress (finished sprint revisited on Day 1 shows ~100%, not 0%)
+  const progressPercent = Math.min(100, Math.round((completedDaysCount / 7) * 100));
   // ── Next-day preview — assemble the same v2 components (space-joined for a
   // short teaser) rather than the dropped v1 ascent_content field. ──
   const nextStageText = ['framework', 'demonstration', 'failure_mode', 'application']
@@ -682,12 +977,12 @@ export default function SummitDayPage({ params }) {
               {dayData.skill_focus}
             </p>
           )}
-          {/* Quiet progress — secondary to content */}
+          {/* Quiet progress — completed_days/7 only (never dayNum-1 position) */}
           <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
             {[1, 2, 3, 4, 5, 6, 7].map(stage => {
               const stageData = allDays.find(d => d.day_number === stage);
-              const isComplete = stage < dayNum;
-              const isCurrent = stage === dayNum;
+              const isComplete = completedDayNumbers.includes(stage);
+              const isCurrent = stage === dayNum && !isComplete;
               return (
                 <div
                   key={stage}
@@ -712,7 +1007,7 @@ export default function SummitDayPage({ params }) {
             color: 'rgba(255,255,255,0.28)',
             letterSpacing: '0.04em',
           })}>
-            {progressPercent}% through the sprint
+            {completedDaysCount} of 7 days complete · {progressPercent}%
           </div>
         </div>
 
@@ -756,8 +1051,12 @@ export default function SummitDayPage({ params }) {
                 <textarea
                   className="journal-input"
                   value={yesterdayOutcome}
-                  onChange={e => setYesterdayOutcome(e.target.value)}
-                  onBlur={saveYesterdayOutcome}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setDraft('yesterdayOutcome', v);
+                    setYesterdayOutcome(v);
+                  }}
+                  onBlur={() => { void saveYesterdayOutcome(); }}
                   placeholder="e.g. Worked Mon; Tue the meeting ran long and I skipped · or: not yet"
                   rows={2}
                   style={{ minHeight: 48, marginBottom: 0 }}
@@ -767,8 +1066,10 @@ export default function SummitDayPage({ params }) {
           </div>
         )}
 
-        {/* ── Day 1 situation (same voice as Day 0) ──────────────────── */}
-        {RETURN_LOOP_V1 && dayNum === 1 && !situationText && (
+        {/* ── Day 1 situation — ALWAYS same DOM tree (no empty/filled remount) ─
+            Bug: helper <p> unmounted on first keystroke, shifting textarea sibling
+            index → focus loss + discarded input. Keep helper in tree; hide only. */}
+        {RETURN_LOOP_V1 && dayNum === 1 && (
           <div
             className="glass-panel"
             style={{
@@ -778,43 +1079,38 @@ export default function SummitDayPage({ params }) {
               background: 'rgba(25,190,227,0.05)',
             }}
           >
-            <div style={t('label', { marginBottom: 10 })}>Your situation this week</div>
-            <p style={t('bodyMuted', { margin: '0 0 12px 0', color: 'rgba(238,242,247,0.72)' })}>
+            <div style={t('label', {
+              marginBottom: 10,
+              color: 'rgba(255,255,255,0.35)',
+            })}>
+              Your situation this week
+            </div>
+            <p
+              style={t('bodyMuted', {
+                margin: '0 0 12px 0',
+                color: 'rgba(238,242,247,0.72)',
+                // Hide when filled — do NOT unmount (preserves textarea focus)
+                display: situationText.trim() ? 'none' : 'block',
+              })}
+            >
               Name one real thread you will practice on — a person, habit, or friction at work.
               Every day comes back to this.
             </p>
             <textarea
               className="journal-input"
               value={situationText}
-              onChange={e => setSituationText(e.target.value)}
-              onBlur={saveSituation}
+              onChange={e => {
+                const v = e.target.value;
+                setDraft('situation', v);
+                setSituationText(v);
+              }}
+              onBlur={() => { void saveSituation(); }}
               placeholder="e.g. Status updates from Jordan that never land before standup"
               rows={2}
-              style={{ minHeight: 64, marginBottom: 0 }}
-            />
-          </div>
-        )}
-        {/* If already set on Day 0, show a quiet reminder they can edit */}
-        {RETURN_LOOP_V1 && dayNum === 1 && situationText && (
-          <div
-            style={{
-              marginBottom: 24,
-              padding: '12px 14px',
-              borderRadius: 12,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            <div style={t('label', { marginBottom: 6, color: 'rgba(255,255,255,0.35)' })}>
-              Your situation this week
-            </div>
-            <textarea
-              className="journal-input"
-              value={situationText}
-              onChange={e => setSituationText(e.target.value)}
-              onBlur={saveSituation}
-              rows={2}
-              style={{ minHeight: 52, marginBottom: 0, background: 'transparent' }}
+              style={{
+                minHeight: 56,
+                marginBottom: 0,
+              }}
             />
           </div>
         )}
@@ -946,8 +1242,12 @@ export default function SummitDayPage({ params }) {
             <textarea
               className="journal-input"
               value={reflectionText}
-              onChange={e => setReflectionText(e.target.value)}
-              onBlur={saveReflection}
+              onChange={e => {
+                const v = e.target.value;
+                setDraft('reflection', v);
+                setReflectionText(v);
+              }}
+              onBlur={() => { void saveReflection(); }}
               placeholder={
                 dayNum === 7
                   ? 'Write your commitment in one or two lines…'
@@ -983,8 +1283,9 @@ export default function SummitDayPage({ params }) {
                     fontWeight: 500,
                     cursor: 'pointer',
                   }}
+                  title="Summit Coach — open chat about today's practice"
                 >
-                  Stuck? Ask coach →
+                  Stuck? Ask Summit Coach →
                 </button>
               )}
               {hasMilepostText && (
@@ -1003,14 +1304,15 @@ export default function SummitDayPage({ params }) {
                     fontWeight: 500,
                     cursor: secondLookBusy ? 'not-allowed' : 'pointer',
                   }}
+                  title="Second look — critique only what you just wrote under Write it down"
                 >
                   {secondLookLoading
                     ? 'Reading…'
                     : secondLookStreaming
                     ? 'Responding…'
                     : coachObservation
-                    ? 'Another look →'
-                    : 'Second look →'}
+                    ? 'Another second look →'
+                    : 'Second look on this answer →'}
                 </button>
               )}
             </div>
@@ -1030,8 +1332,17 @@ export default function SummitDayPage({ params }) {
                   justifyContent: 'space-between',
                   marginBottom: 8,
                 }}>
-                  <div style={t('label', { display: 'inline-flex', alignItems: 'center', gap: 6 })}>
-                    Coach
+                  <div>
+                    <div style={t('label', { display: 'inline-flex', alignItems: 'center', gap: 6 })}>
+                      Second look
+                    </div>
+                    <p style={t('caption', {
+                      margin: '4px 0 0 0',
+                      color: 'rgba(255,255,255,0.4)',
+                      lineHeight: 1.4,
+                    })}>
+                      Critique of the line you just wrote — not the open Summit Coach chat.
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -1146,34 +1457,40 @@ export default function SummitDayPage({ params }) {
                 <textarea
                   className="journal-input"
                   value={missionNote}
-                  onChange={e => setMissionNote(e.target.value)}
-                  onBlur={saveMissionNote}
+                  onChange={e => {
+                    const v = e.target.value;
+                    setDraft('missionNote', v);
+                    setMissionNote(v);
+                  }}
+                  onBlur={() => { void saveMissionNote(); }}
                   placeholder="One line on what you actually did…"
                   rows={2}
                   style={{ minHeight: 48, marginBottom: 0 }}
                 />
-                {/* Same-day outcome only if they logged an attempt — no empty chrome */}
-                {missionNote.trim().length > 0 && (
-                  <div style={{ marginTop: 12 }}>
-                    <label style={t('label', {
-                      display: 'block',
-                      marginBottom: 8,
-                      color: 'rgba(255,255,255,0.35)',
-                    })}>
-                      What happened?{' '}
-                      <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional — if you already know)</span>
-                    </label>
-                    <textarea
-                      className="journal-input"
-                      value={todayOutcome}
-                      onChange={e => setTodayOutcome(e.target.value)}
-                      onBlur={saveTodayOutcome}
-                      placeholder="What resulted — or write not yet / missed with why"
-                      rows={2}
-                      style={{ minHeight: 48, marginBottom: 0 }}
-                    />
-                  </div>
-                )}
+                {/* Always visible — do not gate behind "What I did" (two-click trap) */}
+                <div style={{ marginTop: 12 }}>
+                  <label style={t('label', {
+                    display: 'block',
+                    marginBottom: 8,
+                    color: 'rgba(255,255,255,0.35)',
+                  })}>
+                    What happened?{' '}
+                    <span style={{ fontWeight: 500, opacity: 0.65 }}>(optional)</span>
+                  </label>
+                  <textarea
+                    className="journal-input"
+                    value={todayOutcome}
+                    onChange={e => {
+                      const v = e.target.value;
+                      setDraft('todayOutcome', v);
+                      setTodayOutcome(v);
+                    }}
+                    onBlur={() => { void saveTodayOutcome(); }}
+                    placeholder="What resulted — or not yet / missed with why"
+                    rows={2}
+                    style={{ minHeight: 48, marginBottom: 0 }}
+                  />
+                </div>
               </div>
             )}
             <button

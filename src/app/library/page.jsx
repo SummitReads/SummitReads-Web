@@ -50,7 +50,12 @@ function buildUserSkills(progressData, booksData, dayMetaByBook = {}) {
       }
 
       // Week situation lives on Day 1 progress_notes
-      const situation = String(byDay[1]?.progress_notes || '').trim() || null
+      const situation = (() => {
+        const raw = byDay[1]?.progress_notes
+        if (raw == null) return null
+        if (Array.isArray(raw)) return raw.map(String).join('\n').trim() || null
+        return String(raw).trim() || null
+      })()
 
       // Last completed practice day (1–7) for "what you tried"
       let lastDid = null

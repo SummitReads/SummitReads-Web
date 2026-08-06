@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // User-facing language matches the day UI: practice / write it down / do it now.
-const INITIAL_GREETING = `Summit Coach here. Stuck on today's practice, the write-it-down line, or the do-it-now action? Drop it here and I'll help you sharpen it.`;
+const INITIAL_GREETING = `Summit Coach — open chat for the whole day (not Second look). Stuck on today's practice, Write it down, or Do it now? Drop it here.`;
 
 const EXPLORE_GREETING = `You're in Explore Further. Ask about what you just read — how it applies to your situation, what to do with it, or how it connects to earlier in the sprint.`;
 
@@ -259,7 +259,10 @@ export default function SummitCoach({
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ color: 'white', fontWeight: '700', fontSize: '0.9rem', fontFamily: 'var(--font-sans)' }}>Summit Coach</div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>{subtitle}</div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '1px' }}>
+                Side chat for the whole day · not Second look
+              </div>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.68rem', marginTop: '2px', opacity: 0.85 }}>{subtitle}</div>
             </div>
             {hasUserMessages && (
               <button

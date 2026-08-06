@@ -55,6 +55,23 @@ export function displayReflectionText(reflectionData) {
 }
 
 /**
+ * progress_notes is Postgres text[] in production. App used to write a plain
+ * string → PostgREST 22P02, silent save failure, situation field "discarded".
+ * Always write as a one-element array; always read as joined string.
+ */
+export function progressNotesToText(raw) {
+  if (raw == null || raw === '') return '';
+  if (Array.isArray(raw)) return raw.map((x) => String(x ?? '')).join('\n').trim();
+  return String(raw).trim();
+}
+
+/** Value for user_progress.progress_notes upsert (text[] column). */
+export function progressNotesToDb(text) {
+  const s = String(text ?? '').trim();
+  return s ? [s] : null;
+}
+
+/**
  * Sprint progress from user_progress rows for one book.
  *
  * IMPORTANT: Do not use "count of completed rows" as the day number.
@@ -74,20 +91,22 @@ export function computeSprintProgress(rows) {
     if (p.unlocked_at && (!lastTouched || p.unlocked_at > lastTouched)) {
       lastTouched = p.unlocked_at;
     }
-    // Prefer completed row if duplicates ever appear
+    // Prefer completed === true row if duplicates ever appear
     if (n >= 1 && n <= 7) {
-      if (!byDay[n] || p.completed) byDay[n] = p;
+      if (!byDay[n] || p.completed === true) byDay[n] = p;
     }
   }
 
-  let completedDays = 0;
+  // Strict boolean true only — never treat null/undefined/1 as complete.
+  const completedDayNumbers = [];
   for (let d = 1; d <= 7; d++) {
-    if (byDay[d]?.completed) completedDays++;
+    if (byDay[d]?.completed === true) completedDayNumbers.push(d);
   }
+  const completedDays = completedDayNumbers.length;
 
   let nextDay = 1;
   for (let d = 1; d <= 7; d++) {
-    if (!byDay[d]?.completed) {
+    if (byDay[d]?.completed !== true) {
       nextDay = d;
       break;
     }
@@ -99,6 +118,8 @@ export function computeSprintProgress(rows) {
 
   return {
     completedDays,
+    /** Day numbers 1–7 with completed === true (for dots; do not use d <= completedDays) */
+    completedDayNumbers,
     nextDay,
     isComplete,
     pct,
